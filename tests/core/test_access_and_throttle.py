@@ -30,6 +30,16 @@ async def test_gate_stops_strangers_but_lets_start_and_admin_through(settings):
     assert len(recorder.handled) == 2
 
 
+async def test_gate_rejects_look_alike_command_but_allows_start_with_botname(settings):
+    """«/startx» — не «/start»: не должен обходить режим до запуска (ТЗ, Р4)."""
+    recorder = Recorder()
+    gate = OpenGate(settings, recorder.on_closed)
+    await gate(recorder.handler, make_message("/startx", user_id=500), {})
+    await gate(recorder.handler, make_message("/start@jw_site_check_bot fb", user_id=500), {})
+    assert len(recorder.closed) == 1
+    assert len(recorder.handled) == 1
+
+
 async def test_throttle_blocks_second_message_within_interval_and_notifies_once():
     clock = FakeClock()
     recorder = Recorder()

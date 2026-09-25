@@ -29,4 +29,10 @@ class OpenGate(BaseMiddleware):
 
 
 def _is_start(event: TelegramObject) -> bool:
-    return isinstance(event, Message) and (event.text or "").startswith(START_COMMAND)
+    return isinstance(event, Message) and _command(event.text) == START_COMMAND
+
+
+def _command(text: str | None) -> str:
+    """Первое слово команды без @имени_бота, как разбирает его aiogram Command."""
+    first_word = (text or "").split(maxsplit=1)[0] if text else ""
+    return first_word.split("@", 1)[0]

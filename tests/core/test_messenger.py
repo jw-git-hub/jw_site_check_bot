@@ -45,11 +45,30 @@ async def test_edit_of_deleted_message_raises_gone():
         await AiogramMessenger(bot).edit(1, 5, DIVIDER_ONLY)
 
 
+@pytest.mark.parametrize("description", [
+    "Bad Request: message can't be edited",
+    "Bad Request: MESSAGE_ID_INVALID",
+    "Bad Request: something Telegram has not said before",
+])
+async def test_any_other_bad_request_on_edit_also_raises_gone(description):
+    """Тексты правки rich-сообщения неизвестны, Telegram переформулирует ошибки — список фраз не годится (ТЗ, 7.6)."""
+    bot = fake_bot({"editMessageText": edit_error(description)})
+    with pytest.raises(MessageGone):
+        await AiogramMessenger(bot).edit(1, 5, DIVIDER_ONLY)
+
+
 async def test_blocked_user_becomes_delivery_failed():
     method = SendRichDict(chat_id=1, rich_message={})
     bot = fake_bot({"sendRichMessage": TelegramForbiddenError(method=method, message="Forbidden: bot was blocked")})
     with pytest.raises(DeliveryFailed):
         await AiogramMessenger(bot).send(1, DIVIDER_ONLY)
+
+
+async def test_edit_forbidden_becomes_delivery_failed():
+    method = EditRichDict(chat_id=1, message_id=5, rich_message={})
+    bot = fake_bot({"editMessageText": TelegramForbiddenError(method=method, message="Forbidden: bot was blocked")})
+    with pytest.raises(DeliveryFailed):
+        await AiogramMessenger(bot).edit(1, 5, DIVIDER_ONLY)
 
 
 async def test_edit_or_send_sends_new_message_when_old_is_gone():
@@ -58,3 +77,11 @@ async def test_edit_or_send_sends_new_message_when_old_is_gone():
     new_id = await edit_or_send(messenger, 1, 5, DIVIDER_ONLY)
     assert new_id != 5
     assert messenger.sent == [(1, DIVIDER_ONLY)]
+
+
+async def test_edit_or_send_sends_new_message_for_unknown_bad_request():
+    bot = fake_bot({"editMessageText": edit_error("Bad Request: something Telegram has not said before"),
+                    "sendRichMessage": sent_message(9)})
+    new_id = await edit_or_send(AiogramMessenger(bot), 1, 5, DIVIDER_ONLY)
+    assert new_id == 9
+    assert [call.__api_method__ for call in bot.session.calls] == ["editMessageText", "sendRichMessage"]

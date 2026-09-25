@@ -11,7 +11,6 @@ from aiogram.methods.base import TelegramMethod
 from aiogram.types import Message
 
 NOT_MODIFIED = "message is not modified"
-GONE_PHRASES = ("message to edit not found", "message can't be edited", "message_id_invalid")
 
 
 class SendRichDict(TelegramMethod[Message]):
@@ -66,11 +65,11 @@ class AiogramMessenger:
 
 
 def _raise_edit_problem(description: str) -> None:
+    """Текст ошибки правки Telegram переформулирует и не документирует для rich-сообщений (ТЗ, 7.6):
+    любой Bad Request, кроме «не изменилось», значит — отчёт уйдёт новым сообщением."""
     if NOT_MODIFIED in description:
         return
-    if any(phrase in description for phrase in GONE_PHRASES):
-        raise MessageGone(description)
-    raise DeliveryFailed(description)
+    raise MessageGone(description)
 
 
 async def edit_or_send(messenger: Messenger, chat_id: int, message_id: int, rich_message: dict[str, Any]) -> int:
