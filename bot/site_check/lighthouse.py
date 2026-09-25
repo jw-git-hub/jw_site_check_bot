@@ -33,6 +33,8 @@ SCRIPT_SAVINGS = ("render-blocking-insight", "unused-javascript", "legacy-javasc
 SERVER_SAVINGS = ("document-latency-insight",)
 HEAVIEST_IMAGES = 3
 HEAVIEST_FILES = 10
+HTTP_URL_PREFIXES = ("http://", "https://")
+MIN_TRANSFER_BYTES = 1
 MAX_NAME_LENGTH = 40
 ELLIPSIS = "…"
 BUILD_HASH = re.compile(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9_-]{8,}$")
@@ -100,7 +102,7 @@ class PageFacts:
     insecure_urls: tuple[str, ...]
     post: PostNumbers
     missing_audits: tuple[str, ...]
-    # C7: что просили измерить (requestedUrl, без параметров); задача 13 покажет «запрошено → итог».
+    # Что просили измерить (requestedUrl, без параметров) — пара с final_url покажет «запрошено → итог» (ТЗ, 7.5).
     requested_url: str = ""
 
 
@@ -236,8 +238,14 @@ def _images(audits: dict[str, Any], savings: _Savings) -> ImageFacts:
 
 
 def _heaviest(requests: list[dict[str, Any]], savings: _Savings, limit: int) -> tuple[FileWeight, ...]:
-    ordered = sorted(requests, key=lambda item: _number(item.get("transferSize")), reverse=True)[:limit]
+    downloaded = [item for item in requests if _is_real_download(item)]
+    ordered = sorted(downloaded, key=lambda item: _number(item.get("transferSize")), reverse=True)[:limit]
     return tuple(_file_weight(item, savings) for item in ordered)
+
+
+def _is_real_download(item: dict[str, Any]) -> bool:
+    """data: URIs и обнулённые запросы (кэш, ошибка) не забирали сеть — незачем показывать их «весом» (ТЗ, 5.5)."""
+    return _url(item).startswith(HTTP_URL_PREFIXES) and _number(item.get("transferSize")) >= MIN_TRANSFER_BYTES
 
 
 def _file_weight(item: dict[str, Any], savings: _Savings) -> FileWeight:

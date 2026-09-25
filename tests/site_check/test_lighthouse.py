@@ -76,6 +76,17 @@ def test_images_heaviest_names_savings_and_ratio():
     assert facts.post.heaviest_files[0].name == "app.js"
 
 
+def test_data_uris_and_zero_byte_requests_are_not_the_heaviest():
+    requests = [
+        {"url": "data:image/svg+xml;base64,iVBORw0KGgoAAAANSUhEUg==", "resourceType": "Image", "transferSize": 0},
+        {"url": "https://site.test/img/real.jpg", "resourceType": "Image", "transferSize": 20_000},
+        {"url": "https://site.test/img/cached.jpg", "resourceType": "Image", "transferSize": 0},
+    ]
+    facts = parse_lighthouse(lighthouse(network_requests=audit(mode="informative", items=requests)))
+    assert [image.name for image in facts.images.heaviest] == ["real.jpg"]
+    assert [item.name for item in facts.post.heaviest_files] == ["real.jpg"]
+
+
 def test_mixed_content_urls_lose_parameters():
     items = [{"url": "http://cdn.test/pic.jpg?token=abc"}]
     facts = parse_lighthouse(lighthouse(is_on_https=audit(score=0, mode="binary", items=items)))
@@ -106,7 +117,7 @@ def test_strip_params():
 
 
 def test_requested_url_is_parsed_and_stripped():
-    # C7: ТЗ 7.5 просит «цепочку переадресаций» — бот сам переадресации не проходит, поэтому
+    # ТЗ 7.5 просит «цепочку переадресаций» — бот сам переадресации не проходит, поэтому
     # владельцу показываем то, что просили измерить, и то, где Lighthouse оказался (final_url).
     result = lighthouse()
     result["requestedUrl"] = "https://site.test/?utm_source=x"
@@ -120,7 +131,7 @@ def test_requested_url_missing_gives_empty_string():
 
 
 def test_final_url_loses_parameters():
-    # Ревью, находка 1: final_url должен терять параметры так же, как requested_url (ТЗ 11, Сек13).
+    # final_url должен терять параметры так же, как requested_url (ТЗ 11, Сек13).
     result = lighthouse()
     result["finalDisplayedUrl"] = "https://s.test/?utm=1&token=abc"
     facts = parse_lighthouse(result)
@@ -128,7 +139,7 @@ def test_final_url_loses_parameters():
 
 
 def test_image_savings_match_by_exact_url_first():
-    # Ревью, находка 2: у одной и той же картинки бывает несколько вариантов с разными параметрами
+    # У одной и той же картинки бывает несколько вариантов с разными параметрами
     # (Next.js ?w=, Shopify ?width=) — экономия каждого не должна перетирать соседнюю.
     requests = [
         {"url": "https://site.test/i.jpg?w=800", "resourceType": "Image", "transferSize": 90_000},
@@ -226,7 +237,7 @@ MALFORMED_CASES = [
 
 @pytest.mark.parametrize("corrupt", MALFORMED_CASES, ids=lambda fn: fn.__name__.lstrip("_"))
 def test_malformed_input_degrades_without_raising(corrupt):
-    # Ревью, находка 3: неожиданный вход от Lighthouse не должен ронять разбор целиком.
+    # Неожиданный вход от Lighthouse (обновление API, обрезанный ответ) не должен ронять разбор целиком.
     facts = parse_lighthouse(corrupt(lighthouse()))
     assert isinstance(facts, PageFacts)
 
