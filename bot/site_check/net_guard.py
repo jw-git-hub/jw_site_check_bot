@@ -119,8 +119,13 @@ async def _get_text(session: aiohttp.ClientSession, url: str) -> str | None:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=HOME_IP_TIMEOUT_SECONDS)) as response:
             if not response.ok:
                 return None
-            body = await response.content.read(MAX_HOME_IP_BODY_BYTES)
-            return body.decode("utf-8", errors="replace")
+            # Читаем на один байт больше предела: если он тоже пришёл, тело обрезано бы посередине числа,
+            # и урезанный хвост мог случайно стать другим настоящим адресом — источник отбрасываем целиком,
+            # не разбираем частичное тело (ТЗ, С2).
+            chunk = await response.content.read(MAX_HOME_IP_BODY_BYTES + 1)
+            if len(chunk) > MAX_HOME_IP_BODY_BYTES:
+                return None
+            return chunk.decode("utf-8", errors="replace")
     except (aiohttp.ClientError, TimeoutError):
         return None
 

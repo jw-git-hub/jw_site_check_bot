@@ -6,8 +6,8 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
 
-from bot.site_check.net_guard import (AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress,
-                                      fetch_home_ip, is_public_ipv4, parse_ip, system_resolver)
+from bot.site_check.net_guard import (MAX_HOME_IP_BODY_BYTES, AddressGuard, NameLookupFailed, NameNotFound, NoIPv4,
+                                      PrivateAddress, fetch_home_ip, is_public_ipv4, parse_ip, system_resolver)
 
 PUBLIC = "93.184.215.14"
 
@@ -155,13 +155,39 @@ async def test_fetch_home_ip_skips_undecodable_body():
         assert await fetch_home_ip(session, sources) == PUBLIC
 
 
-async def test_fetch_home_ip_reads_body_up_to_a_limit():
-    async def huge(request):
-        filler = "0" * 1_000_000
-        return web.Response(text=f"{filler}\n{PUBLIC}\n")
+async def test_fetch_home_ip_parses_a_body_of_exactly_the_limit():
+    filler = "0" * (MAX_HOME_IP_BODY_BYTES - 1 - len(PUBLIC))
+    body = f"{filler}\n{PUBLIC}"
+    assert len(body) == MAX_HOME_IP_BODY_BYTES
+
+    async def at_limit(request):
+        return web.Response(text=body)
 
     app = web.Application()
-    app.router.add_get("/huge", huge)
+    app.router.add_get("/at-limit", at_limit)
     async with TestServer(app) as server, aiohttp.ClientSession() as session:
-        sources = (str(server.make_url("/huge")),)
-        assert await fetch_home_ip(session, sources) is None
+        sources = (str(server.make_url("/at-limit")),)
+        assert await fetch_home_ip(session, sources) == PUBLIC
+
+
+async def test_fetch_home_ip_refuses_an_oversize_body_instead_of_parsing_its_truncation():
+    """4082 байта мусора + перенос строки + "93.184.215.140" (14 символов) = на 1 байт больше предела: обрезка
+    по старому правилу дала бы правдоподобный, но чужой адрес — "93.184.215.14"."""
+    truncatable_address = "93.184.215.140"
+    other_public = "8.8.8.8"
+    filler = "0" * (MAX_HOME_IP_BODY_BYTES - len(truncatable_address))
+    body = f"{filler}\n{truncatable_address}"
+    assert len(body) == MAX_HOME_IP_BODY_BYTES + 1
+
+    async def oversize(request):
+        return web.Response(text=body)
+
+    async def trace(request):
+        return web.Response(text=f"{other_public}\n")
+
+    app = web.Application()
+    app.router.add_get("/oversize", oversize)
+    app.router.add_get("/trace", trace)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/oversize")), str(server.make_url("/trace")))
+        assert await fetch_home_ip(session, sources) == other_public
