@@ -164,6 +164,7 @@ TEXTS = {
     "post_measured_at": "Measured (UTC+7)",
     "checking": "Checking {site}…",
     "queued": "There are {sites} ahead of yours — about {minutes} min. The report will appear in this message.",
+    "queued_one": "There is 1 site ahead of yours — about {minutes} min. The report will appear in this message.",
     "again": "Send me a link to a website.",
     "not_a_link": "That doesn't look like a website address. Send a link — for example, example.com.",
     "not_text": "Please send the link as text.",

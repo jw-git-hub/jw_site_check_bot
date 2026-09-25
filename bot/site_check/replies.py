@@ -20,7 +20,8 @@ def checking(texts: Texts, lang: Lang, brand: Brand, display: str) -> dict:
 
 
 def queued(texts: Texts, lang: Lang, brand: Brand, ahead: int, minutes: int) -> dict:
-    return _simple(texts, lang, brand, "queued", sites=texts.count(lang, ahead, "site"), minutes=minutes)
+    key = "queued_one" if ahead == 1 else "queued"  # en "are" needs "is" for exactly one site ahead
+    return _simple(texts, lang, brand, key, sites=texts.count(lang, ahead, "site"), minutes=minutes)
 
 
 def again(texts: Texts, lang: Lang, brand: Brand) -> dict:

@@ -12,6 +12,11 @@ def test_checking_and_queued():
     assert "There are 5 sites ahead of yours — about 3 min." in rich_text(replies.queued(TEXTS, "en", BRAND, 5, 3))
 
 
+def test_queued_with_one_site_ahead_uses_singular_verb():
+    assert "There is 1 site ahead of yours — about 2 min." in rich_text(replies.queued(TEXTS, "en", BRAND, 1, 2))
+    assert "Передо мной ещё 1 сайт — ждать примерно 2 мин." in rich_text(replies.queued(TEXTS, "ru", BRAND, 1, 2))
+
+
 @pytest.mark.parametrize("lang", ["ru", "en"])
 @pytest.mark.parametrize("code", replies.FAILURE_CODES)
 def test_every_failure_has_text_in_both_languages(lang, code):
