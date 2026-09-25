@@ -115,6 +115,20 @@ def test_mixed_content_and_incomplete_chain_are_worth_fixing():
     assert [item.finding for item in block.findings] == [Finding.MIXED_CONTENT, Finding.INCOMPLETE_CHAIN]
 
 
+def test_incomplete_chain_still_warns_about_expiry():
+    """OpenSSL останавливается на коде 20 раньше проверки срока — второе соединение даёт дату сертификата,
+    единственный способ заметить это у самоустановленных сертификатов (ТЗ, 5.4)."""
+    facts = security(outcome=TlsOutcome.INCOMPLETE_CHAIN, days_left=5)
+    block = judge(page(), facts, TODAY).blocks[Block.SECURITY]
+    assert [item.finding for item in block.findings] == [Finding.CERT_EXPIRING, Finding.INCOMPLETE_CHAIN]
+
+
+def test_incomplete_chain_far_from_expiry_has_no_extra_finding():
+    facts = security(outcome=TlsOutcome.INCOMPLETE_CHAIN, days_left=60)
+    block = judge(page(), facts, TODAY).blocks[Block.SECURITY]
+    assert [item.finding for item in block.findings] == [Finding.INCOMPLETE_CHAIN]
+
+
 def test_own_checks_failed_leave_security_unknown():
     failed = SecurityFacts((TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),), (RedirectState.CLOSED,), ())
     assert judge(page(), failed, TODAY).blocks[Block.SECURITY].unknown_reason is UnknownReason.OWN_CHECKS_FAILED

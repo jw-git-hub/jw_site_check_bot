@@ -243,7 +243,8 @@ def _tls_findings(facts: TlsFacts, today: date) -> list[FindingItem]:
     if facts.outcome is TlsOutcome.OTHER:
         return [FindingItem(Finding.CERT_UNTRUSTED, Grade.BAD)]
     if facts.outcome is TlsOutcome.INCOMPLETE_CHAIN:
-        return [FindingItem(Finding.INCOMPLETE_CHAIN, Grade.FIX, until=_cert_until(facts.cert))]
+        return [FindingItem(Finding.INCOMPLETE_CHAIN, Grade.FIX, until=_cert_until(facts.cert))] + \
+            _expiry_findings(facts.cert, today)
     return _expiry_findings(facts.cert, today)
 
 
