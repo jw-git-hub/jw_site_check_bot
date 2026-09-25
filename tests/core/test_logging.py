@@ -24,7 +24,9 @@ def test_token_in_message_is_masked(capsys):
 def test_value_added_after_start_is_masked(capsys):
     add_secret_values(["long-enough-private-value"])
     logger.warning("значение long-enough-private-value попало в текст")
-    assert "long-enough-private-value" not in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "long-enough-private-value" not in out
+    assert MASK in out
 
 
 def test_traceback_is_masked(capsys):
@@ -39,7 +41,11 @@ def test_traceback_is_masked(capsys):
 
 def test_stdlib_logger_goes_through_mask(capsys):
     logging.getLogger("aiogram.dispatcher").warning("url %s", fake_telegram_token())
-    assert fake_telegram_token() not in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert fake_telegram_token() not in captured.out
+    assert fake_telegram_token() not in captured.err
+    assert MASK in captured.out
+    assert "aiogram.dispatcher" in captured.out
 
 
 def test_mask_function_for_other_texts():

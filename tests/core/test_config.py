@@ -46,6 +46,16 @@ def test_typo_in_key_name_is_refused():
         load_settings(Settings, {**VALID, "USER_DAILY_LIMT": "5"})
 
 
+def test_log_level_is_case_insensitive():
+    settings = load_settings(Settings, {**VALID, "LOG_LEVEL": "info"})
+    assert settings.log_level == "INFO"
+
+
+def test_invalid_log_level_is_refused():
+    with pytest.raises(ConfigError, match="log_level"):
+        load_settings(Settings, {**VALID, "LOG_LEVEL": "LOUD"})
+
+
 def test_unrelated_environment_is_not_a_typo():
     assert find_key_typos(["PATH", "HOME", "HOSTNAME", "LANG"], set(Settings.model_fields)) == []
 

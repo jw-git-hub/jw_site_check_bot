@@ -7,9 +7,9 @@
 import os
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Annotated, TypeVar
+from typing import Annotated, Literal, TypeVar
 
-from pydantic import AfterValidator, SecretStr, ValidationError
+from pydantic import AfterValidator, BeforeValidator, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,13 +26,22 @@ def _require_value(secret: SecretStr) -> SecretStr:
 NonEmptySecret = Annotated[SecretStr, AfterValidator(_require_value)]
 
 
+def _upper_log_level(value: object) -> object:
+    return value.upper() if isinstance(value, str) else value
+
+
+# Имена совпадают с уровнями loguru (bot.core.logging.LOGURU_LEVELS): неверное имя роняет
+# запуск здесь, ConfigError-ом с полем log_level, а не позже — тихим падением setup_logging.
+LogLevel = Annotated[Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], BeforeValidator(_upper_log_level)]
+
+
 class CoreSettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore", hide_input_in_errors=True)
 
     bot_token: NonEmptySecret
     admin_id: int
     open_to_all: bool = False
-    log_level: str = "INFO"
+    log_level: LogLevel = "INFO"
     data_dir: Path = Path("data")
 
     @classmethod
