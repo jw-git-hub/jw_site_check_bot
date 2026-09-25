@@ -9,7 +9,7 @@ from bot.site_check.post_numbers import post_numbers
 from bot.site_check.report import ReportRequest, build_report
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts, judge
-from tests.builders import MB, TODAY, images, mobile, page, security, speed
+from tests.builders import MB, TODAY, cert, images, mobile, page, security, speed
 from tests.fakes import rich_text
 
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
@@ -148,6 +148,38 @@ def test_missing_server_response_time_uses_plain_texts():
     assert "Больше всего времени уходит на ответ сервера." in text
     assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
     assert "0 секунд" not in text
+
+
+def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
+    """Ревью, находка 1: server_savings_ms (document-latency-insight) включает переадресации и сжатие, поэтому
+    причина «сервер» может выбраться и когда сам server_ms маленький — тогда тоже без выдуманных секунд."""
+    facts = page(speed(lcp=7000.0, server=2000.0, server_ms=40.0))
+    text = rich_text(report("ru", facts, security()))
+    assert "Больше всего времени уходит на ответ сервера." in text
+    assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
+    assert "0 секунд" not in text
+
+
+def test_expired_certificate_without_parseable_data_uses_no_date_text():
+    """Ревью, находка 2: read_cert_unverified может не разобрать сертификат и отдать cert=None — тогда без
+    пустой даты в предложении."""
+    failed_cert = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, None),), (RedirectState.REDIRECTS,), ())
+    text_ru = rich_text(report("ru", page(), failed_cert))
+    assert "Сертификат истёк: браузер показывает предупреждение во весь экран" in text_ru
+    assert "Сертификат истёк :" not in text_ru
+    text_en = rich_text(report("en", page(), failed_cert))
+    assert "The certificate has expired: the browser shows a full-screen warning" in text_en
+    assert "expired on :" not in text_en
+
+
+def test_security_bad_certificate_still_lists_other_consequences():
+    """Ревью, находка 3: сертификат «плохо» не должен молча прятать остальные находки блока (общее правило —
+    у каждой находки должно быть последствие для посетителя)."""
+    facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.WRONG_HOST, cert()),), (RedirectState.REDIRECTS,),
+                          ("http://x/a.js",))
+    text = rich_text(report("ru", page(), facts))
+    assert "Сертификат выдан на другой адрес" in text
+    assert "Кроме того, часть файлов страницы грузится без защиты" in text
 
 
 def test_post_numbers_shows_redirect_chain_when_addresses_differ():

@@ -92,6 +92,8 @@ TEXTS = {
                          "requests travel as plain text.",
     "security_cert_expired": "The certificate expired on {date}: the browser shows a full-screen warning, and the "
                              "site opens only via \"Advanced\".",
+    "security_cert_expired_no_date": "The certificate has expired: the browser shows a full-screen warning, and "
+                                     "the site opens only via \"Advanced\".",
     "security_cert_not_yet_valid": "The certificate isn't valid yet: the browser shows a full-screen warning, and "
                                    "the site opens only via \"Advanced\".",
     "security_cert_wrong_host": "The certificate is issued for another address: the browser shows a full-screen "

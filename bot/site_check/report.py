@@ -7,7 +7,7 @@ from bot.core.commands import Brand
 from bot.core.i18n import Lang, Texts
 from bot.site_check.lighthouse import ImageFacts, PageFacts
 from bot.site_check.post_numbers import post_numbers
-from bot.site_check.thresholds import COMPRESS_MIN_RATIO
+from bot.site_check.thresholds import COMPRESS_MIN_RATIO, SERVER_ALLOWANCE_MS
 from bot.site_check.tls_check import RedirectState, TlsOutcome
 from bot.site_check.verdict import (REPORT_ORDER, Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, Grade,
                                     FixKey, SecurityFacts, SummaryKind, Verdict)
@@ -101,12 +101,19 @@ def _cause_sentence(texts: Texts, lang: Lang, item: FindingItem) -> list[str]:
     if item.cause is Cause.UNKNOWN:
         return []
     if item.cause is Cause.SERVER:
-        # C24: server_ms может быть None (лидирует document-latency-insight, а server-response-time пропал) —
-        # тогда без цифры, а не «0 секунд».
-        if item.server_ms is None:
+        if _server_response_is_fast(item.server_ms):
             return [texts.get(lang, "cause_server_plain")]
         return [texts.get(lang, "cause_server", seconds=texts.seconds(lang, item.server_ms))]
     return [texts.get(lang, f"cause_{item.cause}")]
+
+
+def _server_response_is_fast(server_ms: float | None) -> bool:
+    """C24: server_savings_ms (document-latency-insight) включает переадресации и сжатие, не только ответ сервера.
+
+    main_cause может выбрать причиной «сервер», даже когда сам ответ (server-response-time) быстрый или проверка
+    пропала — тогда и в предложении, и в «что поправить» нужен текст без выдуманной цифры секунд.
+    """
+    return server_ms is None or server_ms <= SERVER_ALLOWANCE_MS
 
 
 def _mobile_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> str:
@@ -131,7 +138,7 @@ def _tails(texts: Texts, lang: Lang, items: list[FindingItem]) -> str:
 def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> str:
     main = verdict.findings[0] if verdict.findings else None
     if main and main.grade is Grade.BAD:
-        return _security_bad_sentence(texts, lang, main)
+        return _security_bad_text(texts, lang, main, verdict.findings[1:])
     tails = [item for item in verdict.findings if item.finding is not Finding.INCOMPLETE_CHAIN]
     opening = _security_opening(texts, lang, request, verdict)
     if not tails:
@@ -139,11 +146,29 @@ def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bl
     return SENTENCE_GAP.join([opening, texts.get(lang, "security_but", problems=_tails(texts, lang, tails))])
 
 
+def _security_bad_text(texts: Texts, lang: Lang, main: FindingItem, rest: tuple[FindingItem, ...]) -> str:
+    # Ревью, находка 3: сертификат «плохо» не должен молча прятать остальные находки блока — те же слова
+    # («Кроме того, …»), что и в _mobile_text, чтобы у каждой находки было своё последствие.
+    sentence = _security_bad_sentence(texts, lang, main)
+    tails = _tails(texts, lang, [item for item in rest if item.finding is not Finding.INCOMPLETE_CHAIN])
+    if not tails:
+        return sentence
+    return SENTENCE_GAP.join([sentence, texts.get(lang, "also", problems=tails)])
+
+
 def _security_bad_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
     if item.finding is Finding.CERT_INVALID:
-        until = texts.date(lang, item.until) if item.until else ""
-        return texts.get(lang, f"security_cert_{item.cert_problem}", date=until)
+        return _cert_invalid_sentence(texts, lang, item)
     return texts.get(lang, f"security_{item.finding}")
+
+
+def _cert_invalid_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
+    # Ревью, находка 2: read_cert_unverified возвращает cert=None по замыслу, когда второе соединение не удалось —
+    # без даты предложение о просрочке подставляет пустую строку, отсюда отдельный текст без {date}.
+    if item.cert_problem is TlsOutcome.EXPIRED and item.until is None:
+        return texts.get(lang, "security_cert_expired_no_date")
+    until = texts.date(lang, item.until) if item.until else ""
+    return texts.get(lang, f"security_cert_{item.cert_problem}", date=until)
 
 
 def _security_opening(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> str:
@@ -203,8 +228,7 @@ def _fixes_section(texts: Texts, lang: Lang, verdict: Verdict) -> list[dict]:
 
 def fix_text(texts: Texts, lang: Lang, fix: FixItem) -> str:
     item = fix.source
-    if fix.key is FixKey.FIX_SERVER and item.server_ms is None:
-        # C24: то же самое, что в _cause_sentence — без выдуманного «0 секунд».
+    if fix.key is FixKey.FIX_SERVER and _server_response_is_fast(item.server_ms):
         return texts.get(lang, "fix_server_plain")
     until = texts.date(lang, item.until) if item.until else ""
     return texts.get(lang, fix.key, date=until, seconds=texts.seconds(lang, item.server_ms or 0))
