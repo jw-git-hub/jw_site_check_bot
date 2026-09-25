@@ -119,3 +119,8 @@ def test_punycode_tld_in_plain_text_keeps_full_domain_and_path():
     parsed = target("xn--e1afmkfd.xn--p1ai/uslugi")
     assert parsed.host == "xn--e1afmkfd.xn--p1ai"
     assert parsed.display == "пример.рф/uslugi"
+
+
+@pytest.mark.parametrize("url", ["http://a\x00.com/", "http://\ud800.com/"])
+def test_odd_characters_in_host_are_refused_not_crashed(url):
+    rejection(url, [url])

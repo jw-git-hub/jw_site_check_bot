@@ -132,7 +132,7 @@ def _is_ip_literal(host: str) -> bool:
     try:
         socket.inet_aton(host)  # ловит и старые записи адреса: 127.1, 2130706433, 0x7f.1
         return True
-    except OSError:
+    except (OSError, ValueError):  # ValueError — NUL-байт и суррогатные пары: не адрес, а мусор в хосте
         return False
 
 
