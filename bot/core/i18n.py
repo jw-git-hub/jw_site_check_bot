@@ -11,6 +11,7 @@ Lang = Literal["ru", "en"]
 RUSSIAN_CODES = frozenset({"ru", "uk", "be", "kk"})
 BYTES_IN_KB = 1024
 BYTES_IN_MB = 1024 * 1024
+KB_DISPLAY_LIMIT = 1000
 MS_IN_SECOND = 1000
 WHOLE_SECONDS_FROM = 10
 DECIMALS_SHOWN = 1
@@ -59,10 +60,17 @@ class Texts:
         return self.count(lang, shown, "second")
 
     def size(self, lang: Lang, size_bytes: int) -> str:
+        """Меньше 1000 КБ (по округлению) — в целых КБ, дальше — в МБ с одним знаком (ТЗ, 7.1)."""
         units = self._locales[lang].UNITS
-        if size_bytes < BYTES_IN_MB:
-            return f"{max(1, round(size_bytes / BYTES_IN_KB))} {units['kb']}"
-        return f"{self.number(lang, round(size_bytes / BYTES_IN_MB, DECIMALS_SHOWN))} {units['mb']}"
+        rounded_kb = max(1, round(size_bytes / BYTES_IN_KB))
+        if rounded_kb < KB_DISPLAY_LIMIT:
+            return f"{rounded_kb} {units['kb']}"
+        return f"{self._megabytes(lang, size_bytes)} {units['mb']}"
+
+    def _megabytes(self, lang: Lang, size_bytes: int) -> str:
+        value = round(size_bytes / BYTES_IN_MB, DECIMALS_SHOWN)
+        separator = self._locales[lang].DECIMAL_SEPARATOR
+        return f"{value:.{DECIMALS_SHOWN}f}".replace(".", separator)
 
     def date(self, lang: Lang, day: date) -> str:
         return f"{day.day} {self._locales[lang].MONTHS[day.month - 1]} {day.year}"

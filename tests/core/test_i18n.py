@@ -36,7 +36,14 @@ def test_seconds_from_ten_are_whole_and_whole_numbers_have_no_zero():
 def test_sizes():
     assert TEXTS.size("ru", 265_789) == "260 КБ"
     assert TEXTS.size("ru", 3_355_443) == "3,2 МБ"
-    assert TEXTS.size("en", 12 * 1024 * 1024) == "12 MB"
+    assert TEXTS.size("en", 12 * 1024 * 1024) == "12.0 MB"
+
+
+def test_sizes_at_the_kb_to_mb_boundary():
+    assert TEXTS.size("ru", 1_022_976) == "999 КБ"
+    assert TEXTS.size("ru", 1_024_000) == "1,0 МБ"
+    assert TEXTS.size("ru", 1_048_575) == "1,0 МБ"
+    assert TEXTS.size("en", 1_024_000) == "1.0 MB"
 
 
 def test_dates():
