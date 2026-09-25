@@ -7,13 +7,14 @@ from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import ExtensionOID, NameOID
 
 DAY = timedelta(days=1)
 VALID_DAYS = 90
 CA_USAGE = x509.KeyUsage(digital_signature=True, content_commitment=False, key_encipherment=False,
                          data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True,
                          encipher_only=False, decipher_only=False)
+MALFORMED_SAN_BYTES = b"\x30\x05\x82\x03abcXX"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,16 @@ def issue(name: str, issuer: Issued | None = None, *, is_ca: bool = False, dns_n
     builder = _base(name, key, issuer, not_before, not_after)
     builder = _extensions(builder, key, issuer, is_ca, dns_names)
     return Issued(builder.sign(issuer.key if issuer else key, hashes.SHA256()), key)
+
+
+def issue_with_malformed_san(name: str) -> Issued:
+    """Лист с сертификатом, где вместо SAN — не разбираемые cryptography байты: даты читаются, имена — нет."""
+    key = ec.generate_private_key(ec.SECP256R1())
+    builder = _base(name, key, None, None, None)
+    builder = builder.add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+    broken_san = x509.UnrecognizedExtension(ExtensionOID.SUBJECT_ALTERNATIVE_NAME, MALFORMED_SAN_BYTES)
+    builder = builder.add_extension(broken_san, critical=False)
+    return Issued(builder.sign(key, hashes.SHA256()), key)
 
 
 def _base(name, key, issuer, not_before, not_after) -> x509.CertificateBuilder:

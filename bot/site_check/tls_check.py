@@ -5,6 +5,7 @@
 """
 import asyncio
 import contextlib
+import re
 import ssl
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -24,6 +25,13 @@ REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 SUCCESS_STATUSES = range(200, 300)
 HTTPS_PREFIX = "https://"
 USER_AGENT = "Mozilla/5.0 (compatible; jw_site_check_bot; +https://t.me/jw_site_check_bot)"
+# Код ответа — ровно три ASCII-цифры (RFC 9110, 15.1): unicode-двойники вроде «²» проходят str.isdigit(),
+# но валят int(); класс [0-9] в отличие от \d не расширяется на них ни при каких флагах.
+STATUS_CODE_PATTERN = re.compile(r"[0-9]{3}")
+# Ошибки разбора сертификата за пределами базовой структуры (issuer/SAN): cryptography парсит строже
+# OpenSSL и на кривых расширениях кидает не только ValueError, но и свои типы исключений.
+CERT_FIELD_ERRORS = (ValueError, x509.DuplicateExtension, x509.ExtensionNotFound, x509.InvalidVersion,
+                     x509.UnsupportedGeneralNameType)
 
 
 class TlsOutcome(StrEnum):
@@ -106,9 +114,15 @@ async def read_cert_unverified(open_stream: StreamOpener, host: str) -> CertInfo
 
 
 def _peer_cert(writer: asyncio.StreamWriter) -> CertInfo | None:
+    """Разобранный сертификат или None — если DER целиком не разобрать, исход проверки это не должно ронять."""
     ssl_object = writer.get_extra_info("ssl_object")
     der = ssl_object.getpeercert(binary_form=True) if ssl_object else None
-    return parse_cert(der) if der else None
+    if not der:
+        return None
+    try:
+        return parse_cert(der)
+    except CERT_FIELD_ERRORS:
+        return None
 
 
 def parse_cert(der: bytes) -> CertInfo:
@@ -117,19 +131,24 @@ def parse_cert(der: bytes) -> CertInfo:
 
 
 def _issuer(cert: x509.Certificate) -> str:
-    for oid in (NameOID.ORGANIZATION_NAME, NameOID.COMMON_NAME):
-        attributes = cert.issuer.get_attributes_for_oid(oid)
-        if attributes:
-            return str(attributes[0].value)
+    """Строка издателя — не разобралась (кривое расширение) → пустая, даты остаются известны."""
+    try:
+        for oid in (NameOID.ORGANIZATION_NAME, NameOID.COMMON_NAME):
+            attributes = cert.issuer.get_attributes_for_oid(oid)
+            if attributes:
+                return str(attributes[0].value)
+    except CERT_FIELD_ERRORS:
+        return ""
     return ""
 
 
 def _dns_names(cert: x509.Certificate) -> tuple[str, ...]:
+    """Имена из SAN — нет расширения или оно не разобралось → пустой кортеж, а не падение."""
     try:
         extension = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
-    except x509.ExtensionNotFound:
+        return tuple(extension.value.get_values_for_type(x509.DNSName))
+    except CERT_FIELD_ERRORS:
         return ()
-    return tuple(extension.value.get_values_for_type(x509.DNSName))
 
 
 async def check_http_redirect(open_stream: StreamOpener, host: str) -> RedirectState:
@@ -164,7 +183,9 @@ def redirect_state(head: bytes) -> RedirectState:
 
 def _status(status_line: str) -> int | None:
     parts = status_line.split(" ", 2)
-    return int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else None
+    if len(parts) > 1 and STATUS_CODE_PATTERN.fullmatch(parts[1]):
+        return int(parts[1])
+    return None
 
 
 def _header(lines: list[str], name: str) -> str:

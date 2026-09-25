@@ -5,7 +5,7 @@ import pytest
 
 from bot.site_check.tls_check import (RedirectState, TlsFacts, TlsOutcome, check_http_redirect, check_tls,
                                       root_request)
-from tests.certs import Issued, client_context_trusting, issue, server_context
+from tests.certs import Issued, client_context_trusting, issue, issue_with_malformed_san, server_context
 
 HOST = "site.test"
 HUGE_HEADER_BYTES = 70_000
@@ -75,6 +75,16 @@ async def test_full_chain_with_intermediate_is_ok(tmp_path, root):
     assert (await run_tls_check(tmp_path, root, leaf, intermediate.cert)).outcome is TlsOutcome.OK
 
 
+async def test_malformed_certificate_extension_keeps_outcome_and_dates(tmp_path, root):
+    """Сертификат с не разбираемым SAN не роняет проверку: исход и даты остаются, имена — пустой кортеж."""
+    leaf = issue_with_malformed_san(HOST)
+    facts = await run_tls_check(tmp_path, root, leaf)
+    assert facts.outcome is TlsOutcome.SELF_SIGNED
+    assert facts.cert is not None
+    assert facts.cert.not_after == leaf.cert.not_valid_after_utc
+    assert facts.cert.names == ()
+
+
 async def test_closed_port_is_connect_failure():
     assert (await check_tls(refused, HOST)).outcome is TlsOutcome.CONNECT_FAILED
 
@@ -107,6 +117,8 @@ async def serve_http(response: bytes) -> asyncio.Server:
     (b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n", RedirectState.NO_REDIRECT),
     (b"HTTP/1.1 403 Forbidden\r\n\r\n", RedirectState.UNKNOWN),
     (b"garbage\r\n\r\n", RedirectState.UNKNOWN),
+    (b"HTTP/1.1 \xb2 OK\r\n\r\n", RedirectState.UNKNOWN),
+    (b"HTTP/1.1 3O1 x\r\n\r\n", RedirectState.UNKNOWN),
 ])
 async def test_http_redirect_states(response, state):
     server = await serve_http(response)
