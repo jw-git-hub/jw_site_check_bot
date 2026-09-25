@@ -6,6 +6,9 @@ error или проверки нет в ответе — «неизвестно�
 requested_url (уточнение владельца к ТЗ, 7.5): бот не проходит переадресации сам, поэтому вместо «цепочки
 переадресаций» отдаём то, что просили измерить (`requestedUrl`), и то, где Lighthouse оказался (final_url) —
 задача 13 покажет «запрошено → итог».
+
+Lighthouse может прислать не то, что мы ждём (обновление API, обрезанный ответ): неизвестный вход даёт известный
+исход — None/0/пусто/«неизвестно», а не падение разбора (правило владельца, ТЗ 5.1 про переименование проверок).
 """
 import math
 import re
@@ -101,29 +104,66 @@ class PageFacts:
     requested_url: str = ""
 
 
-def audit_state(audit: dict[str, Any] | None) -> AuditState:
-    if not audit:
+@dataclass(frozen=True)
+class _Savings:
+    """Экономия по адресу картинки: сперва точное совпадение, иначе — тот же адрес без параметров.
+
+    Разные варианты одной картинки (Next.js `?w=`, Shopify `?width=`) Lighthouse иногда называет
+    одинаково в разных проверках и без параметров — тогда подходит только точный адрес.
+    """
+
+    by_url: dict[str, int]
+    by_stripped: dict[str, int]
+
+    def get(self, url: str) -> int:
+        if url in self.by_url:
+            return self.by_url[url]
+        return self.by_stripped.get(strip_params(url), 0)
+
+
+def _is_number(value: Any) -> bool:
+    """int/float, но не bool — bool лишь формально подтип int."""
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def _number(value: Any) -> float:
+    return float(value) if _is_number(value) else 0.0
+
+
+def _audit(audits: dict[str, Any], name: str) -> dict[str, Any]:
+    entry = audits.get(name)
+    return entry if isinstance(entry, dict) else {}
+
+
+def _url(item: dict[str, Any], key: str = "url") -> str:
+    value = item.get(key)
+    return value if isinstance(value, str) else ""
+
+
+def audit_state(audit: Any) -> AuditState:
+    if not isinstance(audit, dict):
         return AuditState.UNKNOWN
     mode = audit.get("scoreDisplayMode")
     if mode == NOT_APPLICABLE_MODE:
         return AuditState.NOT_APPLICABLE
     score = audit.get("score")
-    if mode in UNKNOWN_MODES or score is None:
+    if mode in UNKNOWN_MODES or not _is_number(score):
         return AuditState.UNKNOWN
     threshold = 1 if mode == BINARY_MODE else PASS_SCORE
     return AuditState.PASSED if score >= threshold else AuditState.FAILED
 
 
 def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
-    audits = result.get("audits") or {}
+    raw_audits = result.get("audits")
+    audits = raw_audits if isinstance(raw_audits, dict) else {}
     savings = _savings_by_url(audits)
     return PageFacts(
         lighthouse_version=str(result.get("lighthouseVersion", "")),
-        final_url=str(result.get("finalDisplayedUrl") or result.get("requestedUrl") or ""),
+        final_url=strip_params(str(result.get("finalDisplayedUrl") or result.get("requestedUrl") or "")),
         speed=_speed(audits),
         mobile=_mobile(audits),
         images=_images(audits, savings),
-        insecure_urls=tuple(strip_params(item.get("url", "")) for item in _items(audits, "is-on-https")),
+        insecure_urls=tuple(strip_params(url) for item in _items(audits, "is-on-https") if (url := _url(item))),
         post=_post(audits, savings),
         missing_audits=tuple(name for name in AUDIT_IDS if name not in audits),
         requested_url=strip_params(str(result.get("requestedUrl") or "")),
@@ -131,17 +171,24 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
 
 
 def _items(audits: dict[str, Any], name: str) -> list[dict[str, Any]]:
-    details = (audits.get(name) or {}).get("details") or {}
-    return [item for item in details.get("items") or [] if isinstance(item, dict)]
+    details = _audit(audits, name).get("details")
+    items = details.get("items") if isinstance(details, dict) else None
+    return [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
 
 
 def _numeric(audits: dict[str, Any], name: str) -> float | None:
-    value = (audits.get(name) or {}).get("numericValue")
-    return float(value) if isinstance(value, int | float) else None
+    value = _audit(audits, name).get("numericValue")
+    return float(value) if _is_number(value) else None
 
 
 def _lcp_savings(audits: dict[str, Any], names: tuple[str, ...]) -> float:
-    return sum(float(((audits.get(name) or {}).get("metricSavings") or {}).get("LCP") or 0) for name in names)
+    return sum(_lcp_saving(audits, name) for name in names)
+
+
+def _lcp_saving(audits: dict[str, Any], name: str) -> float:
+    savings = _audit(audits, name).get("metricSavings")
+    value = savings.get("LCP") if isinstance(savings, dict) else None
+    return float(value) if _is_number(value) else 0.0
 
 
 def _speed(audits: dict[str, Any]) -> SpeedFacts:
@@ -156,17 +203,31 @@ def _speed(audits: dict[str, Any]) -> SpeedFacts:
 
 def _mobile(audits: dict[str, Any]) -> MobileFacts:
     items = _items(audits, "viewport-insight")
-    snippet = (items[0].get("node") or {}).get("snippet") if items else None
-    return MobileFacts(audit_state(audits.get("viewport-insight")), snippet, audit_state(audits.get("target-size")),
-                       audit_state(audits.get("meta-viewport")))
+    snippet = _snippet(items[0]) if items else None
+    return MobileFacts(audit_state(audits.get("viewport-insight")), snippet,
+                       audit_state(audits.get("target-size")), audit_state(audits.get("meta-viewport")))
 
 
-def _savings_by_url(audits: dict[str, Any]) -> dict[str, int]:
-    items = _items(audits, "image-delivery-insight")
-    return {strip_params(item.get("url", "")): int(item.get("wastedBytes") or 0) for item in items}
+def _snippet(item: dict[str, Any]) -> str | None:
+    node = item.get("node")
+    value = node.get("snippet") if isinstance(node, dict) else None
+    return value if isinstance(value, str) else None
 
 
-def _images(audits: dict[str, Any], savings: dict[str, int]) -> ImageFacts:
+def _savings_by_url(audits: dict[str, Any]) -> _Savings:
+    by_url: dict[str, int] = {}
+    by_stripped: dict[str, int] = {}
+    for item in _items(audits, "image-delivery-insight"):
+        url = _url(item)
+        if not url:
+            continue
+        wasted = int(_number(item.get("wastedBytes")))
+        by_url[url] = wasted
+        by_stripped[strip_params(url)] = wasted
+    return _Savings(by_url, by_stripped)
+
+
+def _images(audits: dict[str, Any], savings: _Savings) -> ImageFacts:
     requests = [item for item in _items(audits, "network-requests") if item.get("resourceType") == IMAGE_REQUEST_TYPE]
     page_bytes = _numeric(audits, "total-byte-weight")
     return ImageFacts(page_bytes=None if page_bytes is None else int(page_bytes),
@@ -174,30 +235,34 @@ def _images(audits: dict[str, Any], savings: dict[str, int]) -> ImageFacts:
                       heaviest=_heaviest(requests, savings, HEAVIEST_IMAGES), compress_ratio=_compress_ratio(audits))
 
 
-def _heaviest(requests: list[dict[str, Any]], savings: dict[str, int], limit: int) -> tuple[FileWeight, ...]:
-    ordered = sorted(requests, key=lambda item: item.get("transferSize") or 0, reverse=True)[:limit]
-    return tuple(FileWeight(file_name(item.get("url", "")), str(item.get("resourceType", "")),
-                            int(item.get("transferSize") or 0), savings.get(strip_params(item.get("url", "")), 0))
-                 for item in ordered)
+def _heaviest(requests: list[dict[str, Any]], savings: _Savings, limit: int) -> tuple[FileWeight, ...]:
+    ordered = sorted(requests, key=lambda item: _number(item.get("transferSize")), reverse=True)[:limit]
+    return tuple(_file_weight(item, savings) for item in ordered)
+
+
+def _file_weight(item: dict[str, Any], savings: _Savings) -> FileWeight:
+    url = _url(item)
+    return FileWeight(file_name(url), str(item.get("resourceType", "")), int(_number(item.get("transferSize"))),
+                      savings.get(url))
 
 
 def _compress_ratio(audits: dict[str, Any]) -> int | None:
     items = _items(audits, "image-delivery-insight")
-    total = sum(int(item.get("totalBytes") or 0) for item in items)
-    after = total - sum(int(item.get("wastedBytes") or 0) for item in items)
+    total = sum(_number(item.get("totalBytes")) for item in items)
+    after = total - sum(_number(item.get("wastedBytes")) for item in items)
     return math.floor(total / after) if total and after > 0 else None
 
 
 def _summary_bytes(audits: dict[str, Any]) -> dict[str, int]:
-    return {str(item.get("resourceType")): int(item.get("transferSize") or 0)
+    return {str(item.get("resourceType")): int(_number(item.get("transferSize")))
             for item in _items(audits, "resource-summary")}
 
 
-def _post(audits: dict[str, Any], savings: dict[str, int]) -> PostNumbers:
+def _post(audits: dict[str, Any], savings: _Savings) -> PostNumbers:
     summary = _summary_bytes(audits)
     total = [item for item in _items(audits, "resource-summary") if item.get("resourceType") == TOTAL_SUMMARY_TYPE]
     return PostNumbers(
-        requests=int(total[0].get("requestCount") or 0) if total else None,
+        requests=int(_number(total[0].get("requestCount"))) if total else None,
         bytes_by_type=tuple((kind, summary[kind]) for kind in SUMMARY_TYPES if kind in summary),
         heaviest_files=_heaviest(_items(audits, "network-requests"), savings, HEAVIEST_FILES),
         third_parties=_third_parties(audits),
@@ -207,20 +272,39 @@ def _post(audits: dict[str, Any], savings: dict[str, int]) -> PostNumbers:
 def _third_parties(audits: dict[str, Any]) -> tuple[tuple[str, int], ...]:
     rows = []
     for item in _items(audits, "third-parties-insight"):
-        entity = item.get("entity")
-        name = entity.get("text") if isinstance(entity, dict) else entity
+        name = _entity_name(item.get("entity"))
         if name:
-            rows.append((str(name), int(item.get("transferSize") or 0)))
+            rows.append((name, int(_number(item.get("transferSize")))))
     return tuple(rows)
 
 
+def _entity_name(entity: Any) -> str | None:
+    if isinstance(entity, dict):
+        entity = entity.get("text")
+    return entity if isinstance(entity, str) and entity else None
+
+
 def strip_params(url: str) -> str:
-    parts = urlsplit(url)
+    if not isinstance(url, str):
+        return ""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return ""
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
 def file_name(url: str) -> str:
     """Имя файла, как его увидит владелец в админке сайта: без хвоста сборки, до 40 знаков (ТЗ, 5.5)."""
+    if not isinstance(url, str):
+        return ""
+    try:
+        return _file_name(url)
+    except ValueError:
+        return ""
+
+
+def _file_name(url: str) -> str:
     parts = urlsplit(url)
     name = unquote(parts.path.rstrip("/").rsplit("/", 1)[-1]) or parts.hostname or url
     pieces = name.split(".")

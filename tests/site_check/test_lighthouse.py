@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from bot.site_check.lighthouse import AuditState, audit_state, file_name, parse_lighthouse, strip_params
+from bot.site_check.lighthouse import AuditState, PageFacts, audit_state, file_name, parse_lighthouse, strip_params
+from bot.site_check.pagespeed import AUDIT_IDS
 from tests.builders import audit, lighthouse
 
 FIXTURES = sorted((Path(__file__).parents[1] / "fixtures" / "pagespeed").glob("*.json"))
@@ -116,6 +117,136 @@ def test_requested_url_is_parsed_and_stripped():
 def test_requested_url_missing_gives_empty_string():
     facts = parse_lighthouse(lighthouse())
     assert facts.requested_url == ""
+
+
+def test_final_url_loses_parameters():
+    # Ревью, находка 1: final_url должен терять параметры так же, как requested_url (ТЗ 11, Сек13).
+    result = lighthouse()
+    result["finalDisplayedUrl"] = "https://s.test/?utm=1&token=abc"
+    facts = parse_lighthouse(result)
+    assert facts.final_url == "https://s.test/"
+
+
+def test_image_savings_match_by_exact_url_first():
+    # Ревью, находка 2: у одной и той же картинки бывает несколько вариантов с разными параметрами
+    # (Next.js ?w=, Shopify ?width=) — экономия каждого не должна перетирать соседнюю.
+    requests = [
+        {"url": "https://site.test/i.jpg?w=800", "resourceType": "Image", "transferSize": 90_000},
+        {"url": "https://site.test/i.jpg?w=400", "resourceType": "Image", "transferSize": 40_000},
+    ]
+    delivery = [
+        {"url": "https://site.test/i.jpg?w=800", "totalBytes": 90_000, "wastedBytes": 80_000},
+        {"url": "https://site.test/i.jpg?w=400", "totalBytes": 40_000, "wastedBytes": 5_000},
+    ]
+    facts = parse_lighthouse(lighthouse(
+        network_requests=audit(mode="informative", items=requests),
+        image_delivery_insight=audit(score=0, items=delivery)))
+    pairs = {(image.bytes, image.savings_bytes) for image in facts.images.heaviest}
+    assert pairs == {(90_000, 80_000), (40_000, 5_000)}
+
+
+def _corrupt_details_list(result: dict) -> dict:
+    result["audits"]["viewport-insight"]["details"] = ["oops"]
+    return result
+
+
+def _corrupt_items_int(result: dict) -> dict:
+    result["audits"]["viewport-insight"]["details"] = {"type": "table", "items": 5}
+    return result
+
+
+def _corrupt_audit_entry_string(result: dict) -> dict:
+    result["audits"]["target-size"] = "oops"
+    return result
+
+
+def _corrupt_audits_list(result: dict) -> dict:
+    result["audits"] = [1, 2, 3]
+    return result
+
+
+def _corrupt_metric_savings_list(result: dict) -> dict:
+    result["audits"]["document-latency-insight"]["metricSavings"] = [1, 2, 3]
+    return result
+
+
+def _corrupt_metric_savings_lcp_text(result: dict) -> dict:
+    result["audits"]["document-latency-insight"]["metricSavings"] = {"LCP": "n/a"}
+    return result
+
+
+def _corrupt_score_string(result: dict) -> dict:
+    result["audits"]["viewport-insight"]["score"] = "1"
+    return result
+
+
+def _corrupt_wasted_bytes_text(result: dict) -> dict:
+    result["audits"]["image-delivery-insight"]["details"] = {
+        "type": "table", "items": [{"url": "https://s.test/i.jpg", "totalBytes": 100, "wastedBytes": "5.5"}]}
+    return result
+
+
+def _corrupt_mixed_transfer_size(result: dict) -> dict:
+    result["audits"]["network-requests"]["details"] = {
+        "type": "table",
+        "items": [{"url": "https://s.test/a.jpg", "resourceType": "Image", "transferSize": "big"},
+                  {"url": "https://s.test/b.jpg", "resourceType": "Image", "transferSize": 100}]}
+    return result
+
+
+def _corrupt_node_not_dict(result: dict) -> dict:
+    result["audits"]["viewport-insight"]["details"] = {"type": "table", "items": [{"node": "oops"}]}
+    return result
+
+
+def _corrupt_network_request_url_null(result: dict) -> dict:
+    result["audits"]["network-requests"]["details"] = {
+        "type": "table", "items": [{"url": None, "resourceType": "Image", "transferSize": 100}]}
+    return result
+
+
+def _corrupt_url_unparsable(result: dict) -> dict:
+    result["audits"]["network-requests"]["details"] = {
+        "type": "table", "items": [{"url": "http://[abc/x.jpg", "resourceType": "Image", "transferSize": 100}]}
+    return result
+
+
+def _corrupt_is_on_https_url_null(result: dict) -> dict:
+    result["audits"]["is-on-https"] = audit(score=0, mode="binary", items=[{"url": None}])
+    return result
+
+
+MALFORMED_CASES = [
+    _corrupt_details_list, _corrupt_items_int, _corrupt_audit_entry_string, _corrupt_audits_list,
+    _corrupt_metric_savings_list, _corrupt_metric_savings_lcp_text, _corrupt_score_string,
+    _corrupt_wasted_bytes_text, _corrupt_mixed_transfer_size, _corrupt_node_not_dict,
+    _corrupt_network_request_url_null, _corrupt_url_unparsable, _corrupt_is_on_https_url_null,
+]
+
+
+@pytest.mark.parametrize("corrupt", MALFORMED_CASES, ids=lambda fn: fn.__name__.lstrip("_"))
+def test_malformed_input_degrades_without_raising(corrupt):
+    # Ревью, находка 3: неожиданный вход от Lighthouse не должен ронять разбор целиком.
+    facts = parse_lighthouse(corrupt(lighthouse()))
+    assert isinstance(facts, PageFacts)
+
+
+def test_corrupt_audits_list_gives_all_missing_and_no_numbers():
+    facts = parse_lighthouse(_corrupt_audits_list(lighthouse()))
+    assert facts.missing_audits == AUDIT_IDS
+    assert facts.speed.lcp_ms is None
+    assert facts.mobile.viewport is AuditState.UNKNOWN
+
+
+def test_corrupt_score_string_gives_unknown_audit_state():
+    facts = parse_lighthouse(_corrupt_score_string(lighthouse()))
+    assert facts.mobile.viewport is AuditState.UNKNOWN
+
+
+def test_corrupt_wasted_bytes_text_gives_zero_savings_not_crash():
+    # wastedBytes="5.5" — не число (в отличие от int/float), поэтому экономия по нему — 0, не падение.
+    facts = parse_lighthouse(_corrupt_wasted_bytes_text(lighthouse()))
+    assert facts.images.compress_ratio == 1
 
 
 @pytest.mark.skipif(not PAGE_FIXTURES, reason="нет записанных ответов PageSpeed (задача 2)")
