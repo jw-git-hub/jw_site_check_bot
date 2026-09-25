@@ -102,7 +102,7 @@ async def test_open_stream_connects_to_checked_address():
 
 @pytest.mark.parametrize(("body", "address"), [
     ("fl=1\nip=93.184.215.14\nts=1", PUBLIC), ("93.184.215.14\n", PUBLIC), ("<html>error</html>", None),
-    ("ip=2001:db8::1", None),
+    ("ip=2001:db8::1", None), ("ip=10.0.0.1", None), ("0.0.0.0", None), ("ip=100.64.0.1", None),
 ])
 def test_parse_ip(body, address):
     assert parse_ip(body) == address
@@ -121,3 +121,47 @@ async def test_fetch_home_ip_tries_next_source():
     async with TestServer(app) as server, aiohttp.ClientSession() as session:
         sources = (str(server.make_url("/broken")), str(server.make_url("/trace")))
         assert await fetch_home_ip(session, sources) == PUBLIC
+
+
+async def test_fetch_home_ip_skips_bad_status_even_with_an_address_in_the_body():
+    other_public = "8.8.8.8"
+
+    async def bad_status(request):
+        return web.Response(status=503, text=f"{PUBLIC}\n")
+
+    async def trace(request):
+        return web.Response(text=f"{other_public}\n")
+
+    app = web.Application()
+    app.router.add_get("/bad", bad_status)
+    app.router.add_get("/trace", trace)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/bad")), str(server.make_url("/trace")))
+        assert await fetch_home_ip(session, sources) == other_public
+
+
+async def test_fetch_home_ip_skips_undecodable_body():
+    async def broken_encoding(request):
+        return web.Response(body=b"\xff\xfe not utf-8 \xff", content_type="text/plain")
+
+    async def trace(request):
+        return web.Response(text=f"{PUBLIC}\n")
+
+    app = web.Application()
+    app.router.add_get("/broken", broken_encoding)
+    app.router.add_get("/trace", trace)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/broken")), str(server.make_url("/trace")))
+        assert await fetch_home_ip(session, sources) == PUBLIC
+
+
+async def test_fetch_home_ip_reads_body_up_to_a_limit():
+    async def huge(request):
+        filler = "0" * 1_000_000
+        return web.Response(text=f"{filler}\n{PUBLIC}\n")
+
+    app = web.Application()
+    app.router.add_get("/huge", huge)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/huge")),)
+        assert await fetch_home_ip(session, sources) is None

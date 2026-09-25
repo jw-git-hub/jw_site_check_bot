@@ -18,6 +18,7 @@ TAILSCALE_RANGE = ipaddress.ip_network("100.64.0.0/10")
 DNS_TIMEOUT_SECONDS = 5
 CONNECT_TIMEOUT_SECONDS = 10
 HOME_IP_TIMEOUT_SECONDS = 10
+MAX_HOME_IP_BODY_BYTES = 4096
 HOME_IP_SOURCES = ("https://1.1.1.1/cdn-cgi/trace", "https://api.ipify.org")
 TRACE_PREFIX = "ip="
 NOT_FOUND_ERRORS = frozenset({socket.EAI_NONAME, getattr(socket, "EAI_NODATA", socket.EAI_NONAME)})
@@ -116,16 +117,20 @@ async def fetch_home_ip(session: aiohttp.ClientSession, sources: tuple[str, ...]
 async def _get_text(session: aiohttp.ClientSession, url: str) -> str | None:
     try:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=HOME_IP_TIMEOUT_SECONDS)) as response:
-            return await response.text()
+            if not response.ok:
+                return None
+            body = await response.content.read(MAX_HOME_IP_BODY_BYTES)
+            return body.decode("utf-8", errors="replace")
     except (aiohttp.ClientError, TimeoutError):
         return None
 
 
 def parse_ip(body: str) -> str | None:
+    """Только настоящий внешний адрес: не любая IPv4-строка в ответе источника (ТЗ, С2)."""
     for line in body.splitlines():
         candidate = line.strip().removeprefix(TRACE_PREFIX)
         try:
-            if ipaddress.ip_address(candidate).version == 4:
+            if is_public_ipv4(candidate, None):
                 return candidate
         except ValueError:
             continue
