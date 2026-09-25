@@ -2,7 +2,8 @@
 """Не пускает секреты в git.
 
 Проверяет пути (.env, база, локальные настройки выкладки, конфликтные копии Syncthing)
-и содержимое (токен Telegram, ключ Google, приватные ключи, любое значение из локального .env).
+и содержимое: токен Telegram, ключ Google, приватные ключи, имена устройств Tailscale
+и любое значение из локальных файлов .env и deploy/deploy.local.env (адрес, пользователь, путь сервера).
 Сами найденные значения никогда не печатает — только файл и на что похоже.
 
   check_secrets.py --staged      файлы, добавленные в коммит (хук pre-commit)
@@ -17,8 +18,8 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # папка синхронизируется Syncthing: никакого __pycache__
 
-ENV_FILE_NAME = ".env"
-MIN_ENV_VALUE_LENGTH = 8
+LOCAL_VALUE_FILES = (".env", "deploy/deploy.local.env")  # их значения в git попадать не должны
+MIN_LOCAL_VALUE_LENGTH = 8
 SHORT_SHA_LENGTH = 12
 STAGED_REVISION = ""
 ALLOWED_PATHS = {".env.example", "deploy/deploy.local.env.example"}
@@ -29,6 +30,7 @@ SECRET_PATTERNS = {
     "похоже на токен бота Telegram": re.compile(r"(?<![0-9])\d{8,12}:" + r"[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])"),
     "похоже на ключ Google API": re.compile("AI" + "za" + r"[0-9A-Za-z_-]{35}"),
     "приватный ключ": re.compile("-----BEGIN " + r"[A-Z ]*" + "PRIVATE KEY-----"),
+    "имя устройства в Tailscale": re.compile(r"\b[a-z0-9-]+\.[a-z0-9-]+\." + r"ts\.net\b", re.IGNORECASE),
 }
 
 FORBIDDEN_PATHS = {
@@ -71,18 +73,24 @@ def read_file(revision: str, path: str) -> str:
     return run_git("show", f"{revision}:{path}").decode(errors="ignore")
 
 
-def parse_env_value(line: str) -> str:
+def parse_value(line: str) -> str:
     _, _, value = line.partition("=")
     return value.strip().strip("'\"")
 
 
-def load_env_values(repo_root: Path) -> set[str]:
-    env_path = repo_root / ENV_FILE_NAME
-    if not env_path.is_file():
+def read_values(path: Path) -> set[str]:
+    if not path.is_file():
         return set()
-    lines = env_path.read_text(encoding="utf-8").splitlines()
-    values = {parse_env_value(line) for line in lines if "=" in line and not line.lstrip().startswith("#")}
-    return {value for value in values if len(value) >= MIN_ENV_VALUE_LENGTH}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    values = {parse_value(line) for line in lines if "=" in line and not line.lstrip().startswith("#")}
+    return {value for value in values if len(value) >= MIN_LOCAL_VALUE_LENGTH}
+
+
+def load_local_values(repo_root: Path) -> set[str]:
+    values: set[str] = set()
+    for name in LOCAL_VALUE_FILES:
+        values |= read_values(repo_root / name)
+    return values
 
 
 def find_path_problems(path: str) -> list[str]:
@@ -91,25 +99,25 @@ def find_path_problems(path: str) -> list[str]:
     return [f"{path}: {kind}" for kind, pattern in FORBIDDEN_PATHS.items() if pattern.search(path)]
 
 
-def find_content_problems(path: str, text: str, env_values: set[str]) -> list[str]:
+def find_content_problems(path: str, text: str, local_values: set[str]) -> list[str]:
     problems = [f"{path}: {kind}" for kind, pattern in SECRET_PATTERNS.items() if pattern.search(text)]
-    if any(value in text for value in env_values):
-        problems.append(f"{path}: содержит значение из .env")
+    if any(value in text for value in local_values):
+        problems.append(f"{path}: содержит значение из .env или deploy.local.env")
     return problems
 
 
-def check_files(revision: str, paths: list[str], env_values: set[str]) -> list[str]:
+def check_files(revision: str, paths: list[str], local_values: set[str]) -> list[str]:
     problems = []
     for path in paths:
         problems += find_path_problems(path)
-        problems += find_content_problems(path, read_file(revision, path), env_values)
+        problems += find_content_problems(path, read_file(revision, path), local_values)
     return problems
 
 
-def check_history(env_values: set[str]) -> list[str]:
+def check_history(local_values: set[str]) -> list[str]:
     problems = []
     for commit in all_commits():
-        found = check_files(commit, changed_paths(commit), env_values)
+        found = check_files(commit, changed_paths(commit), local_values)
         problems += [f"{commit[:SHORT_SHA_LENGTH]} {problem}" for problem in found]
     return problems
 
@@ -123,18 +131,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def collect_problems(args: argparse.Namespace, env_values: set[str]) -> list[str]:
+def collect_problems(args: argparse.Namespace, local_values: set[str]) -> list[str]:
     if args.all:
-        return check_history(env_values)
+        return check_history(local_values)
     if args.staged:
-        return check_files(STAGED_REVISION, staged_paths(), env_values)
-    return check_files(args.rev, commit_paths(args.rev), env_values)
+        return check_files(STAGED_REVISION, staged_paths(), local_values)
+    return check_files(args.rev, commit_paths(args.rev), local_values)
 
 
 def main() -> int:
     args = parse_args()
     repo_root = Path(run_git("rev-parse", "--show-toplevel").decode().strip())
-    problems = collect_problems(args, load_env_values(repo_root))
+    problems = collect_problems(args, load_local_values(repo_root))
     if not problems:
         return 0
     print("Секреты не пропущены:", *problems, sep="\n  ", file=sys.stderr)

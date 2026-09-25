@@ -1,7 +1,8 @@
 #!/bin/sh
 # Не даёт закоммитить секреты. Два сторожа:
 #   gitleaks — известные форматы ключей и токенов;
-#   scripts/check_secrets.py — файлы .env и база, значения из локального .env, токен Telegram, ключ Google.
+#   scripts/check_secrets.py — файлы .env и база; значения из .env и deploy/deploy.local.env
+#   (адрес, пользователь, путь сервера); токен Telegram, ключ Google, имена устройств Tailscale.
 # Нет gitleaks — коммит не проходит: молча пропускать проверку нельзя.
 set -e
 
