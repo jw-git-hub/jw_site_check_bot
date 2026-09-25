@@ -182,6 +182,38 @@ def test_security_bad_certificate_still_lists_other_consequences():
     assert "Кроме того, часть файлов страницы грузится без защиты" in text
 
 
+def two_host_security(first_outcome, second_outcome, first_cert=True, second_cert=True) -> SecurityFacts:
+    """Присланный хост и итоговый (после переадресации) проверяются отдельно — у обоих может найтись «плохо»."""
+    return SecurityFacts((TlsFacts("site.test", first_outcome, cert() if first_cert else None),
+                          TlsFacts("www.site.test", second_outcome, cert() if second_cert else None)),
+                         (RedirectState.REDIRECTS, RedirectState.REDIRECTS), ())
+
+
+def test_second_bad_security_finding_does_not_crash_or_get_a_tail():
+    """Ревью раунд 2, находка 1: tail_* заведён не для каждой находки «плохо» (нет tail_cert_untrusted,
+    tail_cert_invalid, tail_no_https) — вторая такая находка (второй хост) должна молчать в хвосте
+    «Кроме того, …», а не ронять сборку отчёта KeyError'ом."""
+    wrong_host_then_untrusted = two_host_security(TlsOutcome.WRONG_HOST, TlsOutcome.OTHER)
+    no_https_then_expired = two_host_security(TlsOutcome.NO_HTTPS, TlsOutcome.EXPIRED, first_cert=False)
+    for lang in ("ru", "en"):
+        for facts in (wrong_host_then_untrusted, no_https_then_expired):
+            text = rich_text(report(lang, page(), facts))
+            assert "Кроме того" not in text
+            assert "Also," not in text
+
+
+def test_wrong_host_and_incomplete_chain_state_both_consequences():
+    """Ревью раунд 2, находка 2: INCOMPLETE_CHAIN не должен теряться в ветке «плохо» — у него, в отличие от
+    других находок «стоит поправить» в этом сценарии, есть свой tail_incomplete_chain."""
+    facts = two_host_security(TlsOutcome.WRONG_HOST, TlsOutcome.INCOMPLETE_CHAIN)
+    text_ru = rich_text(report("ru", page(), facts))
+    assert "Сертификат выдан на другой адрес" in text_ru
+    assert "Кроме того, сервер отдаёт сертификат не полностью" in text_ru
+    text_en = rich_text(report("en", page(), facts))
+    assert "The certificate is issued for another address" in text_en
+    assert "Also, the server sends the certificate incompletely" in text_en
+
+
 def test_post_numbers_shows_redirect_chain_when_addresses_differ():
     """C7: requested_url и итоговый final_url отличаются — показываем цепочку переадресаций."""
     facts = replace(page(), requested_url="http://site.test/", final_url="https://site.test/")

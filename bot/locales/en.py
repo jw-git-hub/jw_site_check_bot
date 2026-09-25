@@ -108,6 +108,8 @@ TEXTS = {
     "tail_no_redirect": "links without https open the site unprotected in some browsers, marked \"Not secure\"",
     "tail_mixed_content": "some files load without protection — the browser may hide them or drop the lock next to "
                           "the address",
+    "tail_incomplete_chain": "the server sends the certificate incompletely, so some browsers and apps will show "
+                             "the site as unsafe",
     "images_weight": "The page weighs {size}.",
     "images_weight_split": "The page weighs {size}, {images} of it images.",
     "images_heaviest_one": "The heaviest image is {name}, {size}.",

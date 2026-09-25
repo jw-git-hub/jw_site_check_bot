@@ -120,13 +120,23 @@ def _mobile_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bloc
     if verdict.grade is Grade.GOOD:
         return texts.get(lang, "mobile_good")
     main = [item for item in verdict.findings if item.grade is Grade.BAD]
-    tails = _tails(texts, lang, [item for item in verdict.findings if item.grade is Grade.FIX])
+    tails = _tails(texts, lang, _fix_grade_findings(verdict.findings))
     if not main:
         return texts.get(lang, "mobile_but", problems=tails)
     sentences = [texts.get(lang, f"mobile_{main[0].finding}")]
     if tails:
         sentences.append(texts.get(lang, "also", problems=tails))
     return SENTENCE_GAP.join(sentences)
+
+
+def _fix_grade_findings(findings: tuple[FindingItem, ...] | list[FindingItem]) -> list[FindingItem]:
+    """Хвост «Кроме того, …» — только для находок «стоит поправить».
+
+    У «плохо» есть своё главное предложение, а текстов `tail_*` для оценки «плохо» не заведено (ревью раунд 2,
+    находка 1: KeyError на `tail_cert_untrusted` и похожих, когда в хвост попадала находка «плохо» со второго
+    хоста).
+    """
+    return [item for item in findings if item.grade is Grade.FIX]
 
 
 def _tails(texts: Texts, lang: Lang, items: list[FindingItem]) -> str:
@@ -148,9 +158,11 @@ def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bl
 
 def _security_bad_text(texts: Texts, lang: Lang, main: FindingItem, rest: tuple[FindingItem, ...]) -> str:
     # Ревью, находка 3: сертификат «плохо» не должен молча прятать остальные находки блока — те же слова
-    # («Кроме того, …»), что и в _mobile_text, чтобы у каждой находки было своё последствие.
+    # («Кроме того, …»), что и в _mobile_text, чтобы у каждой находки было своё последствие. INCOMPLETE_CHAIN
+    # здесь не исключаем (в отличие от ветки «хорошо/стоит поправить» — там его накрывает открывающее
+    # предложение `security_incomplete_chain`, здесь открывающего предложения нет): у него есть свой `tail_*`.
     sentence = _security_bad_sentence(texts, lang, main)
-    tails = _tails(texts, lang, [item for item in rest if item.finding is not Finding.INCOMPLETE_CHAIN])
+    tails = _tails(texts, lang, _fix_grade_findings(rest))
     if not tails:
         return sentence
     return SENTENCE_GAP.join([sentence, texts.get(lang, "also", problems=tails)])
