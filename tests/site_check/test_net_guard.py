@@ -191,3 +191,66 @@ async def test_fetch_home_ip_refuses_an_oversize_body_instead_of_parsing_its_tru
     async with TestServer(app) as server, aiohttp.ClientSession() as session:
         sources = (str(server.make_url("/oversize")), str(server.make_url("/trace")))
         assert await fetch_home_ip(session, sources) == other_public
+
+
+async def piece_handler(request, pieces: list[bytes]):
+    """Отвечает пришедшими частями по отдельности, с паузой между ними — как настоящая сеть, где
+    `content.read(n)` может не дождаться n байт и отдать только то, что уже пришло."""
+    response = web.StreamResponse()
+    await response.prepare(request)
+    for piece in pieces:
+        await response.write(piece)
+        await asyncio.sleep(0.01)
+    await response.write_eof()
+    return response
+
+
+async def test_fetch_home_ip_reassembles_a_body_delivered_in_pieces():
+    async def in_pieces(request):
+        return await piece_handler(request, [b"93.184.215.14", b"0\n"])
+
+    app = web.Application()
+    app.router.add_get("/pieces", in_pieces)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/pieces")),)
+        assert await fetch_home_ip(session, sources) == "93.184.215.140"
+
+
+async def test_fetch_home_ip_detects_oversize_body_delivered_in_pieces():
+    truncatable_address = "93.184.215.140"
+    other_public = "8.8.8.8"
+    filler = "0" * (MAX_HOME_IP_BODY_BYTES - len(truncatable_address))
+    body = f"{filler}\n{truncatable_address}".encode()
+    assert len(body) == MAX_HOME_IP_BODY_BYTES + 1
+    pieces = [body[start:start + 1000] for start in range(0, len(body), 1000)]
+
+    async def oversize_in_pieces(request):
+        return await piece_handler(request, pieces)
+
+    async def trace(request):
+        return web.Response(text=f"{other_public}\n")
+
+    app = web.Application()
+    app.router.add_get("/oversize", oversize_in_pieces)
+    app.router.add_get("/trace", trace)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/oversize")), str(server.make_url("/trace")))
+        assert await fetch_home_ip(session, sources) == other_public
+
+
+async def test_fetch_home_ip_refuses_oversize_body_even_when_address_is_in_the_first_piece():
+    other_public = "8.8.8.8"
+    filler = ("0" * MAX_HOME_IP_BODY_BYTES).encode()
+
+    async def address_first(request):
+        return await piece_handler(request, [f"{PUBLIC}\n".encode(), filler])
+
+    async def trace(request):
+        return web.Response(text=f"{other_public}\n")
+
+    app = web.Application()
+    app.router.add_get("/address-first", address_first)
+    app.router.add_get("/trace", trace)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        sources = (str(server.make_url("/address-first")), str(server.make_url("/trace")))
+        assert await fetch_home_ip(session, sources) == other_public

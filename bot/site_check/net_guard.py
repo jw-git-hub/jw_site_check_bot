@@ -119,15 +119,27 @@ async def _get_text(session: aiohttp.ClientSession, url: str) -> str | None:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=HOME_IP_TIMEOUT_SECONDS)) as response:
             if not response.ok:
                 return None
-            # Читаем на один байт больше предела: если он тоже пришёл, тело обрезано бы посередине числа,
-            # и урезанный хвост мог случайно стать другим настоящим адресом — источник отбрасываем целиком,
-            # не разбираем частичное тело (ТЗ, С2).
-            chunk = await response.content.read(MAX_HOME_IP_BODY_BYTES + 1)
-            if len(chunk) > MAX_HOME_IP_BODY_BYTES:
-                return None
-            return chunk.decode("utf-8", errors="replace")
+            body = await _read_within_limit(response.content)
+            return body.decode("utf-8", errors="replace") if body is not None else None
     except (aiohttp.ClientError, TimeoutError):
         return None
+
+
+async def _read_within_limit(content: aiohttp.StreamReader) -> bytes | None:
+    """Копит поток, пока не наступит конец или тело не превысит предел.
+
+    `read(n)` у aiohttp не ждёт n байт — отдаёт что уже пришло, поэтому тело, доставленное несколькими
+    кусками, читаем в цикле. Превысили предел — источник ненадёжен целиком, разбирать обрезанный хвост
+    как правдоподобный чужой адрес нельзя (ТЗ, С2).
+    """
+    body = b""
+    while True:
+        piece = await content.read(MAX_HOME_IP_BODY_BYTES + 1 - len(body))
+        if not piece:
+            return body
+        body += piece
+        if len(body) > MAX_HOME_IP_BODY_BYTES:
+            return None
 
 
 def parse_ip(body: str) -> str | None:
