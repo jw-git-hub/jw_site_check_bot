@@ -36,8 +36,9 @@ TOO_MANY_REQUESTS = 429
 FIRST_SERVER_ERROR = 500
 KEY_PROBLEM_STATUSES = frozenset({400, 401, 403})
 KEY_PROBLEM_MARKERS = ("api key", "api_key", "permission_denied", "has not been used", "is disabled")
-LIGHTHOUSE_ERROR = re.compile(r"Lighthouse returned error: ([A-Z_]+)")
+LIGHTHOUSE_ERROR = re.compile(r"Lighthouse returned error: ([A-Z][A-Z_]+)\b")
 PAGE_STATUS = re.compile(r"Status code: (\d{3})")
+SOMETHING_WRONG_MARKER = "something went wrong"
 NO_ERROR = "NO_ERROR"
 TIMEOUT_CODE = "TIMEOUT"
 ERRORED_DOCUMENT = "ERRORED_DOCUMENT_REQUEST"
@@ -90,7 +91,7 @@ class PageSpeedClient:
             try:
                 return await self._once(url, deadline)
             except _Retryable as error:
-                if attempt == MAX_ATTEMPTS or deadline - self._clock.monotonic() < RETRY_MIN_REMAINING_SECONDS:
+                if attempt == MAX_ATTEMPTS or deadline - self._clock.monotonic() <= RETRY_MIN_REMAINING_SECONDS:
                     raise PageSpeedUnavailable(error.reason) from None
         raise AssertionError("недостижимо")
 
@@ -102,6 +103,9 @@ class PageSpeedClient:
         try:
             async with request as response:
                 return interpret(response.status, await self._read(response))
+        except aiohttp.ConnectionTimeoutError as error:
+            # Не достучались до самого Google (обрыв/чёрная дыра сети) — это наша беда, не тайм-аут сайта.
+            raise _Retryable(f"network: {type(error).__name__}") from None
         except TimeoutError:
             raise LighthouseFailure(TIMEOUT_CODE, None) from None
         except aiohttp.ClientError as error:
@@ -124,6 +128,8 @@ def _params(url: str) -> list[tuple[str, str]]:
 def interpret(status: int, body: bytes) -> dict[str, Any]:
     payload = _json_or_none(body)
     message = _error_message(payload)
+    if SOMETHING_WRONG_MARKER in message.lower():
+        raise _Retryable(f"http {status}")
     _raise_lighthouse_failure(message)
     if status == HTTP_OK and payload and "lighthouseResult" in payload:
         return _checked_result(payload["lighthouseResult"])

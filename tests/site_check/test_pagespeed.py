@@ -7,8 +7,8 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
 
-from bot.site_check.pagespeed import (FIELDS, KEY_HEADER, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
-                                      classify, interpret)
+from bot.site_check.pagespeed import (FIELDS, KEY_HEADER, RETRY_MIN_REMAINING_SECONDS, LighthouseFailure,
+                                      PageSpeedClient, PageSpeedUnavailable, classify, interpret)
 from tests.fakes import FakeClock, fake_google_key
 
 RESULT = {"lighthouseResult": {"lighthouseVersion": "13.5.0", "finalDisplayedUrl": "https://site.test/", "audits": {}}}
@@ -107,10 +107,33 @@ async def test_two_server_errors_give_up(run_client):
         await run_client(FakePageSpeed((503, "x"), (503, "x")))
 
 
+async def test_something_went_wrong_without_lighthouse_prefix_is_retried(run_client):
+    """Статус ниже 500 (не quota, не отказ ключа) с «Something went wrong» — тоже повтор, не наша ошибка сразу."""
+    body = {"error": {"code": 400, "message": "Oops, Something went wrong on our end. Please try again."}}
+    fake = FakePageSpeed((400, body), (200, RESULT))
+    assert (await run_client(fake))["lighthouseVersion"] == "13.5.0"
+    assert len(fake.requests) == 2
+
+
+async def test_something_went_wrong_with_lighthouse_prefix_is_retried(run_client):
+    body = {"error": {"code": 500, "message": "Lighthouse returned error: Something went wrong."}}
+    fake = FakePageSpeed((500, body), (200, RESULT))
+    assert (await run_client(fake))["lighthouseVersion"] == "13.5.0"
+    assert len(fake.requests) == 2
+
+
 async def test_no_retry_when_little_time_left(run_client):
     fake = FakePageSpeed((503, "x"), (200, RESULT))
     with pytest.raises(PageSpeedUnavailable):
         await run_client(fake, seconds_left=30)
+    assert len(fake.requests) == 1
+
+
+async def test_no_retry_when_exactly_forty_seconds_left(run_client):
+    """ТЗ 5.1: повтор только если до срока осталось *больше* 40 секунд — ровно 40 повтора не даёт."""
+    fake = FakePageSpeed((503, "x"), (200, RESULT))
+    with pytest.raises(PageSpeedUnavailable):
+        await run_client(fake, seconds_left=RETRY_MIN_REMAINING_SECONDS)
     assert len(fake.requests) == 1
 
 
@@ -122,6 +145,37 @@ async def test_slow_answer_is_site_timeout(run_client):
 async def test_huge_answer_is_refused(run_client):
     with pytest.raises(PageSpeedUnavailable, match="too_large"):
         await run_client(FakePageSpeed((200, RESULT)), max_bytes=10)
+
+
+class _ConnectTimeoutRequest:
+    """Контекст-менеджер запроса, который никогда не достучится до Google — рвётся уже на соединении."""
+
+    async def __aenter__(self):
+        raise aiohttp.ConnectionTimeoutError("connect timeout")
+
+    async def __aexit__(self, *exc_info):
+        return False
+
+
+class ConnectTimeoutSession:
+    """Подделка сессии aiohttp: каждый запрос падает на соединении с Google, а не с сайтом."""
+
+    def __init__(self):
+        self.calls = 0
+
+    def get(self, *args, **kwargs):
+        self.calls += 1
+        return _ConnectTimeoutRequest()
+
+
+async def test_connection_timeout_to_google_is_our_problem_not_the_site():
+    """Обрыв/чёрная дыра сети до самого Google — не тайм-аут сайта: повтор, затем service_down (ТЗ 5.1)."""
+    session = ConnectTimeoutSession()
+    clock = FakeClock()
+    client = PageSpeedClient(session, fake_google_key(), clock, endpoint="https://example.invalid/psi")
+    with pytest.raises(PageSpeedUnavailable):
+        await client.run("https://site.test/", deadline=clock.monotonic() + 120)
+    assert session.calls == 2
 
 
 @pytest.mark.parametrize(("code", "status", "expected"), [
