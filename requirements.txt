@@ -1,0 +1,10 @@
+# Точные версии — единственный источник правды о зависимостях и слой pip install в Dockerfile.
+aiogram==3.31.0
+aiohttp==3.14.3
+SQLAlchemy[asyncio]==2.0.52
+aiosqlite==0.22.1
+pydantic==2.13.5
+pydantic-settings==2.15.0
+loguru==0.7.3
+cryptography==50.0.1
+idna==3.20

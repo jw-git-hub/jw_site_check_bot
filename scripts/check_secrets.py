@@ -11,6 +11,7 @@
   check_secrets.py --all         всё, что когда-либо попадало в коммиты (перед отправкой в GitHub)
 """
 import argparse
+import importlib.util
 import re
 import subprocess
 import sys
@@ -24,14 +25,18 @@ SHORT_SHA_LENGTH = 12
 STAGED_REVISION = ""
 ALLOWED_PATHS = {".env.example", "deploy/deploy.local.env.example"}
 
-# Шаблоны собраны из частей, чтобы этот файл сам проходил проверку.
-SECRET_PATTERNS = {
-    # Не \b: в адресе запроса токен идёт сразу после «bot» — /bot123…:AA…/getMe.
-    "похоже на токен бота Telegram": re.compile(r"(?<![0-9])\d{8,12}:" + r"[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])"),
-    "похоже на ключ Google API": re.compile("AI" + "za" + r"[0-9A-Za-z_-]{35}"),
-    "приватный ключ": re.compile("-----BEGIN " + r"[A-Z ]*" + "PRIVATE KEY-----"),
-    "имя устройства в Tailscale": re.compile(r"\b[a-z0-9-]+\.[a-z0-9-]+\." + r"ts\.net\b", re.IGNORECASE),
-}
+PATTERNS_FILE = Path(__file__).resolve().parents[1] / "bot" / "core" / "secret_patterns.py"
+
+
+def load_secret_patterns() -> dict[str, re.Pattern[str]]:
+    """Шаблоны — из модуля бота по пути к файлу: без пакета бота и его зависимостей (ТЗ, Сек10)."""
+    spec = importlib.util.spec_from_file_location("secret_patterns", PATTERNS_FILE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.SECRET_PATTERNS
+
+
+SECRET_PATTERNS = load_secret_patterns()
 
 FORBIDDEN_PATHS = {
     "файл окружения": re.compile(r"(^|/)\.env(\.[^/]+)?$"),
