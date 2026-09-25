@@ -86,3 +86,36 @@ def test_google_search_is_not_a_social_page():
 @pytest.mark.parametrize("text", ["просто текст", "1.45 раза быстрее", "x" * 2001])
 def test_no_link_in_text(text):
     assert rejection(text).code == NOT_A_LINK
+
+
+@pytest.mark.parametrize("url", [
+    "http://127.0.0.１/", "http://１２７.０.０.１/", "http://𝟏𝟐𝟕.𝟎.𝟎.𝟏/", "http://127.0.0。1/",
+    "http://nas.router。lan/", "http://x.ＬＯＣＡＬ/", "http://foo.ｏｎｉｏｎ/", "http://a.localhost。/",
+])
+def test_unicode_lookalikes_are_refused_after_normalization(url):
+    assert rejection(url, [url]).code == BAD_ADDRESS
+
+
+def test_unicode_lookalike_zone_in_plain_text_is_refused():
+    assert rejection("router.ｌａｎ").code == BAD_ADDRESS
+
+
+def test_unicode_dot_lookalike_does_not_hide_social_platform():
+    parsed = rejection("instagram.com。/x", ["instagram.com。/x"])
+    assert (parsed.code, parsed.platform) == (SOCIAL, "Instagram")
+
+
+@pytest.mark.parametrize("text", [
+    "example.com/login?next=https://example.com/",
+    "пример.рф/?r=http://x.ru",
+    "example.com/#http://x",
+])
+def test_scheme_in_query_or_fragment_does_not_count_as_given(text):
+    parsed = target(text)
+    assert (parsed.scheme, parsed.scheme_given) == ("https", False)
+
+
+def test_punycode_tld_in_plain_text_keeps_full_domain_and_path():
+    parsed = target("xn--e1afmkfd.xn--p1ai/uslugi")
+    assert parsed.host == "xn--e1afmkfd.xn--p1ai"
+    assert parsed.display == "пример.рф/uslugi"

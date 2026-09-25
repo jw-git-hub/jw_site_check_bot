@@ -18,8 +18,9 @@ QUERY_SAFE = PATH_SAFE + "?"
 TRAILING_PUNCTUATION = ".,;:!?)]}»\"'"
 SERVICE_ZONES = frozenset({"local", "localhost", "lan", "home", "internal", "intranet", "corp", "test", "invalid",
                            "onion", "arpa"})
-DOMAIN_WORD = re.compile(r"(?:https?://)?(?:[\w-]+\.)+(?:[^\W\d_]{2,}|xn--[\w-]+)(?::\d+)?(?:[/?#]\S*)?",
+DOMAIN_WORD = re.compile(r"(?:https?://)?(?:[\w-]+\.)+(?:xn--[\w-]+|[^\W\d_]{2,})(?::\d+)?(?:[/?#]\S*)?",
                          re.IGNORECASE)
+SCHEME_PREFIX = re.compile(r"[a-z][a-z0-9+.-]*://", re.IGNORECASE)
 
 NOT_A_LINK = "not_a_link"
 BAD_ADDRESS = "bad_address"
@@ -75,7 +76,7 @@ def parse_input(text: str, entity_urls: list[str]) -> Target | Rejection:
     candidate = _candidate(text, entity_urls)
     if candidate is None:
         return Rejection(NOT_A_LINK)
-    scheme_given = "://" in candidate
+    scheme_given = bool(SCHEME_PREFIX.match(candidate))
     parts = _split(candidate if scheme_given else f"{HTTPS}://{candidate}")
     if parts is None:
         return Rejection(BAD_ADDRESS)
@@ -104,13 +105,17 @@ def _split(url: str) -> SplitResult | None:
 
 def _target(parts: SplitResult, scheme_given: bool) -> Target | Rejection:
     host = (parts.hostname or "").rstrip(".")
-    if _is_ip_literal(host) or "." not in host or host.rsplit(".", 1)[-1] in SERVICE_ZONES:
+    if _is_ip_literal(host):  # idna отказывает на ::1 и подобных — ловим их до кодирования
         return Rejection(BAD_ADDRESS)
     try:
-        ascii_host = idna.encode(host, uts46=True).decode("ascii")
+        ascii_host = idna.encode(host, uts46=True).decode("ascii").rstrip(".")
         display_host = idna.decode(ascii_host)
     except idna.IDNAError:
         return Rejection(NOT_A_LINK)
+    # UTS46 приводит похожие на цифры и буквы юникод-символы (полноширинные, кружком, математические,
+    # «。») к ASCII — проверяем адрес и зону ещё раз, уже на итоговом хосте, иначе они проходят мимо П3
+    if _is_ip_literal(ascii_host) or "." not in ascii_host or ascii_host.rsplit(".", 1)[-1] in SERVICE_ZONES:
+        return Rejection(BAD_ADDRESS)
     path = parts.path or ROOT_PATH
     platform = _platform(ascii_host, path)
     if platform:
