@@ -1,0 +1,66 @@
+from bot.core.access import OpenGate, is_open_for
+from bot.core.throttle import ThrottleMiddleware
+from tests.fakes import ADMIN_ID, FakeClock, fake_bot, make_callback, make_message
+
+
+class Recorder:
+    def __init__(self):
+        self.handled, self.closed = [], []
+
+    async def handler(self, event, data):
+        self.handled.append(event)
+
+    async def on_closed(self, event):
+        self.closed.append(event)
+
+
+def test_open_for_admin_always_and_for_everyone_after_launch(settings):
+    assert is_open_for(settings, ADMIN_ID)
+    assert not is_open_for(settings, 500)
+    assert is_open_for(settings.model_copy(update={"open_to_all": True}), 500)
+
+
+async def test_gate_stops_strangers_but_lets_start_and_admin_through(settings):
+    recorder = Recorder()
+    gate = OpenGate(settings, recorder.on_closed)
+    await gate(recorder.handler, make_message("example.com", user_id=500), {})
+    await gate(recorder.handler, make_message("/start channel", user_id=500), {})
+    await gate(recorder.handler, make_message("example.com", user_id=ADMIN_ID), {})
+    assert len(recorder.closed) == 1
+    assert len(recorder.handled) == 2
+
+
+async def test_throttle_blocks_second_message_within_interval_and_notifies_once():
+    clock = FakeClock()
+    recorder = Recorder()
+    sent_notices: list[tuple[int, str]] = []
+
+    async def send_notice(chat_id: int, text: str) -> None:
+        sent_notices.append((chat_id, text))
+
+    throttle = ThrottleMiddleware(2.0, lambda code: "Слишком часто", send_notice, clock.monotonic)
+    bot = fake_bot()
+    first, second, third = (make_message("a").as_(bot) for _ in range(3))
+    await throttle(recorder.handler, first, {})
+    await throttle(recorder.handler, second, {})
+    await throttle(recorder.handler, third, {})
+    assert len(recorder.handled) == 1
+    assert sent_notices == [(second.chat.id, "Слишком часто")]
+    assert [call.__api_method__ for call in bot.session.calls] == []
+    clock.advance(2.5)
+    await throttle(recorder.handler, make_message("b").as_(bot), {})
+    assert len(recorder.handled) == 2
+
+
+async def test_throttled_button_is_always_answered():
+    clock = FakeClock()
+    recorder = Recorder()
+
+    async def send_notice(chat_id: int, text: str) -> None:
+        raise AssertionError("send_notice не вызывается для нажатий кнопки")
+
+    throttle = ThrottleMiddleware(0.7, lambda code: "Слишком часто", send_notice, clock.monotonic)
+    bot = fake_bot()
+    await throttle(recorder.handler, make_callback("again").as_(bot), {})
+    await throttle(recorder.handler, make_callback("again").as_(bot), {})
+    assert [call.__api_method__ for call in bot.session.calls] == ["answerCallbackQuery"]
