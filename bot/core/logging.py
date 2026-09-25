@@ -1,0 +1,71 @@
+"""Журнал: loguru в stdout — его хранит Docker, 3 файла по 10 МБ (ТЗ, С13), — с маскировкой секретов (ТЗ, Сек7, Сек12).
+
+- Маскируется итоговая строка вместе с трейсбеком: aiohttp и aiogram кладут в тексты ошибок адрес запроса с токеном.
+- Шаблоны секретов работают с первой строки журнала, значения — сразу после загрузки настроек.
+- diagnose=False: в трейсбеке нет значений переменных, а в них бывают секреты.
+- Журналы стандартной библиотеки (aiogram, aiohttp, asyncio) идут через тот же путь.
+"""
+import logging
+import sys
+from collections.abc import Iterable
+
+from loguru import logger
+
+from bot.core.secret_patterns import SECRET_PATTERNS
+
+MASK = "***"
+MIN_SECRET_LENGTH = 6  # короче — не секрет, а маскировка испортила бы журнал
+LOG_FORMAT = "{time:YYYY-MM-DD HH:mm:ss} {level} {name}: {message}"
+LOGURU_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+QUIET_LOGGERS = ("aiohttp.access", "aiohttp.client", "aiohttp.internal")
+
+
+class SecretMasker:
+    def __init__(self) -> None:
+        self._values: tuple[str, ...] = ()
+
+    def add(self, values: Iterable[str]) -> None:
+        known = set(self._values) | {value for value in values if len(value) >= MIN_SECRET_LENGTH}
+        self._values = tuple(sorted(known, key=len, reverse=True))
+
+    def mask(self, text: str) -> str:
+        for value in self._values:
+            text = text.replace(value, MASK)
+        for pattern in SECRET_PATTERNS.values():
+            text = pattern.sub(MASK, text)
+        return text
+
+
+MASKER = SecretMasker()
+
+
+def mask(text: str) -> str:
+    return MASKER.mask(text)
+
+
+def add_secret_values(values: Iterable[str]) -> None:
+    MASKER.add(values)
+
+
+def _write_masked(message: str) -> None:
+    sys.stdout.write(MASKER.mask(str(message)))
+    sys.stdout.flush()
+
+
+class _StdlibToLoguru(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        level = record.levelname if record.levelname in LOGURU_LEVELS else record.levelno
+        logger.opt(exception=record.exc_info).log(level, "{}: {}", record.name, record.getMessage())
+
+
+def _log_uncaught(exc_type, exc_value, exc_traceback) -> None:
+    logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("необработанное исключение")
+
+
+def setup_logging(level: str = "INFO") -> None:
+    logger.remove()
+    logger.add(_write_masked, level=level, format=LOG_FORMAT, colorize=False, diagnose=False, backtrace=False)
+    logging.basicConfig(handlers=[_StdlibToLoguru()], level=logging.INFO, force=True)
+    for name in QUIET_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
+    sys.excepthook = _log_uncaught
