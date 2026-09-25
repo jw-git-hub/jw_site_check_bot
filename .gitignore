@@ -1,0 +1,39 @@
+# Секреты — только в .env на сервере, в git никогда
+.env
+.env.*
+!.env.example
+# Адрес сервера, пользователь и пути — только на Маке
+/deploy/*.local.env
+
+# База и её копии: в ней user_id людей
+/data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# Логи и кэши
+*.log
+/logs/
+.cache/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Syncthing
+*sync-conflict*
+.stfolder
+.stversions
+
+# macOS и редакторы
+.DS_Store
+Icon?
+.idea/
+.vscode/
+
+# Локальные настройки Claude Code
+.claude/settings.local.json

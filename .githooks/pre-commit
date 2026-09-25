@@ -1,0 +1,14 @@
+#!/bin/sh
+# Не даёт закоммитить секреты. Два сторожа:
+#   gitleaks — известные форматы ключей и токенов;
+#   scripts/check_secrets.py — файлы .env и база, значения из локального .env, токен Telegram, ключ Google.
+# Нет gitleaks — коммит не проходит: молча пропускать проверку нельзя.
+set -e
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "Коммит остановлен: не установлен gitleaks (brew install gitleaks)." >&2
+  exit 1
+fi
+
+gitleaks git --pre-commit --staged --redact --no-banner
+exec python3 "$(git rev-parse --show-toplevel)/scripts/check_secrets.py" --staged
