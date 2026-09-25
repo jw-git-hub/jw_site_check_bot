@@ -113,7 +113,12 @@ async def serve_http(response: bytes) -> asyncio.Server:
 @pytest.mark.parametrize(("response", "state"), [
     (b"HTTP/1.1 301 Moved\r\nLocation: https://site.test/\r\n\r\n", RedirectState.REDIRECTS),
     (b"HTTP/1.1 308 Permanent\r\nlocation: HTTPS://www.site.test/\r\n\r\n", RedirectState.REDIRECTS),
-    (b"HTTP/1.1 302 Found\r\nLocation: http://site.test/home\r\n\r\n", RedirectState.NO_REDIRECT),
+    # Location не на https — не доказывает ни переадресацию, ни её отсутствие (бот сам переходы не делает,
+    # ТЗ 5.4): редирект на другой http-адрес, относительный путь, protocol-relative и отсутствующий Location.
+    (b"HTTP/1.1 302 Found\r\nLocation: http://site.test/home\r\n\r\n", RedirectState.UNKNOWN),
+    (b"HTTP/1.1 301 Moved\r\nLocation: /home\r\n\r\n", RedirectState.UNKNOWN),
+    (b"HTTP/1.1 301 Moved\r\nLocation: //www.site.test/\r\n\r\n", RedirectState.UNKNOWN),
+    (b"HTTP/1.1 301 Moved\r\n\r\n", RedirectState.UNKNOWN),
     (b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n", RedirectState.NO_REDIRECT),
     (b"HTTP/1.1 403 Forbidden\r\n\r\n", RedirectState.UNKNOWN),
     (b"garbage\r\n\r\n", RedirectState.UNKNOWN),

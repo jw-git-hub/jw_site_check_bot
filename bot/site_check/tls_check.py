@@ -176,8 +176,10 @@ def redirect_state(head: bytes) -> RedirectState:
     lines = head.decode("latin-1").split("\r\n")
     status = _status(lines[0])
     if status in REDIRECT_STATUSES:
+        # Location не на https (другой http-адрес, относительный путь, protocol-relative, отсутствует) не
+        # доказывает ни переадресацию, ни её отсутствие — бот сам переходы не делает (ТЗ, 5.4, С4).
         secure = _header(lines, "location").lower().startswith(HTTPS_PREFIX)
-        return RedirectState.REDIRECTS if secure else RedirectState.NO_REDIRECT
+        return RedirectState.REDIRECTS if secure else RedirectState.UNKNOWN
     return RedirectState.NO_REDIRECT if status in SUCCESS_STATUSES else RedirectState.UNKNOWN
 
 
