@@ -60,17 +60,12 @@ class Texts:
         return self.count(lang, shown, "second")
 
     def size(self, lang: Lang, size_bytes: int) -> str:
-        """Меньше 1000 КБ (по округлению) — в целых КБ, дальше — в МБ с одним знаком (ТЗ, 7.1)."""
+        """Меньше 1000 КБ (по округлению) — в целых КБ, дальше — в МБ (ТЗ, 7.1)."""
         units = self._locales[lang].UNITS
         rounded_kb = max(1, round(size_bytes / BYTES_IN_KB))
         if rounded_kb < KB_DISPLAY_LIMIT:
             return f"{rounded_kb} {units['kb']}"
-        return f"{self._megabytes(lang, size_bytes)} {units['mb']}"
-
-    def _megabytes(self, lang: Lang, size_bytes: int) -> str:
-        value = round(size_bytes / BYTES_IN_MB, DECIMALS_SHOWN)
-        separator = self._locales[lang].DECIMAL_SEPARATOR
-        return f"{value:.{DECIMALS_SHOWN}f}".replace(".", separator)
+        return f"{self.number(lang, round(size_bytes / BYTES_IN_MB, DECIMALS_SHOWN))} {units['mb']}"
 
     def date(self, lang: Lang, day: date) -> str:
         return f"{day.day} {self._locales[lang].MONTHS[day.month - 1]} {day.year}"
