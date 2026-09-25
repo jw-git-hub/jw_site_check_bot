@@ -142,7 +142,7 @@ def test_expiring_certificate_sentence_and_fix():
 
 
 def test_missing_server_response_time_uses_plain_texts():
-    """C24: server_ms может быть None (лидирует document-latency-insight, а server-response-time пропал)."""
+    """server_ms может быть None (лидирует document-latency-insight, а server-response-time пропал)."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=None))
     text = rich_text(report("ru", facts, security()))
     assert "Больше всего времени уходит на ответ сервера." in text
@@ -151,8 +151,8 @@ def test_missing_server_response_time_uses_plain_texts():
 
 
 def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
-    """Ревью, находка 1: server_savings_ms (document-latency-insight) включает переадресации и сжатие, поэтому
-    причина «сервер» может выбраться и когда сам server_ms маленький — тогда тоже без выдуманных секунд."""
+    """server_savings_ms (document-latency-insight) включает переадресации и сжатие, поэтому причина «сервер»
+    может выбраться и когда сам server_ms маленький — тогда тоже без выдуманных секунд."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=40.0))
     text = rich_text(report("ru", facts, security()))
     assert "Больше всего времени уходит на ответ сервера." in text
@@ -161,8 +161,7 @@ def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
 
 
 def test_expired_certificate_without_parseable_data_uses_no_date_text():
-    """Ревью, находка 2: read_cert_unverified может не разобрать сертификат и отдать cert=None — тогда без
-    пустой даты в предложении."""
+    """read_cert_unverified может не разобрать сертификат и отдать cert=None — тогда без пустой даты в предложении."""
     failed_cert = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, None),), (RedirectState.REDIRECTS,), ())
     text_ru = rich_text(report("ru", page(), failed_cert))
     assert "Сертификат истёк: браузер показывает предупреждение во весь экран" in text_ru
@@ -173,8 +172,8 @@ def test_expired_certificate_without_parseable_data_uses_no_date_text():
 
 
 def test_security_bad_certificate_still_lists_other_consequences():
-    """Ревью, находка 3: сертификат «плохо» не должен молча прятать остальные находки блока (общее правило —
-    у каждой находки должно быть последствие для посетителя)."""
+    """Сертификат «плохо» не должен молча прятать остальные находки блока (общее правило — у каждой находки
+    должно быть последствие для посетителя)."""
     facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.WRONG_HOST, cert()),), (RedirectState.REDIRECTS,),
                           ("http://x/a.js",))
     text = rich_text(report("ru", page(), facts))
@@ -190,9 +189,9 @@ def two_host_security(first_outcome, second_outcome, first_cert=True, second_cer
 
 
 def test_second_bad_security_finding_does_not_crash_or_get_a_tail():
-    """Ревью раунд 2, находка 1: tail_* заведён не для каждой находки «плохо» (нет tail_cert_untrusted,
-    tail_cert_invalid, tail_no_https) — вторая такая находка (второй хост) должна молчать в хвосте
-    «Кроме того, …», а не ронять сборку отчёта KeyError'ом."""
+    """tail_* заведён не для каждой находки «плохо» (нет tail_cert_untrusted, tail_cert_invalid, tail_no_https) —
+    вторая такая находка (второй хост) должна молчать в хвосте «Кроме того, …», а не ронять сборку отчёта
+    KeyError'ом."""
     wrong_host_then_untrusted = two_host_security(TlsOutcome.WRONG_HOST, TlsOutcome.OTHER)
     no_https_then_expired = two_host_security(TlsOutcome.NO_HTTPS, TlsOutcome.EXPIRED, first_cert=False)
     for lang in ("ru", "en"):
@@ -203,8 +202,8 @@ def test_second_bad_security_finding_does_not_crash_or_get_a_tail():
 
 
 def test_wrong_host_and_incomplete_chain_state_both_consequences():
-    """Ревью раунд 2, находка 2: INCOMPLETE_CHAIN не должен теряться в ветке «плохо» — у него, в отличие от
-    других находок «стоит поправить» в этом сценарии, есть свой tail_incomplete_chain."""
+    """INCOMPLETE_CHAIN не должен теряться в ветке «плохо» — у него, в отличие от других находок «стоит
+    поправить» в этом сценарии, есть свой tail_incomplete_chain."""
     facts = two_host_security(TlsOutcome.WRONG_HOST, TlsOutcome.INCOMPLETE_CHAIN)
     text_ru = rich_text(report("ru", page(), facts))
     assert "Сертификат выдан на другой адрес" in text_ru
@@ -215,14 +214,14 @@ def test_wrong_host_and_incomplete_chain_state_both_consequences():
 
 
 def test_post_numbers_shows_redirect_chain_when_addresses_differ():
-    """C7: requested_url и итоговый final_url отличаются — показываем цепочку переадресаций."""
+    """requested_url и итоговый final_url отличаются — показываем цепочку переадресаций (ТЗ, 7.5)."""
     facts = replace(page(), requested_url="http://site.test/", final_url="https://site.test/")
     text = rich_text(post_numbers(TEXTS, "ru", facts, security(), MEASURED_AT))
     assert "Переадресация | http://site.test/ → https://site.test/" in text
 
 
 def test_post_numbers_hides_redirect_row_when_no_real_redirect():
-    """C7: без переадресации (адреса совпадают или requested_url пуст) строки быть не должно."""
+    """Без переадресации (адреса совпадают или requested_url пуст) строки быть не должно."""
     same = replace(page(), requested_url="https://site.test/", final_url="https://site.test/")
     assert "Переадресация" not in rich_text(post_numbers(TEXTS, "ru", same, security(), MEASURED_AT))
     empty = replace(page(), requested_url="", final_url="https://site.test/")

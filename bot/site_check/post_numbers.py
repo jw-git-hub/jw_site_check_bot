@@ -64,7 +64,7 @@ def _meta_rows(texts: Texts, lang: Lang, page: PageFacts, security: SecurityFact
 
 
 def _redirect_row(texts: Texts, lang: Lang, requested_url: str, final_url: str) -> list[list[str]]:
-    """C7 (ТЗ, 7.5): цепочка переадресаций — что просили измерить и куда PageSpeed в итоге попал."""
+    """Цепочка переадресаций (ТЗ, 7.5): что просили измерить и куда PageSpeed в итоге попал."""
     if not requested_url or requested_url == final_url:
         return []
     chain = REDIRECT_CHAIN.format(requested=requested_url, final=final_url)

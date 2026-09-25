@@ -108,7 +108,7 @@ def _cause_sentence(texts: Texts, lang: Lang, item: FindingItem) -> list[str]:
 
 
 def _server_response_is_fast(server_ms: float | None) -> bool:
-    """C24: server_savings_ms (document-latency-insight) включает переадресации и сжатие, не только ответ сервера.
+    """server_savings_ms (document-latency-insight) включает переадресации и сжатие, не только ответ сервера.
 
     main_cause может выбрать причиной «сервер», даже когда сам ответ (server-response-time) быстрый или проверка
     пропала — тогда и в предложении, и в «что поправить» нужен текст без выдуманной цифры секунд.
@@ -132,9 +132,9 @@ def _mobile_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bloc
 def _fix_grade_findings(findings: tuple[FindingItem, ...] | list[FindingItem]) -> list[FindingItem]:
     """Хвост «Кроме того, …» — только для находок «стоит поправить».
 
-    У «плохо» есть своё главное предложение, а текстов `tail_*` для оценки «плохо» не заведено (ревью раунд 2,
-    находка 1: KeyError на `tail_cert_untrusted` и похожих, когда в хвост попадала находка «плохо» со второго
-    хоста).
+    У «плохо» есть своё главное предложение, а текстов `tail_*` для оценки «плохо» не заведено (нет
+    `tail_cert_untrusted` и похожих) — находка «плохо» со второго хоста в хвост поэтому не попадает, иначе
+    `_tails` упала бы KeyError'ом на отсутствующем ключе.
     """
     return [item for item in findings if item.grade is Grade.FIX]
 
@@ -157,10 +157,10 @@ def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bl
 
 
 def _security_bad_text(texts: Texts, lang: Lang, main: FindingItem, rest: tuple[FindingItem, ...]) -> str:
-    # Ревью, находка 3: сертификат «плохо» не должен молча прятать остальные находки блока — те же слова
-    # («Кроме того, …»), что и в _mobile_text, чтобы у каждой находки было своё последствие. INCOMPLETE_CHAIN
-    # здесь не исключаем (в отличие от ветки «хорошо/стоит поправить» — там его накрывает открывающее
-    # предложение `security_incomplete_chain`, здесь открывающего предложения нет): у него есть свой `tail_*`.
+    # Сертификат «плохо» не должен молча прятать остальные находки блока — те же слова («Кроме того, …»),
+    # что и в _mobile_text, чтобы у каждой находки было своё последствие. INCOMPLETE_CHAIN здесь не исключаем
+    # (в отличие от ветки «хорошо/стоит поправить» — там его накрывает открывающее предложение
+    # `security_incomplete_chain`, здесь открывающего предложения нет): у него есть свой `tail_*`.
     sentence = _security_bad_sentence(texts, lang, main)
     tails = _tails(texts, lang, _fix_grade_findings(rest))
     if not tails:
@@ -175,8 +175,8 @@ def _security_bad_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
 
 
 def _cert_invalid_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
-    # Ревью, находка 2: read_cert_unverified возвращает cert=None по замыслу, когда второе соединение не удалось —
-    # без даты предложение о просрочке подставляет пустую строку, отсюда отдельный текст без {date}.
+    # read_cert_unverified возвращает cert=None по замыслу, когда второе соединение не удалось — без даты
+    # предложение о просрочке подставляет пустую строку, отсюда отдельный текст без {date}.
     if item.cert_problem is TlsOutcome.EXPIRED and item.until is None:
         return texts.get(lang, "security_cert_expired_no_date")
     until = texts.date(lang, item.until) if item.until else ""
