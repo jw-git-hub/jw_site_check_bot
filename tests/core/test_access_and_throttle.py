@@ -40,6 +40,16 @@ async def test_gate_rejects_look_alike_command_but_allows_start_with_botname(set
     assert len(recorder.handled) == 1
 
 
+async def test_gate_handles_whitespace_only_text_without_crashing(settings):
+    """Текст из одних пробелов (включая полноширинный «　») не должен ронять разбор команды."""
+    recorder = Recorder()
+    gate = OpenGate(settings, recorder.on_closed)
+    for text in ("   ", " ", "　"):
+        await gate(recorder.handler, make_message(text, user_id=500), {})
+    assert len(recorder.closed) == 3
+    assert len(recorder.handled) == 0
+
+
 async def test_throttle_blocks_second_message_within_interval_and_notifies_once():
     clock = FakeClock()
     recorder = Recorder()

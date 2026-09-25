@@ -33,6 +33,10 @@ def _is_start(event: TelegramObject) -> bool:
 
 
 def _command(text: str | None) -> str:
-    """Первое слово команды без @имени_бота, как разбирает его aiogram Command."""
-    first_word = (text or "").split(maxsplit=1)[0] if text else ""
-    return first_word.split("@", 1)[0]
+    """Первое слово команды без @имени_бота, как разбирает его aiogram Command.
+
+    У текста из одних пробелов split() возвращает пустой список — first_word тогда пустая строка,
+    а не IndexError.
+    """
+    words = (text or "").split(maxsplit=1)
+    return (words[0] if words else "").split("@", 1)[0]
