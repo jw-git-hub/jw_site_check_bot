@@ -63,6 +63,12 @@ class _StdlibToLoguru(logging.Handler):
         except Exception:  # noqa: BLE001 — плохое форматирование записи не должно ронять программу
             self.handleError(record)
 
+    def handleError(self, record: logging.LogRecord) -> None:
+        """Раунд 1 обзора задачи 19 (Сек7): logging.Handler.handleError по умолчанию печатает record.msg и
+        record.args в сыром stderr, в обход маски — а там бывает секрет (аргумент испорченной записи).
+        Вместо него — тот же журнал с маской: только имя логгера и трейсбек, без исходного сообщения."""
+        logger.opt(exception=True).error("запись журнала {} не оформилась", record.name)
+
 
 def _log_uncaught(exc_type, exc_value, exc_traceback) -> None:
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("необработанное исключение")

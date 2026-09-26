@@ -8,17 +8,44 @@ from pathlib import Path
 import pytest
 from loguru import logger
 
-from bot.core.logging import MASK, _StdlibToLoguru, add_secret_values, mask, setup_logging
+from bot.core.logging import MASK, _log_uncaught, _log_uncaught_in_thread, _log_unraisable, _StdlibToLoguru
+from bot.core.logging import add_secret_values, mask, setup_logging
 from tests.fakes import fake_google_key, fake_telegram_token
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def _capture_hooks() -> tuple:
+    return sys.excepthook, threading.excepthook, sys.unraisablehook
+
+
+def _restore_hooks(hooks: tuple) -> None:
+    """Обратная сторона setup_logging (раунд 1 обзора задачи 19, находка 2): без возврата эти перехватчики
+    остаются подменены на весь процесс pytest, и следующие файлы тестов теряют собственный перехват pytest
+    ошибок в потоках и финализаторах."""
+    sys.excepthook, threading.excepthook, sys.unraisablehook = hooks
+    logging.captureWarnings(False)
+
+
 @pytest.fixture(autouse=True)
 def fresh_logging():
+    previous_hooks = _capture_hooks()
     setup_logging("DEBUG")
     yield
     logger.remove()
+    _restore_hooks(previous_hooks)
+
+
+def test_restore_hooks_reverts_setup_logging_globals():
+    """Раунд 1 обзора задачи 19 (находка 2): setup_logging переставляет sys.excepthook, threading.excepthook,
+    sys.unraisablehook и включает logging.captureWarnings — фикстура должна вернуть их в teardown, иначе они
+    утекают на весь процесс pytest (наблюдалось: следующие файлы тестов теряли перехват pytest ошибок
+    в потоках/финализаторах)."""
+    baseline = _capture_hooks()
+    setup_logging("DEBUG")
+    assert _capture_hooks() == (_log_uncaught, _log_uncaught_in_thread, _log_unraisable)
+    _restore_hooks(baseline)
+    assert _capture_hooks() == baseline
 
 
 def test_token_in_message_is_masked(capsys):
@@ -86,29 +113,46 @@ def test_unraisable_exception_is_masked_and_logged(capsys):
     assert MASK in out
 
 
-def test_warnings_logger_goes_through_masked_log(capsys):
-    """Поправка 3 к задаче 19: тот же путь, каким captureWarnings передаёт предупреждение журналу."""
-    logging.getLogger("py.warnings").warning("осторожно: %s", fake_google_key())
-    out = capsys.readouterr().out
-    assert fake_google_key() not in out
-    assert MASK in out
-
-
-def test_warnings_warn_is_masked_in_a_real_process():
-    """Поправка 3 к задаче 19: logging.captureWarnings(True) — сквозная проверка без обвязки pytest вокруг
-    warnings.showwarning, которая внутри теста подменяла бы её на свою (см. документацию pytest о перехвате
-    предупреждений)."""
+def test_warnings_are_masked_only_when_capture_is_enabled():
+    """Раунд 1 обзора задачи 19: без logging.captureWarnings(True) предупреждение уходит в сырой stderr —
+    первый прогон подтверждает это (иначе тест не ловил бы регресс), второй — что setup_logging чинит это
+    на обоих потоках. warnings.warn проверяется в отдельном процессе: внутри самого теста pytest подменяет
+    warnings.showwarning на своё на время тела теста (см. документацию pytest о перехвате предупреждений)."""
     key = fake_google_key()
-    script = ("from bot.core.logging import setup_logging; setup_logging('DEBUG')\n"
-             "import warnings; warnings.simplefilter('always')\n"
-             f"warnings.warn('осторожно: {key}')\n")
+    warn = f"import warnings; warnings.simplefilter('always'); warnings.warn('осторожно: {key}')\n"
+
+    without_capture = subprocess.run([sys.executable, "-c", warn], cwd=ROOT, capture_output=True, text=True,
+                                     timeout=30)
+    assert key in without_capture.stderr  # подтверждает, что сценарий вообще что-то проверяет
+
+    with_capture = subprocess.run([sys.executable, "-c",
+                                   f"from bot.core.logging import setup_logging; setup_logging('DEBUG')\n{warn}"],
+                                  cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert key not in with_capture.stdout
+    assert key not in with_capture.stderr
+    assert MASK in with_capture.stdout
+
+
+def test_broken_log_record_does_not_leak_raw_arguments(capsys):
+    """Раунд 1 обзора задачи 19 (Сек7): logging.Handler.handleError печатает record.msg/record.args в сыром
+    stderr, в обход маски — секрет из аргументов записи не должен утечь ни в один поток."""
+    key = fake_google_key()
+    broken = logging.LogRecord("t", logging.WARNING, __file__, 1, "%s и %s", (key,), None)
+    _StdlibToLoguru().emit(broken)  # не должно бросить исключение
+    captured = capsys.readouterr()
+    assert key not in captured.out
+    assert key not in captured.err
+
+
+def test_broken_log_record_is_masked_end_to_end_in_a_real_process():
+    """Раунд 1 обзора задачи 19 (Сек7): тот же случай, что нашёл ревьюер — getLogger(...).warning с
+    несовпадающим числом %s и секретом в аргументах, настоящим процессом (Logger.callHandlers, не только
+    emit напрямую)."""
+    key = fake_google_key()
+    script = ("from bot.core.logging import add_secret_values, setup_logging; setup_logging('DEBUG')\n"
+             f"add_secret_values(['{key}'])\n"
+             "import logging\n"
+             f"logging.getLogger('aiohttp.client').warning('url %s and %s', '{key}')\n")
     result = subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True, timeout=30)
     assert key not in result.stdout
-    assert MASK in result.stdout
-
-
-def test_broken_log_record_does_not_crash_the_program():
-    """Поправка 3 к задаче 19: _StdlibToLoguru.emit не должен ронять программу на плохом форматировании —
-    ошибка форматирования уходит в self.handleError, а не наружу исключением."""
-    broken = logging.LogRecord("t", logging.WARNING, __file__, 1, "%s и %s", ("только-один-аргумент",), None)
-    _StdlibToLoguru().emit(broken)  # не должно бросить исключение
+    assert key not in result.stderr
