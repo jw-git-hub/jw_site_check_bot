@@ -94,12 +94,15 @@ find_neighbour_container_ip() {
 # нечем. Поднимаем временный сами: из уже собранного образа бота, без сети (--pull never — никаких
 # скачиваний), в сети Docker по умолчанию (не в нашей site_check), с командой-заглушкой вместо самого
 # бота. Убирается при любом выходе скрипта через trap, а не --rm: тот сработал бы только после docker stop.
+# Функция — не через $(...): в подстановке команд trap достался бы только её собственной подоболочке
+# и снял бы контейнер сразу же, ещё до проверки. Поэтому результат — в глобальной переменной.
+temporary_neighbour_ip=""
 start_temporary_neighbour() {
   docker run -d --pull never --network bridge --name "$NEIGHBOUR_CONTAINER_NAME" \
-    "$NEIGHBOUR_IMAGE" sleep infinity >/dev/null
+    "$NEIGHBOUR_IMAGE" sleep infinity >/dev/null || return 1
   trap 'docker rm -f "$NEIGHBOUR_CONTAINER_NAME" >/dev/null 2>&1 || true' EXIT
-  docker inspect "$NEIGHBOUR_CONTAINER_NAME" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' \
-    | grep -v '^$' | head -n1
+  temporary_neighbour_ip="$(docker inspect "$NEIGHBOUR_CONTAINER_NAME" \
+    --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' | grep -v '^$' | head -n1)"
 }
 
 # Временный сосед ничего не слушает (команда — заглушка): reachable_from_host здесь ничего не докажет,
@@ -143,7 +146,7 @@ if [ -n "$neighbour_ip" ]; then
   expect_closed "$neighbour_ip" "$NEIGHBOUR_PORT" "соседний контейнер" neighbour
 else
   echo "на сервере нет запущенных контейнеров вне нашей сети — поднимаю временный для проверки"
-  temporary_neighbour_ip="$(start_temporary_neighbour || true)"
+  start_temporary_neighbour || true
   if [ -n "$temporary_neighbour_ip" ]; then
     expect_temporary_neighbour_closed "$temporary_neighbour_ip"
   else
