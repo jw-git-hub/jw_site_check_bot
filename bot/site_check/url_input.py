@@ -103,12 +103,27 @@ def _split(url: str) -> SplitResult | None:
     return None if parts.username or parts.password else parts
 
 
+def to_ascii_host(host: str) -> str | None:
+    """Хост (в том числе юникодом) → ASCII (IDNA, UTS46). Не перевёлся — None.
+
+    Единственное место перевода хоста в ASCII: разбор ввода (ниже) и оценка после замера (pipeline.py,
+    verdict.py) пользуются этой функцией, не второй копией (обзор задачи 14, находка 2) — иначе результат мог
+    разойтись и один и тот же хост выглядел бы «разным» при сравнении.
+    """
+    try:
+        return idna.encode(host, uts46=True).decode("ascii").rstrip(".")
+    except idna.IDNAError:
+        return None
+
+
 def _target(parts: SplitResult, scheme_given: bool) -> Target | Rejection:
     host = (parts.hostname or "").rstrip(".")
     if _is_ip_literal(host):  # idna отказывает на ::1 и подобных — ловим их до кодирования
         return Rejection(BAD_ADDRESS)
+    ascii_host = to_ascii_host(host)
+    if ascii_host is None:
+        return Rejection(NOT_A_LINK)
     try:
-        ascii_host = idna.encode(host, uts46=True).decode("ascii").rstrip(".")
         display_host = idna.decode(ascii_host)
     except idna.IDNAError:
         return Rejection(NOT_A_LINK)

@@ -7,7 +7,8 @@ from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
-from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome, to_ascii_host
+from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
+from bot.site_check.url_input import to_ascii_host
 
 MAX_TROUBLES = 2
 MAX_FIXES = 3

@@ -1,4 +1,5 @@
 """До замера (ТЗ, П6): адрес для PageSpeed и защита присланного хоста. Не дольше 10 секунд — срок ставит pipeline."""
+import asyncio
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -13,6 +14,9 @@ UNREACHABLE_DNS = "unreachable_dns"
 PRIVATE_ADDRESS = "private_address"
 SERVICE_DOWN = "service_down"
 DNS_REASON = "dns"  # поправка 2: наш DNS не ответил — задача 17 отличит это от сбоя PageSpeed
+# ТЗ С5 — у каждого шага свой срок: порт 443, который тихо роняет пакеты, иначе держит check_tls (в net_guard —
+# до 5 с DNS и 10 с подключения) дольше, чем pipeline оставляет на весь шаг измерения (обзор задачи 14, находка 1).
+TLS_CHECK_TIMEOUT_SECONDS = 4
 
 
 @dataclass(frozen=True)
@@ -84,10 +88,19 @@ async def probe(target: Target, probes: SiteProbes) -> ProbeResult:
 
 async def measure(target: Target, probes: SiteProbes) -> ProbeResult:
     """https или http — когда имя уже проверено (после resolve_target)."""
-    tls = await probes.check_tls(target.host)
+    tls = await _check_tls_within_budget(target.host, probes)
     if target.scheme_given or (tls and tls.outcome not in UNREACHABLE_TLS):
         return ProbeResult(target.url, tls)
     return await _fall_back_to_http(target, probes)
+
+
+async def _check_tls_within_budget(host: str, probes: SiteProbes) -> TlsFacts | None:
+    """Не дождались за свой срок — считаем как явный обрыв соединения, а не тратим на него весь бюджет
+    «до замера»: дальше решит проверка порта 80 (обзор задачи 14, находка 1)."""
+    try:
+        return await asyncio.wait_for(probes.check_tls(host), TLS_CHECK_TIMEOUT_SECONDS)
+    except TimeoutError:
+        return TlsFacts(host, TlsOutcome.CONNECT_FAILED)
 
 
 async def _fall_back_to_http(target: Target, probes: SiteProbes) -> ProbeResult:

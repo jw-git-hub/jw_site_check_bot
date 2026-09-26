@@ -13,7 +13,6 @@ from enum import StrEnum
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
-import idna
 
 from bot.site_check.net_guard import StreamOpener
 
@@ -213,12 +212,3 @@ async def close_quietly(writer: asyncio.StreamWriter) -> None:
         writer.close()
     else:
         transport.abort()
-
-
-def to_ascii_host(host: str) -> str | None:
-    """Юникодный хост (например, из finalDisplayedUrl PageSpeed) → ASCII (IDNA), как уже делает разбор ввода
-    (url_input.py). Не перевёлся — None: проверки после замера для такого хоста не идут (поправки 7 и 11)."""
-    try:
-        return idna.encode(host, uts46=True).decode("ascii").rstrip(".")
-    except idna.IDNAError:
-        return None

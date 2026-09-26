@@ -12,8 +12,8 @@ from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpe
                                       classify)
 from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes, measure,
                                   resolve_target)
-from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome, to_ascii_host
-from bot.site_check.url_input import Target
+from bot.site_check.tls_check import HTTPS_PREFIX, RedirectState, TlsFacts, TlsOutcome
+from bot.site_check.url_input import Target, to_ascii_host
 from bot.site_check.verdict import TLS_INVALID, SecurityFacts, Verdict, judge
 
 CHECK_DEADLINE_SECONDS = 120  # ТЗ, Л4: одна проверка целиком
@@ -127,18 +127,19 @@ class Pipeline:
 
     async def _after(self, target: Target, before: ProbeResult, page: PageFacts) -> SecurityFacts:
         final_host = to_ascii_host(urlsplit(page.final_url).hostname or target.host)
-        checks = self._after_checks(target.host, final_host, before.tls)
+        checks = self._after_checks(target.host, final_host, before.tls, page)
         try:
             tls, redirects = await asyncio.wait_for(checks, AFTER_TIMEOUT_SECONDS)
         except TimeoutError:
             tls, redirects = _known(before.tls), ()
         return SecurityFacts(tls=tls, redirects=redirects, insecure_urls=page.insecure_urls)
 
-    async def _after_checks(self, submitted_host: str, final_host: str | None,
-                            first_tls: TlsFacts | None) -> tuple[tuple[TlsFacts, ...], tuple[RedirectState, ...]]:
+    async def _after_checks(self, submitted_host: str, final_host: str | None, first_tls: TlsFacts | None,
+                            page: PageFacts) -> tuple[tuple[TlsFacts, ...], tuple[RedirectState, ...]]:
         """final_host is None — юникодный итоговый хост не перевёлся в ASCII: проверки для него не идут, только
         отметка «неизвестно» (поправка 7), без падения.
         """
+        first_tls = await self._recheck_if_pagespeed_disagrees(submitted_host, final_host, first_tls, page)
         tls = list(_known(first_tls))
         redirects = [await self._probes.check_redirect(submitted_host)]
         if final_host is None:
@@ -147,6 +148,17 @@ class Pipeline:
             tls += _known(await self._probes.check_tls(final_host))
             redirects.append(await self._probes.check_redirect(final_host))
         return tuple(tls), tuple(redirects)
+
+    async def _recheck_if_pagespeed_disagrees(self, submitted_host: str, final_host: str | None,
+                                              first_tls: TlsFacts | None, page: PageFacts) -> TlsFacts | None:
+        """Своя проверка до замера сказала NO_HTTPS для этого хоста (443 не ответил нам), а PageSpeed (настоящий
+        браузер) на самом деле открыл https на том же хосте — свежая проверка важнее устаревшей (обзор задачи 14,
+        находка 3). Другой хост (переадресация) сюда не попадает — там уже есть Finding.HTTPS_AFTER_REDIRECT.
+        """
+        same_host_https = final_host == submitted_host and page.final_url.startswith(HTTPS_PREFIX)
+        if first_tls is None or first_tls.outcome is not TlsOutcome.NO_HTTPS or not same_host_https:
+            return first_tls
+        return await self._probes.check_tls(submitted_host)
 
 
 def _known(tls: TlsFacts | None) -> tuple[TlsFacts, ...]:

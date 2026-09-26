@@ -6,7 +6,7 @@ import pytest
 
 from bot.site_check import tls_check
 from bot.site_check.tls_check import (RedirectState, TlsFacts, TlsOutcome, check_http_redirect, check_tls,
-                                      close_quietly, root_request, to_ascii_host)
+                                      close_quietly, root_request)
 from tests.certs import Issued, client_context_trusting, issue, issue_with_malformed_san, server_context
 
 HOST = "site.test"
@@ -186,14 +186,5 @@ async def test_close_quietly_does_not_wait_for_a_clean_shutdown():
     assert writer.transport.aborted
 
 
-# --- Задача 14, поправки 7 и 11: перевод хоста итогового адреса в ASCII (нужен в pipeline.py и verdict.py) ---
-
-@pytest.mark.parametrize(("host", "ascii_host"), [
-    ("site.test", "site.test"), ("пример.рф", "xn--e1afmkfd.xn--p1ai"), ("XN--E1AFMKFD.test", "xn--e1afmkfd.test"),
-])
-def test_to_ascii_host_normalises_unicode_and_case(host, ascii_host):
-    assert to_ascii_host(host) == ascii_host
-
-
-def test_to_ascii_host_returns_none_for_a_host_idna_refuses():
-    assert to_ascii_host("-a.test") is None
+# Перевод хоста в ASCII (IDNA) — задача url_input.py (разбор ввода уже это делает); тесты там же, без второй
+# копии здесь (обзор задачи 14, находка 2).

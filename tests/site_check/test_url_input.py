@@ -1,6 +1,6 @@
 import pytest
 
-from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK, SOCIAL, Rejection, Target, parse_input
+from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK, SOCIAL, Rejection, Target, parse_input, to_ascii_host
 
 
 def target(text: str, entity_urls: list[str] | None = None) -> Target:
@@ -124,3 +124,16 @@ def test_punycode_tld_in_plain_text_keeps_full_domain_and_path():
 @pytest.mark.parametrize("url", ["http://a\x00.com/", "http://\ud800.com/"])
 def test_odd_characters_in_host_are_refused_not_crashed(url):
     rejection(url, [url])
+
+
+# --- Задача 14, обзор («находка 2»): один перевод хоста в ASCII, переиспользуется в pipeline.py и verdict.py ---
+
+@pytest.mark.parametrize(("host", "ascii_host"), [
+    ("site.test", "site.test"), ("пример.рф", "xn--e1afmkfd.xn--p1ai"), ("XN--E1AFMKFD.test", "xn--e1afmkfd.test"),
+])
+def test_to_ascii_host_normalises_unicode_and_case(host, ascii_host):
+    assert to_ascii_host(host) == ascii_host
+
+
+def test_to_ascii_host_returns_none_for_a_host_idna_refuses():
+    assert to_ascii_host("-a.test") is None
