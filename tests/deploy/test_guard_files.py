@@ -45,3 +45,67 @@ def test_install_applies_rules_without_restarting_the_service():
     script = read("firewall.sh")
     assert 'nft -f "$RULES_TARGET"' in script
     assert "restart" not in script  # перезапуск службы по RequiredBy перезапустил бы и Docker
+
+
+def test_service_stops_with_nftables_to_stay_fail_closed():
+    unit = read("jw-site-check-guard.service")
+    # Debian: ExecStop общей nftables.service — flush ruleset. Без PartOf наша таблица пропадёт,
+    # а служба останется «active (exited)» — контейнер продолжит работать без изоляции.
+    assert re.search(r"^PartOf=.*nftables\.service", unit, re.MULTILINE)
+    assert re.search(r"^After=.*nftables\.service", unit, re.MULTILINE)
+
+
+def test_check_isolation_verifies_the_container_is_running_before_any_probe():
+    script = read("check_isolation.sh")
+    running_check = script.index("container_running || fail")
+    first_call = script.index('expect_closed "$router_ip"')  # первый настоящий вызов, не объявление функции
+    assert running_check < first_call
+
+
+def test_check_isolation_probe_treats_only_os_error_as_closed():
+    script = read("check_isolation.sh")
+    # Голый except (или любой другой) проглотил бы сбой docker exec / трассу Python как «закрыто».
+    assert "except OSError:" in script
+    assert re.search(r"^\s*except:\s*$", script, re.MULTILINE) is None
+    assert "PROBE_CLOSED_EXIT_CODE" in script
+
+
+def test_check_isolation_distinguishes_closed_from_probe_errors():
+    script = read("check_isolation.sh")
+    assert re.search(r"\bclosed\)", script)
+    assert re.search(r"\berror\)", script)
+
+
+def test_check_isolation_reads_docker_gateway_from_the_bridge_not_ipam():
+    script = read("check_isolation.sh")
+    # IPAM.Config[0].Gateway пуст, когда compose задаёт только subnet — проверка молча пропускалась.
+    assert "docker network inspect" not in script
+    assert 'ip -4 -o addr show dev "$BRIDGE_INTERFACE"' in script
+
+
+def test_check_isolation_treats_an_undetermined_address_as_a_failure_not_a_skip():
+    script = read("check_isolation.sh")
+    assert "require_address" in script
+    assert 'require_address "$tailscale_ip"' in script
+    assert 'require_address "$gateway_ip"' in script
+
+
+def test_check_isolation_checks_a_neighbour_container():
+    script = read("check_isolation.sh")
+    assert "find_neighbour_container_ip" in script
+    assert "соседний контейнер" in script
+    assert "нет запущенных контейнеров" in script  # честный отказ, если проверить нечем
+
+
+def test_check_isolation_verdict_requires_every_group_confirmed_and_no_failures():
+    script = read("check_isolation.sh")
+    assert "group_confirmed" in script
+    for group in ("router", "server", "tailscale", "neighbour"):
+        assert group in script
+    assert "Изоляция в порядке" in script
+    assert "не проверено групп" in script
+
+
+def test_check_isolation_header_mentions_nftables_restart():
+    header = "\n".join(read("check_isolation.sh").splitlines()[:6])
+    assert "nftables" in header

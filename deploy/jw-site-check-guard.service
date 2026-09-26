@@ -2,11 +2,16 @@
 # Таблица на месте раньше Docker, а Docker без неё не стартует: бот ни секунды не работает без изоляции.
 # After=nftables.service: если общая служба nftables включена, её /etc/nftables.conf начинается с flush ruleset —
 # таблица должна появиться после него, а не до.
+# PartOf=nftables.service: у Debian ExecStop общей nftables.service — nft flush ruleset. Без PartOf
+# перезапуск или остановка nftables стёрли бы нашу таблицу, а эта служба осталась бы «active (exited)» —
+# контейнер продолжил бы работать без изоляции. С PartOf её тоже останавливает, а Docker без неё не
+# держится (RequiredBy ниже) — фейл-клоуз вместо тихой дыры. Проверка — после перезапуска nftables.
 [Unit]
 Description=jw_site_check_bot: изоляция сети контейнера (nftables)
 DefaultDependencies=no
 Wants=network-pre.target
 After=nftables.service
+PartOf=nftables.service
 Before=network-pre.target docker.service shutdown.target
 Conflicts=shutdown.target
 

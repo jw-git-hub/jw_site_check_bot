@@ -1,55 +1,124 @@
 #!/usr/bin/env bash
 # Проверка изоляции контейнера (ТЗ, С11). На сервере, из папки бота, когда контейнер запущен:
 #   deploy/check_isolation.sh
-# Запускать после установки, после перезагрузки сервера и после перезапуска tailscaled или docker.
+# Запускать после установки, после перезагрузки сервера и после перезапуска tailscaled, docker или
+# nftables — наша таблица привязана к nftables.service (PartOf) и уходит вместе с ним.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 NETWORK="jw_site_check_bot_site_check"
+BRIDGE_INTERFACE="br-sitecheck"
 TIMEOUT_SECONDS=3
+PROBE_CLOSED_EXIT_CODE=42
+# Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker exec, трасса Python)
+# не должна выдаваться за «закрыто»: голый except это делал бы.
 PROBE='import socket, sys
 try:
     socket.create_connection((sys.argv[1], int(sys.argv[2])), timeout=float(sys.argv[3])).close()
 except OSError:
-    sys.exit(1)'
+    sys.exit(int(sys.argv[4]))'
+
+declare -A group_confirmed=([router]=0 [server]=0 [tailscale]=0 [neighbour]=0)
+declare -A group_label=([router]="роутер" [server]="сервер" [tailscale]="Tailscale" [neighbour]="соседний контейнер")
 failures=0
 
-reachable() { docker compose exec -T bot python -c "$PROBE" "$1" "$2" "$TIMEOUT_SECONDS"; }
+fail() { printf 'Изоляция не проверена: %s\n' "$*" >&2; exit 1; }
+
+container_running() { [ -n "$(docker compose ps --status running -q bot)" ]; }
+
+# open — соединение установилось; closed — зонд поймал явный отказ (сравнение с PROBE_CLOSED_EXIT_CODE);
+# error — что-то ещё (сбой docker exec, необработанное исключение) — это не «закрыто».
+probe() {
+  if docker compose exec -T bot python -c "$PROBE" "$1" "$2" "$TIMEOUT_SECONDS" "$PROBE_CLOSED_EXIT_CODE"; then
+    echo open
+  elif [ "$?" -eq "$PROBE_CLOSED_EXIT_CODE" ]; then
+    echo closed
+  else
+    echo error
+  fi
+}
+
 # С самого сервера: если цель закрыта и отсюда, «закрыто» из контейнера ничего не доказывает
 reachable_from_host() { timeout "$TIMEOUT_SECONDS" bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; }
 
+# Адрес, который скрипту не удалось определить, — это отказ проверки, а не тихий пропуск.
+require_address() {
+  if [ -n "$1" ]; then return 0; fi
+  echo "ОШИБКА: не удалось определить адрес: $2"
+  failures=$((failures + 1))
+  return 1
+}
+
 expect_closed() {
-  if ! reachable_from_host "$1" "$2"; then
-    echo "пропуск: $3 ($1:$2) недоступен и с самого сервера — проверка ничего не покажет"
-  elif reachable "$1" "$2"; then
-    echo "ОШИБКА: из контейнера доступен $3 ($1:$2)"
-    failures=$((failures + 1))
-  else
-    echo "закрыто: $3"
+  local target="$1" port="$2" label="$3" group="${4:-}"
+  if ! reachable_from_host "$target" "$port"; then
+    echo "пропуск: $label ($target:$port) недоступен и с самого сервера — проверка ничего не покажет"
+    return
   fi
+  case "$(probe "$target" "$port")" in
+    closed) [ -z "$group" ] || group_confirmed[$group]=$((group_confirmed[$group] + 1)); echo "закрыто: $label" ;;
+    open) failures=$((failures + 1)); echo "ОШИБКА: из контейнера доступен $label ($target:$port)" ;;
+    error) failures=$((failures + 1)); echo "ОШИБКА: проверка «$label» не выполнена (сбой зонда)" ;;
+  esac
 }
 
 expect_open() {
-  if reachable "$1" "$2"; then
-    echo "открыто: $3"
+  local target="$1" port="$2" label="$3"
+  if [ "$(probe "$target" "$port")" = open ]; then
+    echo "открыто: $label"
   else
-    echo "ОШИБКА: из контейнера недоступен $3 ($1:$2)"
     failures=$((failures + 1))
+    echo "ОШИБКА: из контейнера недоступен $label ($target:$port)"
   fi
 }
 
-router_ip="$(ip -4 route show default | awk '{print $3; exit}')"
-server_ip="$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i < NF; i++) if ($i == "src") print $(i + 1)}')"
-gateway_ip="$(docker network inspect "$NETWORK" --format '{{(index .IPAM.Config 0).Gateway}}')"
-tailscale_ip="$(tailscale ip -4 2>/dev/null | head -n 1 || true)"
+# Сосед — любой другой запущенный контейнер вне нашей сети. Если такого нет (например, сразу после
+# установки Docker), проверить нечем — вердикт должен честно сказать, что группа не подтверждена.
+find_neighbour_container_ip() {
+  local candidate networks
+  for candidate in $(docker ps -q); do
+    networks="$(docker inspect "$candidate" --format '{{range $net, $cfg := .NetworkSettings.Networks}}{{$net}} {{end}}')"
+    case " $networks " in
+      *" $NETWORK "*) continue ;;
+    esac
+    docker inspect "$candidate" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' | grep -v '^$' | head -n1
+    return 0
+  done
+  return 1
+}
 
-expect_closed "$router_ip" 80 "роутер"
-expect_closed "$server_ip" 22 "сервер по адресу в домашней сети"
-expect_closed "$gateway_ip" 22 "сервер через шлюз Docker"
-if [ -n "$tailscale_ip" ]; then expect_closed "$tailscale_ip" 22 "сервер в Tailscale"; fi
-expect_closed 100.100.100.100 53 "DNS Tailscale"
+report_verdict() {
+  local group unmet=()
+  for group in "${!group_label[@]}"; do
+    [ "${group_confirmed[$group]}" -gt 0 ] || unmet+=("${group_label[$group]}")
+  done
+  if [ "$failures" -eq 0 ] && [ "${#unmet[@]}" -eq 0 ]; then
+    echo "Изоляция в порядке"
+    return 0
+  fi
+  echo "Изоляция НЕ подтверждена: сбоев $failures, не проверено групп: ${unmet[*]:-нет}"
+  return 1
+}
+
+container_running || fail "контейнер bot не запущен (docker compose up -d)"
+
+router_ip="$(ip -4 route show default | awk '{print $3; exit}')" || true
+server_ip="$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i < NF; i++) if ($i == "src") print $(i + 1)}')" || true
+gateway_ip="$(ip -4 -o addr show dev "$BRIDGE_INTERFACE" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1)" || true
+tailscale_ip="$(tailscale ip -4 2>/dev/null | head -n 1 || true)"
+neighbour_ip="$(find_neighbour_container_ip || true)"
+
+require_address "$router_ip" "адрес роутера" && expect_closed "$router_ip" 80 "роутер" router
+require_address "$server_ip" "адрес сервера в домашней сети" && expect_closed "$server_ip" 22 "сервер по адресу в домашней сети" server
+require_address "$gateway_ip" "шлюз Docker для сервера" && expect_closed "$gateway_ip" 22 "сервер через шлюз Docker" server
+require_address "$tailscale_ip" "адрес сервера в Tailscale" && expect_closed "$tailscale_ip" 22 "сервер в Tailscale" tailscale
+if [ -n "$neighbour_ip" ]; then
+  expect_closed "$neighbour_ip" 80 "соседний контейнер" neighbour
+else
+  echo "пропуск: соседний контейнер — на сервере нет запущенных контейнеров вне нашей сети, проверить нечем"
+fi
+expect_closed 100.100.100.100 53 "DNS Tailscale" tailscale
 expect_closed 2001:4860:4860::8888 443 "интернет по IPv6"
 expect_open www.google.com 443 "интернет по IPv4"
 
-[ "$failures" -eq 0 ] || { echo "Изоляция НЕ в порядке: $failures"; exit 1; }
-echo "Изоляция в порядке"
+report_verdict || exit 1
