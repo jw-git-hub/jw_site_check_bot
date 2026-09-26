@@ -11,38 +11,39 @@ FAILURE_CODES = (
 )
 
 
-def _simple(texts: Texts, lang: Lang, brand: Brand, key: str, **params: object) -> dict:
-    return simple_message(brand, texts.get(lang, key, **params))
+def _simple(texts: Texts, lang: Lang, key: str, **params: object) -> dict:
+    return simple_message(texts, lang, texts.get(lang, key, **params))
 
 
-def checking(texts: Texts, lang: Lang, brand: Brand, display: str) -> dict:
-    return _simple(texts, lang, brand, "checking", site=display)
+def checking(texts: Texts, lang: Lang, display: str) -> dict:
+    return _simple(texts, lang, "checking", site=display)
 
 
-def queued(texts: Texts, lang: Lang, brand: Brand, ahead: int, minutes: int) -> dict:
+def queued(texts: Texts, lang: Lang, ahead: int, minutes: int) -> dict:
     key = "queued_one" if ahead == 1 else "queued"  # en "are" needs "is" for exactly one site ahead
-    return _simple(texts, lang, brand, key, sites=texts.count(lang, ahead, "site"), minutes=minutes)
+    return _simple(texts, lang, key, sites=texts.count(lang, ahead, "site"), minutes=minutes)
 
 
-def again(texts: Texts, lang: Lang, brand: Brand) -> dict:
-    return _simple(texts, lang, brand, "again")
+def again(texts: Texts, lang: Lang) -> dict:
+    return _simple(texts, lang, "again")
 
 
-def busy(texts: Texts, lang: Lang, brand: Brand, display: str) -> dict:
-    return _simple(texts, lang, brand, "busy", site=display)
+def busy(texts: Texts, lang: Lang, display: str) -> dict:
+    return _simple(texts, lang, "busy", site=display)
 
 
-def limit_user(texts: Texts, lang: Lang, brand: Brand, limit: int, hours: int) -> dict:
-    return _simple(texts, lang, brand, "limit_user", checks=texts.count(lang, limit, "check"), hours=hours)
+def limit_user(texts: Texts, lang: Lang, limit: int, hours: int) -> dict:
+    return _simple(texts, lang, "limit_user", checks=texts.count(lang, limit, "check"), hours=hours)
 
 
-def failure(texts: Texts, lang: Lang, brand: Brand, code: str, **params: object) -> dict:
+def failure(texts: Texts, lang: Lang, code: str, **params: object) -> dict:
     key = code if code in FAILURE_CODES else FALLBACK_CODE
-    return _simple(texts, lang, brand, key, **params)
+    return _simple(texts, lang, key, **params)
 
 
-def social(texts: Texts, lang: Lang, brand: Brand, platform: str) -> dict:
+def social(texts: Texts, lang: Lang, brand: Brand, platform: str) -> tuple[dict, dict]:
     link = rich.dm_link(brand.dm_username, texts.get(lang, "order_prefill"))
-    button = rich.pill_url(texts.get(lang, "discuss_button"), link, rich.STYLE_PRIMARY)
-    return rich.message([rich.header(brand.section), rich.paragraph(texts.get(lang, "social", platform=platform)),
-                         rich.pills(button)])
+    button = rich.button_url(texts.get(lang, "discuss_button"), link, rich.STYLE_PRIMARY)
+    message = rich.message([rich.header(texts.get(lang, "header_section")),
+                            rich.paragraph(texts.get(lang, "social", platform=platform))])
+    return message, rich.keyboard(button)

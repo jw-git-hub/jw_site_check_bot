@@ -70,7 +70,7 @@ async def build(settings: Settings, clock: Clock) -> Parts:
     messenger = AiogramMessenger(bot)
     http = aiohttp.ClientSession(trust_env=False)
     users, repo = Users(engine, clock), ChecksRepo(engine, clock)
-    notifier = Notifier(messenger, settings.admin_id, clock, TEXTS, BRAND)
+    notifier = Notifier(messenger, settings.admin_id, clock, TEXTS)
     guard = AddressGuard(system_resolver)
     queue, intake = _checking(settings, clock, users, repo, messenger, notifier, guard, http)
     dispatcher = build_dispatcher(settings, users, repo, messenger, intake, clock)
@@ -109,9 +109,10 @@ async def on_unexpected_error(event: ErrorEvent, messenger: Messenger) -> None:
     if recipient is None:
         return
     chat_id, language_code = recipient
-    text = TEXTS.get(detect_lang(language_code), "unexpected_error")
+    lang = detect_lang(language_code)
+    text = TEXTS.get(lang, "unexpected_error")
     with contextlib.suppress(TelegramAPIError, DeliveryFailed):
-        await messenger.send(chat_id, commands.simple_message(BRAND, text))
+        await messenger.send(chat_id, commands.simple_message(TEXTS, lang, text))
 
 
 def _error_recipient(update: Update) -> tuple[int, str | None] | None:
@@ -143,12 +144,14 @@ def throttle_notice(language_code: str | None) -> str:
     return TEXTS.get(detect_lang(language_code), "throttled")
 
 
-def _throttle_notice_sender(messenger: Messenger) -> Callable[[int, str], Awaitable[None]]:
+def _throttle_notice_sender(messenger: Messenger) -> Callable[[int, str | None], Awaitable[None]]:
     """send_notice для ThrottleMiddleware: то же rich-сообщение с шапкой (ТЗ, 7.1), доставка best-effort —
     предупреждение о частоте не должно ронять обработку из-за DeliveryFailed."""
-    async def send(chat_id: int, text: str) -> None:
+    async def send(chat_id: int, language_code: str | None) -> None:
+        lang = detect_lang(language_code)
+        message = commands.simple_message(TEXTS, lang, throttle_notice(language_code))
         with contextlib.suppress(DeliveryFailed):
-            await messenger.send(chat_id, commands.simple_message(BRAND, text))
+            await messenger.send(chat_id, message)
     return send
 
 
@@ -161,14 +164,14 @@ def closed_answer(users: Users, messenger: Messenger) -> Callable[[TelegramObjec
             if isinstance(event, CallbackQuery):
                 await event.answer(text)
             else:
-                await messenger.send(event.chat.id, commands.simple_message(BRAND, text))
+                await messenger.send(event.chat.id, commands.simple_message(TEXTS, user.lang, text))
     return answer
 
 
 async def close_interrupted(repo: ChecksRepo, messenger: Messenger) -> None:
     """После перезапуска незаконченные проверки не повторяются: одна уронила бота — повтор уронит снова (ТЗ, Л5)."""
     for item in await best_effort(repo.interrupt_unfinished(), "незаконченные проверки", []):
-        message = replies.failure(TEXTS, item.lang, BRAND, INTERRUPTED)
+        message = replies.failure(TEXTS, item.lang, INTERRUPTED)
         with contextlib.suppress(DeliveryFailed):
             await edit_or_send(messenger, item.chat_id, item.message_id, message)
 

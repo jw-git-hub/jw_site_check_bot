@@ -58,7 +58,7 @@ def _build_world(messenger, settings, db) -> SimpleNamespace:
     clock, pipeline = FakeClock(), FakePipeline()
     users, repo = Users(db, clock), ChecksRepo(db, clock)
     limits = Limits(repo, clock, settings.user_daily_limit, settings.global_daily_limit, settings.admin_id)
-    notifier = Notifier(messenger, settings.admin_id, clock, TEXTS, BRAND)
+    notifier = Notifier(messenger, settings.admin_id, clock, TEXTS)
     runner = CheckRunner(pipeline, repo, limits, messenger, TEXTS, BRAND, notifier, clock)
     queue = CheckQueue(settings.check_workers, settings.queue_max, runner.run, clock)
     intake = Intake(users, repo, limits, queue, messenger, TEXTS, BRAND, settings, notifier)
@@ -96,9 +96,12 @@ async def test_link_gets_status_then_report_in_the_same_message(world):
     await world.intake.handle_text(link("example.com"))
     await settle(world)
     assert world.messenger.sent[0][1]["blocks"][1]["text"] == ["Проверяю example.com…"]
-    chat_id, message_id, report = world.messenger.edited[-1]
+    assert world.messenger.sent[0][2] is None  # у «Проверяю…» клавиатуры нет
+    chat_id, message_id, report, keyboard = world.messenger.edited[-1]
     assert (chat_id, message_id) == (USER, FIRST_MESSAGE_ID)
     assert "Сайт в порядке" in world.messenger.last()
+    # Правка «Проверяю…» в отчёт ставит клавиатуру отчёта (задача 23a).
+    assert keyboard["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
     assert await rows(world.db, "SELECT status, charged FROM checks") == [("done", 1)]
 
 
@@ -129,7 +132,10 @@ async def test_report_is_sent_anew_when_status_message_is_gone(world):
     world.messenger.gone.add(FIRST_MESSAGE_ID)
     world.pipeline.gate.set()
     await settle(world)
-    assert "Сайт в порядке" in rich_text(world.messenger.sent[-1][1])
+    chat_id, message, keyboard = world.messenger.sent[-1]
+    assert "Сайт в порядке" in rich_text(message)
+    # Отчёт, ушедший новым сообщением (правка не прошла), — тоже с клавиатурой (задача 23a).
+    assert keyboard["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
 
 
 async def test_blocked_user_does_not_break_worker(world):
@@ -157,7 +163,7 @@ async def test_our_failure_is_not_charged_and_owner_is_notified(world):
     await world.intake.handle_text(link("example.com"))
     await settle(world)
     assert await rows(world.db, "SELECT error_code, charged FROM checks") == [("service_down", 0)]
-    to_owner = [message for chat_id, message in world.messenger.sent if chat_id == ADMIN_ID]
+    to_owner = [message for chat_id, message, _ in world.messenger.sent if chat_id == ADMIN_ID]
     assert len(to_owner) == 1
 
 
@@ -170,7 +176,7 @@ async def test_missing_audits_notify_owner_once(world):
     await settle(world)
     await world.intake.handle_text(link("example.org", user_id=78))
     await settle(world)
-    assert len([chat_id for chat_id, _ in world.messenger.sent if chat_id == ADMIN_ID]) == 1
+    assert len([chat_id for chat_id, _, _ in world.messenger.sent if chat_id == ADMIN_ID]) == 1
 
 
 async def test_user_limit_is_explained(world, settings):
@@ -193,7 +199,7 @@ async def test_service_down_before_measurement_only_logs_no_owner_notice(world):
     world.pipeline.outcomes["example.com"] = CheckFailed("service_down", reached_measurement=False, reason="dns")
     await world.intake.handle_text(link("example.com"))
     await settle(world)
-    assert [chat_id for chat_id, _ in world.messenger.sent if chat_id == ADMIN_ID] == []
+    assert [chat_id for chat_id, _, _ in world.messenger.sent if chat_id == ADMIN_ID] == []
     assert await rows(world.db, "SELECT error_code, charged FROM checks") == [("service_down", 0)]
 
 
@@ -221,14 +227,14 @@ async def test_final_message_delivery_recovers_after_one_retry(db, settings):
             self._target = target
             self._broken_edits_left = 1
 
-        async def send(self, chat_id, rich_message):
-            return await self._target.send(chat_id, rich_message)
+        async def send(self, chat_id, rich_message, reply_markup=None):
+            return await self._target.send(chat_id, rich_message, reply_markup)
 
-        async def edit(self, chat_id, message_id, rich_message):
+        async def edit(self, chat_id, message_id, rich_message, reply_markup=None):
             if self._broken_edits_left > 0:
                 self._broken_edits_left -= 1
                 raise DeliveryFailed("временный сбой")
-            await self._target.edit(chat_id, message_id, rich_message)
+            await self._target.edit(chat_id, message_id, rich_message, reply_markup)
 
     world = _build_world(FlakyOnce(inner), settings, db)
     world.queue.start()
@@ -238,6 +244,7 @@ async def test_final_message_delivery_recovers_after_one_retry(db, settings):
     finally:
         await world.queue.stop()
     assert "Сайт в порядке" in rich_text(inner.edited[-1][2])
+    assert inner.edited[-1][3]["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
 
 
 async def test_new_user_not_text_refusal_is_recorded(world):
@@ -254,7 +261,7 @@ async def test_on_again_survives_a_stale_callback(db):
     stale_answer = TelegramBadRequest(method=AnswerCallbackQuery(callback_query_id="1"), message="query is too old")
     bot = fake_bot({"answerCallbackQuery": stale_answer})
     callback = make_callback("again", user_id=USER).as_(bot)
-    await on_again(callback, users=users, messenger=messenger, texts=TEXTS, brand=BRAND)
+    await on_again(callback, users=users, messenger=messenger, texts=TEXTS)
     assert "Пришлите ссылку на сайт" in messenger.last()
 
 
@@ -282,7 +289,7 @@ async def test_queue_overflow_with_delivery_failure_releases_reservation_once(wo
     она стала между этой проверкой и вызовом `submit`."""
     overflow_user = 3
 
-    async def failing_edit(chat_id, message_id, rich_message):
+    async def failing_edit(chat_id, message_id, rich_message, reply_markup=None):
         raise DeliveryFailed("правка недоступна")
 
     def submit_finds_it_full(job):
@@ -328,10 +335,10 @@ def test_every_producible_failure_code_has_a_reply(code, lang):
     # Без этой строки тест не мог бы упасть: failure() тихо подменяет неизвестный код на measure_failed,
     # и "{" not in text была бы верна для любого кода, даже для не заведённого текста.
     assert code in replies.FAILURE_CODES
-    message_text = rich_text(replies.failure(TEXTS, lang, BRAND, code, status=FIRST_SERVER_ERROR, site="example.com"))
+    message_text = rich_text(replies.failure(TEXTS, lang, code, status=FIRST_SERVER_ERROR, site="example.com"))
     assert "{" not in message_text
 
 
 def test_server_error_reply_shows_the_status_code():
-    message_text = rich_text(replies.failure(TEXTS, "ru", BRAND, "server_error", status=503, site="example.com"))
+    message_text = rich_text(replies.failure(TEXTS, "ru", "server_error", status=503, site="example.com"))
     assert "503" in message_text

@@ -20,12 +20,33 @@ def edit_error(text: str) -> TelegramBadRequest:
     return TelegramBadRequest(method=EditRichDict(chat_id=1, message_id=1, rich_message={}), message=text)
 
 
+KEYBOARD = {"inline_keyboard": [[{"text": "A", "callback_data": "a"}]]}
+
+
 async def test_send_passes_dict_and_returns_message_id():
     bot = fake_bot({"sendRichMessage": sent_message(7)})
     assert await AiogramMessenger(bot).send(1, DIVIDER_ONLY) == 7
     call = bot.session.calls[0]
     assert isinstance(call, SendRichDict)
     assert call.rich_message == DIVIDER_ONLY
+    assert call.reply_markup is None
+
+
+async def test_send_passes_reply_markup_alongside_rich_message():
+    bot = fake_bot({"sendRichMessage": sent_message(7)})
+    await AiogramMessenger(bot).send(1, DIVIDER_ONLY, KEYBOARD)
+    call = bot.session.calls[0]
+    assert call.rich_message == DIVIDER_ONLY
+    assert call.reply_markup == KEYBOARD
+
+
+async def test_edit_passes_reply_markup_alongside_rich_message():
+    bot = fake_bot({"editMessageText": sent_message(7)})
+    await AiogramMessenger(bot).edit(1, 5, DIVIDER_ONLY, KEYBOARD)
+    call = bot.session.calls[0]
+    assert isinstance(call, EditRichDict)
+    assert call.rich_message == DIVIDER_ONLY
+    assert call.reply_markup == KEYBOARD
 
 
 def test_rich_dict_is_serialized_as_json():
@@ -74,9 +95,9 @@ async def test_edit_forbidden_becomes_delivery_failed():
 async def test_edit_or_send_sends_new_message_when_old_is_gone():
     messenger = FakeMessenger()
     messenger.gone.add(5)
-    new_id = await edit_or_send(messenger, 1, 5, DIVIDER_ONLY)
+    new_id = await edit_or_send(messenger, 1, 5, DIVIDER_ONLY, KEYBOARD)
     assert new_id != 5
-    assert messenger.sent == [(1, DIVIDER_ONLY)]
+    assert messenger.sent == [(1, DIVIDER_ONLY, KEYBOARD)]
 
 
 async def test_edit_or_send_sends_new_message_for_unknown_bad_request():

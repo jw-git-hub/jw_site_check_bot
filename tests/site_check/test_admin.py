@@ -3,7 +3,6 @@ import re
 
 from aiogram.filters import CommandObject
 
-from bot.brand import BRAND
 from bot.core.commands import simple_message
 from bot.core.users import Users
 from bot.locales import TEXTS
@@ -32,7 +31,7 @@ async def fill(db) -> ChecksRepo:
 async def test_stats_by_label_for_week_and_month(db):
     messenger = FakeMessenger()
     await on_stats(make_message("/stats", user_id=ADMIN_ID), repo=await fill(db), messenger=messenger, texts=TEXTS,
-                   brand=BRAND, clock=FakeClock())
+                   clock=FakeClock())
     text = messenger.last()
     assert "Учёт за 7 дней" in text and "Учёт за 30 дней" in text
     assert "channel | 1 | 1 | 1 | 0" in text
@@ -44,7 +43,7 @@ async def test_stats_by_label_for_week_and_month(db):
 async def test_site_shows_where_the_person_came_from_and_what_they_saw(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
-                  repo=await fill(db), messenger=messenger, texts=TEXTS, brand=BRAND)
+                  repo=await fill(db), messenger=messenger, texts=TEXTS)
     text = messenger.last()
     assert "Проверки site.org" in text
     assert "25.09.2026 19:00 | channel | ok | хорошо · хорошо · хорошо · хорошо" in text
@@ -53,7 +52,7 @@ async def test_site_shows_where_the_person_came_from_and_what_they_saw(db):
 async def test_site_without_domain_explains_usage(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site", user_id=ADMIN_ID), CommandObject(command="site", args=None),
-                  repo=await fill(db), messenger=messenger, texts=TEXTS, brand=BRAND)
+                  repo=await fill(db), messenger=messenger, texts=TEXTS)
     assert "Пришлите домен: /site example.com" in messenger.last()
 
 
@@ -67,7 +66,7 @@ async def test_only_owner_passes_the_filter(settings):
 async def test_site_shows_lcp_seconds_and_page_weight(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
-                  repo=await fill(db), messenger=messenger, texts=TEXTS, brand=BRAND)
+                  repo=await fill(db), messenger=messenger, texts=TEXTS)
     assert "1,4 секунды · 260 КБ" in messenger.last()
 
 
@@ -80,7 +79,7 @@ async def test_site_shows_a_dash_when_key_numbers_are_missing(db):
     await repo.finish_failed(check_id, "timeout", charged=False)
     messenger = FakeMessenger()
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
-                  repo=repo, messenger=messenger, texts=TEXTS, brand=BRAND)
+                  repo=repo, messenger=messenger, texts=TEXTS)
     assert "— · —" in messenger.last()
 
 
@@ -88,8 +87,8 @@ async def test_site_shows_a_dash_when_key_numbers_are_missing(db):
 async def test_site_usage_message_is_built_with_simple_message(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site", user_id=ADMIN_ID), CommandObject(command="site", args=None),
-                  repo=await fill(db), messenger=messenger, texts=TEXTS, brand=BRAND)
-    assert messenger.sent[-1][1] == simple_message(BRAND, TEXTS.get(OWNER_LANG, "site_usage"))
+                  repo=await fill(db), messenger=messenger, texts=TEXTS)
+    assert messenger.sent[-1][1] == simple_message(TEXTS, OWNER_LANG, TEXTS.get(OWNER_LANG, "site_usage"))
 
 
 # usage-сообщение собрано вызовом simple_message, SECTION_SIZE и ITEMS_JOIN — из bot.site_check.report, не

@@ -8,7 +8,7 @@ from aiogram.types import Message
 
 from bot.core import rich
 from bot.core.clock import Clock
-from bot.core.commands import Brand, simple_message
+from bot.core.commands import simple_message
 from bot.core.config import CoreSettings
 from bot.core.i18n import Texts
 from bot.core.messenger import Messenger
@@ -33,26 +33,24 @@ class IsAdmin(Filter):
 
 
 @router.message(Command("stats"), IsAdmin())
-async def on_stats(message: Message, repo: ChecksRepo, messenger: Messenger, texts: Texts, brand: Brand,
-                   clock: Clock) -> None:
+async def on_stats(message: Message, repo: ChecksRepo, messenger: Messenger, texts: Texts, clock: Clock) -> None:
     windows = [(days, *await repo.stats(clock.now() - timedelta(days=days))) for days in STATS_WINDOWS_DAYS]
-    await messenger.send(message.chat.id, stats_message(texts, brand, windows))
+    await messenger.send(message.chat.id, stats_message(texts, windows))
 
 
 @router.message(Command("site"), IsAdmin())
-async def on_site(message: Message, command: CommandObject, repo: ChecksRepo, messenger: Messenger, texts: Texts,
-                  brand: Brand) -> None:
+async def on_site(message: Message, command: CommandObject, repo: ChecksRepo, messenger: Messenger,
+                  texts: Texts) -> None:
     parsed = parse_input(command.args or "", [])
     if not isinstance(parsed, Target):
-        await messenger.send(message.chat.id, simple_message(brand, texts.get(OWNER_LANG, "site_usage")))
+        await messenger.send(message.chat.id, simple_message(texts, OWNER_LANG, texts.get(OWNER_LANG, "site_usage")))
         return
     checks = await repo.recent_for_domain(parsed.display_host)
-    await messenger.send(message.chat.id, site_message(texts, brand, parsed.display_host, checks))
+    await messenger.send(message.chat.id, site_message(texts, parsed.display_host, checks))
 
 
-def stats_message(texts: Texts, brand: Brand,
-                  windows: list[tuple[int, list[LabelStats], list[tuple[str, int]]]]) -> dict:
-    blocks = [rich.header(brand.section)]
+def stats_message(texts: Texts, windows: list[tuple[int, list[LabelStats], list[tuple[str, int]]]]) -> dict:
+    blocks = [rich.header(texts.get(OWNER_LANG, "header_section"))]
     for days, rows, refusals in windows:
         blocks += _stats_section(texts, days, rows, refusals)
     blocks.append(rich.paragraph(texts.get(OWNER_LANG, "stats_note")))
@@ -75,8 +73,8 @@ def _stats_section(texts: Texts, days: int, rows: list[LabelStats], refusals: li
     return section
 
 
-def site_message(texts: Texts, brand: Brand, domain: str, checks: list[DomainCheck]) -> dict:
-    blocks = [rich.header(brand.section),
+def site_message(texts: Texts, domain: str, checks: list[DomainCheck]) -> dict:
+    blocks = [rich.header(texts.get(OWNER_LANG, "header_section")),
              rich.heading(texts.get(OWNER_LANG, "site_title", domain=domain), SECTION_SIZE)]
     if not checks:
         return rich.message([*blocks, rich.paragraph(texts.get(OWNER_LANG, "site_empty"))])

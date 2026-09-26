@@ -53,10 +53,10 @@ async def test_gate_handles_whitespace_only_text_without_crashing(settings):
 async def test_throttle_blocks_second_message_within_interval_and_notifies_once():
     clock = FakeClock()
     recorder = Recorder()
-    sent_notices: list[tuple[int, str]] = []
+    sent_notices: list[tuple[int, str | None]] = []
 
-    async def send_notice(chat_id: int, text: str) -> None:
-        sent_notices.append((chat_id, text))
+    async def send_notice(chat_id: int, language_code: str | None) -> None:
+        sent_notices.append((chat_id, language_code))
 
     throttle = ThrottleMiddleware(2.0, lambda code: "Слишком часто", send_notice, clock.monotonic)
     bot = fake_bot()
@@ -65,7 +65,7 @@ async def test_throttle_blocks_second_message_within_interval_and_notifies_once(
     await throttle(recorder.handler, second, {})
     await throttle(recorder.handler, third, {})
     assert len(recorder.handled) == 1
-    assert sent_notices == [(second.chat.id, "Слишком часто")]
+    assert sent_notices == [(second.chat.id, second.from_user.language_code)]
     assert [call.__api_method__ for call in bot.session.calls] == []
     clock.advance(2.5)
     await throttle(recorder.handler, make_message("b").as_(bot), {})

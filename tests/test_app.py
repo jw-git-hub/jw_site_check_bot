@@ -67,8 +67,8 @@ async def test_throttle_notice_sender_sends_rich_message_with_header():
     """send_notice для ThrottleMiddleware — rich-сообщение с шапкой, не голый текст."""
     messenger = FakeMessenger()
     send_notice = _throttle_notice_sender(messenger)
-    await send_notice(42, "Слишком часто — подождите пару секунд.")
-    assert messenger.sent == [(42, messenger.sent[0][1])]
+    await send_notice(42, "ru")
+    assert messenger.sent == [(42, messenger.sent[0][1], None)]
     assert "Слишком часто" in messenger.last()
 
 
@@ -77,7 +77,7 @@ async def test_throttle_notice_sender_suppresses_delivery_failure():
     messenger = FakeMessenger()
     messenger.blocked.add(42)
     send_notice = _throttle_notice_sender(messenger)
-    await send_notice(42, "текст")  # не должно бросить DeliveryFailed
+    await send_notice(42, None)  # не должно бросить DeliveryFailed
     assert messenger.sent == []
 
 

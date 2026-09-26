@@ -1,7 +1,8 @@
 """Сборка rich-сообщений Telegram (Bot API 10.3) — словарями, как в боте канала (ТЗ, 7.1).
 
-Формат экосистемы: первая строка — моноширинная «>jw_ ~/раздел»; в конце — разделитель и моноширинный подвал
-«jw-dev.pro · @jw_dev_pro», сайт и юзернейм — ссылками. Кнопки — пилюли внутри текста.
+Формат экосистемы: первая строка — моноширинная «>jw ~/раздел_»; в конце — разделитель и моноширинный подвал
+«jw-dev.pro · @jw_dev_pro», сайт и юзернейм — ссылками. Кнопки — inline-клавиатура под сообщением, одна в строке
+(решение владельца после живой приёмки, задача 23a).
 """
 from typing import Any
 from urllib.parse import quote
@@ -9,13 +10,13 @@ from urllib.parse import quote
 Block = dict[str, Any]
 Inline = str | dict[str, Any]
 
-HEADER_PREFIX = ">jw_ ~/"
+HEADER_PREFIX = ">jw ~/"
+HEADER_SUFFIX = "_"
 SITE_TEXT = "jw-dev.pro"
 SITE_URL = "https://jw-dev.pro"
 USERNAME_TEXT = "@jw_dev_pro"
 USERNAME_URL = "https://t.me/jw_dev_pro"
 FOOTER_SEPARATOR = " · "
-PILL_GAP = "  "
 TELEGRAM_LINK = "https://t.me/"
 CELL_ALIGN = "left"
 CELL_VALIGN = "top"
@@ -43,7 +44,7 @@ def divider() -> Block:
 
 
 def header(section: str) -> Block:
-    return paragraph(code(HEADER_PREFIX + section))
+    return paragraph(code(HEADER_PREFIX + section + HEADER_SUFFIX))
 
 
 def footer() -> Block:
@@ -51,12 +52,12 @@ def footer() -> Block:
     return {"type": "footer", "text": parts}
 
 
-def pill_url(text: str, url: str, style: str | None = None) -> dict[str, Any]:
-    return {"type": "button", "button": _button(text, style, url=url)}
+def button_url(text: str, url: str, style: str | None = None) -> dict[str, Any]:
+    return _button(text, style, url=url)
 
 
-def pill_callback(text: str, data: str, style: str | None = None) -> dict[str, Any]:
-    return {"type": "button", "button": _button(text, style, callback_data=data)}
+def button_callback(text: str, data: str, style: str | None = None) -> dict[str, Any]:
+    return _button(text, style, callback_data=data)
 
 
 def _button(text: str, style: str | None, **action: str) -> dict[str, Any]:
@@ -66,11 +67,9 @@ def _button(text: str, style: str | None, **action: str) -> dict[str, Any]:
     return button
 
 
-def pills(*buttons: dict[str, Any]) -> Block:
-    parts: list[Inline] = []
-    for index, button in enumerate(buttons):
-        parts.extend([PILL_GAP, button] if index else [button])
-    return paragraph(*parts)
+def keyboard(*buttons: dict[str, Any]) -> dict[str, Any]:
+    """Inline-клавиатура под сообщением — одна кнопка в строке (решение владельца, задача 23a)."""
+    return {"inline_keyboard": [[button] for button in buttons]}
 
 
 def details(summary: str, blocks: list[Block]) -> Block:

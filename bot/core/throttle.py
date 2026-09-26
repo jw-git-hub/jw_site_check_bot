@@ -20,7 +20,8 @@ from bot.core.messenger import DeliveryFailed
 
 class ThrottleMiddleware(BaseMiddleware):
     def __init__(self, interval: float, notice: Callable[[str | None], str],
-                send_notice: Callable[[int, str], Awaitable[object]], clock: Callable[[], float] = time.monotonic):
+                send_notice: Callable[[int, str | None], Awaitable[object]],
+                clock: Callable[[], float] = time.monotonic):
         self._interval = interval
         self._notice = notice
         self._send_notice = send_notice
@@ -52,11 +53,10 @@ class ThrottleMiddleware(BaseMiddleware):
                 await event.answer()
             return
         self._last_notice[user_id] = now
-        text = self._notice(language_code)
         if isinstance(event, CallbackQuery):
-            await event.answer(text)
+            await event.answer(self._notice(language_code))
         elif isinstance(event, Message):
-            await self._send_notice(event.chat.id, text)
+            await self._send_notice(event.chat.id, language_code)
 
     def _forget_old(self, now: float) -> None:
         for moments in (self._last_event, self._last_notice):

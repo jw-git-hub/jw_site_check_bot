@@ -45,32 +45,37 @@ class FakeClock:
 class FakeMessenger:
     """Запоминает отправленное и исправленное. gone — удалённые сообщения, blocked — чаты, где бот заблокирован.
 
+    sent — (chat_id, rich_message, reply_markup), edited — (chat_id, message_id, rich_message, reply_markup):
+    клавиатура — последним элементом, чтобы старые проверки по индексу текста не ломались (задача 23a).
+
     history — и отправленное, и исправленное, в хронологическом порядке (только успешная доставка),
     чтобы last() возвращал действительно последнее сообщение, а не последнюю правку.
     """
 
     def __init__(self) -> None:
-        self.sent: list[tuple[int, dict[str, Any]]] = []
-        self.edited: list[tuple[int, int, dict[str, Any]]] = []
+        self.sent: list[tuple[int, dict[str, Any], dict[str, Any] | None]] = []
+        self.edited: list[tuple[int, int, dict[str, Any], dict[str, Any] | None]] = []
         self.history: list[dict[str, Any]] = []
         self.gone: set[int] = set()
         self.blocked: set[int] = set()
         self._next_id = 100
 
-    async def send(self, chat_id: int, rich_message: dict[str, Any]) -> int:
+    async def send(self, chat_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> int:
         if chat_id in self.blocked:
             raise DeliveryFailed(BLOCKED_TEXT)
         self._next_id += 1
-        self.sent.append((chat_id, rich_message))
+        self.sent.append((chat_id, rich_message, reply_markup))
         self.history.append(rich_message)
         return self._next_id
 
-    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any]) -> None:
+    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> None:
         if chat_id in self.blocked:
             raise DeliveryFailed(BLOCKED_TEXT)
         if message_id in self.gone:
             raise MessageGone("message to edit not found")
-        self.edited.append((chat_id, message_id, rich_message))
+        self.edited.append((chat_id, message_id, rich_message, reply_markup))
         self.history.append(rich_message)
 
     def last(self) -> str:
@@ -88,8 +93,6 @@ def _inline(value: Any) -> str:
         return value
     if isinstance(value, list):
         return "".join(_inline(item) for item in value)
-    if value.get("type") == "button":
-        return f"[{_inline(value['button']['text'])}]"
     return _inline(value.get("text", ""))
 
 

@@ -19,6 +19,7 @@ class SendRichDict(TelegramMethod[Message]):
 
     chat_id: int
     rich_message: dict[str, Any]
+    reply_markup: dict[str, Any] | None = None
 
 
 class EditRichDict(TelegramMethod[Message | bool]):
@@ -28,6 +29,7 @@ class EditRichDict(TelegramMethod[Message | bool]):
     chat_id: int
     message_id: int
     rich_message: dict[str, Any]
+    reply_markup: dict[str, Any] | None = None
 
 
 class MessageGone(Exception):
@@ -39,25 +41,31 @@ class DeliveryFailed(Exception):
 
 
 class Messenger(Protocol):
-    async def send(self, chat_id: int, rich_message: dict[str, Any]) -> int: ...
+    async def send(self, chat_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> int: ...
 
-    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any]) -> None: ...
+    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> None: ...
 
 
 class AiogramMessenger:
     def __init__(self, bot: Bot):
         self._bot = bot
 
-    async def send(self, chat_id: int, rich_message: dict[str, Any]) -> int:
+    async def send(self, chat_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> int:
         try:
-            sent = await self._bot(SendRichDict(chat_id=chat_id, rich_message=rich_message))
+            sent = await self._bot(SendRichDict(chat_id=chat_id, rich_message=rich_message,
+                                                reply_markup=reply_markup))
         except TelegramAPIError as error:
             raise DeliveryFailed(str(error)) from None
         return sent.message_id
 
-    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any]) -> None:
+    async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any],
+                   reply_markup: dict[str, Any] | None = None) -> None:
         try:
-            await self._bot(EditRichDict(chat_id=chat_id, message_id=message_id, rich_message=rich_message))
+            await self._bot(EditRichDict(chat_id=chat_id, message_id=message_id, rich_message=rich_message,
+                                         reply_markup=reply_markup))
         except TelegramBadRequest as error:
             _raise_edit_problem(str(error).lower())
         except TelegramAPIError as error:
@@ -72,10 +80,11 @@ def _raise_edit_problem(description: str) -> None:
     raise MessageGone(description)
 
 
-async def edit_or_send(messenger: Messenger, chat_id: int, message_id: int, rich_message: dict[str, Any]) -> int:
+async def edit_or_send(messenger: Messenger, chat_id: int, message_id: int, rich_message: dict[str, Any],
+                       reply_markup: dict[str, Any] | None = None) -> int:
     """Правит сообщение, а если его нет — шлёт новое. Возвращает id сообщения, где теперь текст."""
     try:
-        await messenger.edit(chat_id, message_id, rich_message)
+        await messenger.edit(chat_id, message_id, rich_message, reply_markup)
         return message_id
     except MessageGone:
-        return await messenger.send(chat_id, rich_message)
+        return await messenger.send(chat_id, rich_message, reply_markup)

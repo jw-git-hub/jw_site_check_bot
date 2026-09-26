@@ -4,7 +4,7 @@ from bot.core import rich
 
 
 def test_header_is_monospace_console_line():
-    assert rich.header("site-check") == {"type": "paragraph", "text": [{"type": "code", "text": ">jw_ ~/site-check"}]}
+    assert rich.header("site-check") == {"type": "paragraph", "text": [{"type": "code", "text": ">jw ~/site-check_"}]}
 
 
 def test_footer_links_site_and_username_in_monospace():
@@ -13,11 +13,15 @@ def test_footer_links_site_and_username_in_monospace():
     assert parts[2]["url"] == "https://t.me/jw_dev_pro"
 
 
-def test_pills_are_separated_and_keep_style():
-    block = rich.pills(rich.pill_url("A", "https://a.example"), rich.pill_callback("B", "again", "primary"))
-    assert block["text"][1] == rich.PILL_GAP
-    assert block["text"][2]["button"] == {"text": "B", "callback_data": "again", "style": "primary"}
-    assert "style" not in block["text"][0]["button"]
+def test_button_url_and_callback_keep_style():
+    assert rich.button_url("A", "https://a.example") == {"text": "A", "url": "https://a.example"}
+    assert rich.button_callback("B", "again", "primary") == {"text": "B", "callback_data": "again",
+                                                             "style": "primary"}
+
+
+def test_keyboard_puts_one_button_per_row():
+    a, b = rich.button_url("A", "https://a.example"), rich.button_callback("B", "again")
+    assert rich.keyboard(a, b) == {"inline_keyboard": [[a], [b]]}
 
 
 def test_table_marks_first_row_and_aligns_every_cell():

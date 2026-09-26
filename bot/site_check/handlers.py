@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TypeVar
 
 from aiogram import F, Router
 from aiogram.exceptions import TelegramAPIError
@@ -39,6 +40,7 @@ RETRY_DELAY_SECONDS = 2  # 1–3 с — доставка итога повтор
 DELIVERY_ATTEMPTS = 2  # первая попытка плюс одна повторная
 
 router = Router(name="site_check")
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -85,7 +87,7 @@ class Intake:
         user = await self._users.touch(incoming.user_id, incoming.language_code)
         parsed = parse_input(incoming.text, incoming.entity_urls)
         if isinstance(parsed, Rejection):
-            await self._refuse(incoming.chat_id, user, None, parsed.code, self._rejection_message(user, parsed))
+            await self._refuse(incoming.chat_id, user, None, parsed.code, *self._rejection_message(user, parsed))
             return
         refusal = await self._refusal(user, parsed)
         if refusal:
@@ -95,33 +97,34 @@ class Intake:
 
     async def handle_not_text(self, user_id: int, chat_id: int, language_code: str | None) -> None:
         user = await self._users.touch(user_id, language_code)
-        message = replies.failure(self._texts, user.lang, self._brand, NOT_TEXT)
+        message = replies.failure(self._texts, user.lang, NOT_TEXT)
         await self._refuse(chat_id, user, None, NOT_TEXT, message)
 
-    def _rejection_message(self, user: User, rejection: Rejection) -> dict:
+    def _rejection_message(self, user: User, rejection: Rejection) -> tuple[dict, dict | None]:
         if rejection.code == SOCIAL:
             return replies.social(self._texts, user.lang, self._brand, rejection.platform)
-        return replies.failure(self._texts, user.lang, self._brand, rejection.code)
+        return replies.failure(self._texts, user.lang, rejection.code), None
 
     async def _refusal(self, user: User, target: Target) -> tuple[str, dict] | None:
         busy_with = self._queue.busy_display(user.user_id)
         if busy_with:
-            return BUSY, replies.busy(self._texts, user.lang, self._brand, busy_with)
+            return BUSY, replies.busy(self._texts, user.lang, busy_with)
         decision = await self._limits.decide(user.user_id)
         if decision.code == LIMIT_USER:
             limit = self._settings.user_daily_limit
-            return LIMIT_USER, replies.limit_user(self._texts, user.lang, self._brand, limit, decision.hours_left)
+            return LIMIT_USER, replies.limit_user(self._texts, user.lang, limit, decision.hours_left)
         if decision.code == LIMIT_GLOBAL:
             checks = self._texts.count("ru", self._settings.global_daily_limit, "check")
             await self._notifier.notify(LIMIT_GLOBAL, "notify_global_limit", DAY, checks=checks)
-            return LIMIT_GLOBAL, replies.failure(self._texts, user.lang, self._brand, LIMIT_GLOBAL)
+            return LIMIT_GLOBAL, replies.failure(self._texts, user.lang, LIMIT_GLOBAL)
         if self._queue.is_full():
-            return QUEUE_FULL, replies.failure(self._texts, user.lang, self._brand, QUEUE_FULL)
+            return QUEUE_FULL, replies.failure(self._texts, user.lang, QUEUE_FULL)
         return None
 
-    async def _refuse(self, chat_id: int, user: User, target: Target | None, code: str, message: dict) -> None:
+    async def _refuse(self, chat_id: int, user: User, target: Target | None, code: str, message: dict,
+                      keyboard: dict | None = None) -> None:
         try:
-            await self._messenger.send(chat_id, message)
+            await self._messenger.send(chat_id, message, keyboard)
         except DeliveryFailed as error:
             logger.warning("отказ не доставлен: {}", error)
         new = NewCheck(user.user_id, user.last_source, target, FAILED, code)
@@ -157,15 +160,15 @@ class Intake:
 
     def _status(self, user: User, target: Target, ahead: int) -> dict:
         if ahead == 0:
-            return replies.checking(self._texts, user.lang, self._brand, target.display)
-        return replies.queued(self._texts, user.lang, self._brand, ahead, self._queue.estimate_minutes(ahead))
+            return replies.checking(self._texts, user.lang, target.display)
+        return replies.queued(self._texts, user.lang, ahead, self._queue.estimate_minutes(ahead))
 
     async def _queue_overflow(self, job: CheckJob) -> None:
         """Очередь заполнилась между reserve и submit: запись закрывается первой, доставка отказа — best
         effort — release места делает единственный вызывающий, `_enqueue`."""
         if job.check_id:
             await best_effort(self._repo.finish_failed(job.check_id, QUEUE_FULL, charged=False), "очередь полна", None)
-        message = replies.failure(self._texts, job.lang, self._brand, QUEUE_FULL)
+        message = replies.failure(self._texts, job.lang, QUEUE_FULL)
         try:
             await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
         except DeliveryFailed as error:
@@ -200,7 +203,7 @@ class CheckRunner:
         if job.check_id:
             await best_effort(self._repo.mark_running(job.check_id), "начало проверки", None)
         if job.was_queued:
-            await self._show(job, replies.checking(self._texts, job.lang, self._brand, job.target.display))
+            await self._show(job, replies.checking(self._texts, job.lang, job.target.display))
 
     async def _show(self, job: CheckJob, message: dict) -> None:
         """Статус «Проверяю…»: без повторной попытки — свежий статус важнее старого."""
@@ -209,12 +212,14 @@ class CheckRunner:
         except DeliveryFailed as error:
             logger.warning("сообщение проверки {} не доставлено: {}", job.check_id, error)
 
-    async def _deliver(self, job: CheckJob, message: dict) -> None:
+    async def _deliver(self, job: CheckJob, message: dict, keyboard: dict | None = None) -> None:
         """Итог (отчёт или отказ) — до двух попыток с паузой между ними; не прошли обе — один раз в журнал.
-        Одна функция на оба случая (отчёт и отказ) — они доставляются одинаково."""
+        Одна функция на оба случая (отчёт и отказ) — они доставляются одинаково. У отчёта есть клавиатура
+        (задача 23a), у отказа — нет: правка «Проверяю…» ставит клавиатуру отчёта, а если правка не прошла —
+        новое сообщение уходит с той же клавиатурой (`edit_or_send` несёт её в обоих случаях)."""
         for attempt in range(1, DELIVERY_ATTEMPTS + 1):
             try:
-                job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
+                job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message, keyboard)
                 return
             except DeliveryFailed as error:
                 if attempt == DELIVERY_ATTEMPTS:
@@ -222,7 +227,7 @@ class CheckRunner:
                 else:
                     await asyncio.sleep(RETRY_DELAY_SECONDS)
 
-    def _safe_message(self, build: Callable[[], dict]) -> dict | None:
+    def _safe_message(self, build: Callable[[], T]) -> T | None:
         """Сборка сообщения — тоже под защитой: неожиданное сочетание находок не должно ронять воркер
         и оставлять человека со статусом «Проверяю…» навсегда."""
         try:
@@ -234,22 +239,23 @@ class CheckRunner:
     async def _finish_done(self, job: CheckJob, result: CheckResult) -> None:
         request = ReportRequest(job.target.display, job.target.display_host, result.verdict, result.page,
                                 result.security, job.is_admin, self._clock.now())
-        message = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
-        if message is None:
+        built = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
+        if built is None:
             # Сбой сборки отчёта (ТЗ Л9) — наша сторона, а не сайта, замер не в счёт.
             await self._finish_failed(job, CheckFailed(MEASURE_FAILED, reached_measurement=False))
             return
-        await self._deliver(job, message)
+        message, keyboard = built
+        await self._deliver(job, message, keyboard)
         self._limits.remember_charge(job.user_id)
         if job.check_id:
             await best_effort(self._repo.finish_done(job.check_id, result), "итог проверки", None)
         await self._notify_missing_audits(result)
 
     async def _finish_failed(self, job: CheckJob, failure: CheckFailed) -> None:
-        message = self._safe_message(lambda: replies.failure(self._texts, job.lang, self._brand, failure.code,
+        message = self._safe_message(lambda: replies.failure(self._texts, job.lang, failure.code,
                                                               status=failure.page_status, site=job.target.display))
         if message is None:
-            message = replies.failure(self._texts, job.lang, self._brand, MEASURE_FAILED)
+            message = replies.failure(self._texts, job.lang, MEASURE_FAILED)
         await self._deliver(job, message)
         if failure.charged:
             self._limits.remember_charge(job.user_id)
@@ -278,10 +284,9 @@ class CheckRunner:
 
 
 @router.message(F.text.startswith(COMMAND_PREFIX))
-async def on_unknown_command(message: Message, users: Users, messenger: Messenger, texts: Texts,
-                             brand: Brand) -> None:
+async def on_unknown_command(message: Message, users: Users, messenger: Messenger, texts: Texts) -> None:
     user = await users.touch(message.from_user.id, message.from_user.language_code)
-    await messenger.send(message.chat.id, replies.again(texts, user.lang, brand))
+    await messenger.send(message.chat.id, replies.again(texts, user.lang))
 
 
 @router.message(F.text | F.caption)
@@ -295,9 +300,9 @@ async def on_other(message: Message, intake: Intake) -> None:
 
 
 @router.callback_query(F.data == AGAIN_CALLBACK)
-async def on_again(callback: CallbackQuery, users: Users, messenger: Messenger, texts: Texts, brand: Brand) -> None:
+async def on_again(callback: CallbackQuery, users: Users, messenger: Messenger, texts: Texts) -> None:
     # Устаревшее нажатие («Проверить другой сайт» на старом отчёте) не должно ронять обработчик.
     with contextlib.suppress(TelegramAPIError):
         await callback.answer()
     user = await users.touch(callback.from_user.id, callback.from_user.language_code)
-    await messenger.send(callback.message.chat.id, replies.again(texts, user.lang, brand))
+    await messenger.send(callback.message.chat.id, replies.again(texts, user.lang))

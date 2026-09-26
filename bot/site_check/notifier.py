@@ -4,7 +4,7 @@ import math
 from loguru import logger
 
 from bot.core.clock import Clock
-from bot.core.commands import Brand, simple_message
+from bot.core.commands import simple_message
 from bot.core.i18n import Lang, Texts
 from bot.core.messenger import DeliveryFailed, Messenger
 
@@ -15,12 +15,11 @@ ONCE = math.inf  # один раз за жизнь процесса: после 
 
 
 class Notifier:
-    def __init__(self, messenger: Messenger, admin_id: int, clock: Clock, texts: Texts, brand: Brand):
+    def __init__(self, messenger: Messenger, admin_id: int, clock: Clock, texts: Texts):
         self._messenger = messenger
         self._admin_id = admin_id
         self._clock = clock
         self._texts = texts
-        self._brand = brand
         self._last: dict[str, float] = {}
 
     async def notify(self, kind: str, key: str, period: float, **params: object) -> None:
@@ -30,7 +29,7 @@ class Notifier:
             return
         self._last[kind] = now
         # То же служебное сообщение, что и у остальных команд, — не своя копия сборки.
-        message = simple_message(self._brand, self._texts.get(OWNER_LANG, key, **params))
+        message = simple_message(self._texts, OWNER_LANG, self._texts.get(OWNER_LANG, key, **params))
         try:
             await self._messenger.send(self._admin_id, message)
         except DeliveryFailed as error:
