@@ -10,8 +10,8 @@ from bot.core.clock import Clock
 from bot.site_check.lighthouse import AuditState, PageFacts, parse_lighthouse
 from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
                                       classify)
-from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes, measure,
-                                  resolve_target)
+from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes,
+                                  check_tls_within_budget, measure, resolve_target)
 from bot.site_check.tls_check import HTTPS_PREFIX, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import Target, to_ascii_host
 from bot.site_check.verdict import TLS_INVALID, SecurityFacts, Verdict, judge
@@ -131,8 +131,17 @@ class Pipeline:
         try:
             tls, redirects = await asyncio.wait_for(checks, AFTER_TIMEOUT_SECONDS)
         except TimeoutError:
-            tls, redirects = _known(before.tls), ()
+            tls, redirects = self._after_timeout_tls(before.tls, final_host, target.host, page), ()
         return SecurityFacts(tls=tls, redirects=redirects, insecure_urls=page.insecure_urls)
+
+    def _after_timeout_tls(self, first_tls: TlsFacts | None, final_host: str | None, submitted_host: str,
+                           page: PageFacts) -> tuple[TlsFacts, ...]:
+        """Срок после замера вышел раньше своих проверок — используем то, что знали до замера, но не возвращаем
+        NO_HTTPS, которую PageSpeed уже опроверг (обзор задачи 14, раунд 2, требование (б); тот же признак, что
+        и в `_recheck_if_pagespeed_disagrees` ниже)."""
+        if _pagespeed_contradicts_no_https(first_tls, final_host, submitted_host, page):
+            return ()
+        return _known(first_tls)
 
     async def _after_checks(self, submitted_host: str, final_host: str | None, first_tls: TlsFacts | None,
                             page: PageFacts) -> tuple[tuple[TlsFacts, ...], tuple[RedirectState, ...]]:
@@ -154,11 +163,22 @@ class Pipeline:
         """Своя проверка до замера сказала NO_HTTPS для этого хоста (443 не ответил нам), а PageSpeed (настоящий
         браузер) на самом деле открыл https на том же хосте — свежая проверка важнее устаревшей (обзор задачи 14,
         находка 3). Другой хост (переадресация) сюда не попадает — там уже есть Finding.HTTPS_AFTER_REDIRECT.
+
+        Свой срок — тот же, что у TLS-проверки до замера (probe.check_tls_within_budget), не второй wait_for:
+        раунд 2 обзора, требование (а). Не дождались — свежий исход «обрыв соединения», как и до замера.
         """
-        same_host_https = final_host == submitted_host and page.final_url.startswith(HTTPS_PREFIX)
-        if first_tls is None or first_tls.outcome is not TlsOutcome.NO_HTTPS or not same_host_https:
+        if not _pagespeed_contradicts_no_https(first_tls, final_host, submitted_host, page):
             return first_tls
-        return await self._probes.check_tls(submitted_host)
+        return await check_tls_within_budget(submitted_host, self._probes)
+
+
+def _pagespeed_contradicts_no_https(first_tls: TlsFacts | None, final_host: str | None, submitted_host: str,
+                                    page: PageFacts) -> bool:
+    """PageSpeed (настоящий браузер) открыл https на том же хосте, для которого своя проверка сказала NO_HTTPS —
+    эту находку нельзя ни использовать как исход перепроверки, ни вернуть обратно при таймауте после замера
+    (обзор задачи 14: находка 3 в раунде 1, требование (б) в раунде 2 — один признак для обоих мест)."""
+    return (first_tls is not None and first_tls.outcome is TlsOutcome.NO_HTTPS
+           and final_host == submitted_host and page.final_url.startswith(HTTPS_PREFIX))
 
 
 def _known(tls: TlsFacts | None) -> tuple[TlsFacts, ...]:

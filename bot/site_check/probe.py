@@ -88,15 +88,16 @@ async def probe(target: Target, probes: SiteProbes) -> ProbeResult:
 
 async def measure(target: Target, probes: SiteProbes) -> ProbeResult:
     """https или http — когда имя уже проверено (после resolve_target)."""
-    tls = await _check_tls_within_budget(target.host, probes)
+    tls = await check_tls_within_budget(target.host, probes)
     if target.scheme_given or (tls and tls.outcome not in UNREACHABLE_TLS):
         return ProbeResult(target.url, tls)
     return await _fall_back_to_http(target, probes)
 
 
-async def _check_tls_within_budget(host: str, probes: SiteProbes) -> TlsFacts | None:
-    """Не дождались за свой срок — считаем как явный обрыв соединения, а не тратим на него весь бюджет
-    «до замера»: дальше решит проверка порта 80 (обзор задачи 14, находка 1)."""
+async def check_tls_within_budget(host: str, probes: SiteProbes) -> TlsFacts | None:
+    """Не дождались за свой срок — считаем как явный обрыв соединения, а не тратим на него весь бюджет времени,
+    в который эта проверка вписана: до замера — на проверку порта 80 (находка 1), после замера — на перепроверку
+    устаревшей NO_HTTPS (обзор задачи 14, раунд 2) — обе стороны используют одну и ту же обёртку, не по копии."""
     try:
         return await asyncio.wait_for(probes.check_tls(host), TLS_CHECK_TIMEOUT_SECONDS)
     except TimeoutError:

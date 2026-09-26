@@ -390,3 +390,55 @@ async def test_different_host_redirect_keeps_https_after_redirect_finding():
     security = result.verdict.blocks[Block.SECURITY]
     assert [item.finding for item in security.findings] == [Finding.HTTPS_AFTER_REDIRECT]
     assert security.grade is Grade.FIX
+
+
+# --- Обзор задачи 14, раунд 2: перепроверка находки 3 не должна сама съедать бюджет «после замера» ---
+
+async def test_same_host_recheck_that_hangs_does_not_reinstate_no_https(monkeypatch):
+    """Требование (а) обзора: перепроверка после замера использует тот же короткий срок TLS-проверки, что и
+    до замера (probe.py), — иначе зависший check_tls дотянул бы до внешнего AFTER_TIMEOUT_SECONDS."""
+    monkeypatch.setattr(probe_module, "TLS_CHECK_TIMEOUT_SECONDS", 0.02)
+
+    class HangingRecheckProbes(FakeProbes):
+        async def check_tls(self, host):
+            self.calls.append(("tls", host))
+            await asyncio.sleep(0.05)
+            raise AssertionError("перепроверка не должна была дождаться ответа — сработать должен свой срок")
+
+    probes = HangingRecheckProbes(redirects={"site.test": RedirectState.REDIRECTS})
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://site.test/", **PAGE_AUDITS))
+    result = await Pipeline(probes, pagespeed, FakeClock()).run(target())
+    findings = [item.finding for item in result.verdict.blocks[Block.SECURITY].findings]
+    assert Finding.NO_HTTPS not in findings
+    security = result.verdict.blocks[Block.SECURITY]
+    assert (security.grade, security.unknown_reason) == (Grade.UNKNOWN, UnknownReason.OWN_CHECKS_FAILED)
+
+
+async def test_after_timeout_does_not_reinstate_a_contradicted_no_https(monkeypatch):
+    """Требование (б) обзора: даже если после успешной перепроверки зависнет что-то другое (здесь — вторая
+    проверка переадресации) и сработает внешний AFTER_TIMEOUT_SECONDS, устаревшую NO_HTTPS, которую PageSpeed уже
+    опроверг, нельзя возвращать обратно — откат должен использовать тот же признак «PageSpeed не согласен»."""
+    monkeypatch.setattr(pipeline_module, "AFTER_TIMEOUT_SECONDS", 0.02)
+
+    class HangingSecondRedirectProbes(FakeProbes):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._redirect_calls = 0
+
+        async def check_tls(self, host):
+            self.calls.append(("tls", host))
+            return TlsFacts(host, TlsOutcome.CONNECT_FAILED)
+
+        async def check_redirect(self, host):
+            self._redirect_calls += 1
+            self.calls.append(("redirect", host))
+            if self._redirect_calls == 1:
+                return RedirectState.REDIRECTS
+            await asyncio.sleep(0.05)
+            raise AssertionError("вторая проверка переадресации (после замера) не должна была дождаться ответа")
+
+    probes = HangingSecondRedirectProbes()
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://site.test/", **PAGE_AUDITS))
+    result = await Pipeline(probes, pagespeed, FakeClock()).run(target())
+    findings = [item.finding for item in result.verdict.blocks[Block.SECURITY].findings]
+    assert Finding.NO_HTTPS not in findings
