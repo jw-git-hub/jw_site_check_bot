@@ -46,6 +46,12 @@ def test_typo_in_key_name_is_refused():
         load_settings(Settings, {**VALID, "USER_DAILY_LIMT": "5"})
 
 
+@pytest.mark.parametrize("field", ["USER_DAILY_LIMIT", "GLOBAL_DAILY_LIMIT", "CHECK_WORKERS", "QUEUE_MAX"])
+def test_non_positive_queue_numbers_are_refused(field):
+    with pytest.raises(ConfigError, match=field.lower()):
+        load_settings(Settings, {**VALID, field: "0"})
+
+
 def test_log_level_is_case_insensitive():
     settings = load_settings(Settings, {**VALID, "LOG_LEVEL": "info"})
     assert settings.log_level == "INFO"
