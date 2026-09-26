@@ -73,6 +73,8 @@ remote_or_fail "test -f $FOLDER/.env" "нет .env на сервере — со�
 remote_or_fail "test \"\$(stat -c %u $FOLDER/data)\" = $CONTAINER_UID" \
   "папка data на сервере — не у пользователя $CONTAINER_UID (docs/эксплуатация.md)" >/dev/null
 remote_or_fail "cd $FOLDER && test -z \"\$(git status --porcelain)\"" "на сервере есть правки в рабочей копии" >/dev/null
+remote_or_fail "systemctl is-active --quiet jw-site-check-guard.service" \
+  "изоляция сети не включена — на сервере: sudo deploy/firewall.sh" >/dev/null
 
 # Снимок для отката: коммит, который сейчас на сервере, и был ли там вообще контейнер (docker compose
 # ps -a — включая остановленный). Если нет — это первая выкладка, откатывать в случае беды некуда.

@@ -126,7 +126,7 @@ def test_odd_characters_in_host_are_refused_not_crashed(url):
     rejection(url, [url])
 
 
-# --- Задача 14, обзор («находка 2»): один перевод хоста в ASCII, переиспользуется в pipeline.py и verdict.py ---
+# --- Один перевод хоста в ASCII, переиспользуется в pipeline.py и verdict.py, без второй копии ---
 
 @pytest.mark.parametrize(("host", "ascii_host"), [
     ("site.test", "site.test"), ("пример.рф", "xn--e1afmkfd.xn--p1ai"), ("XN--E1AFMKFD.test", "xn--e1afmkfd.test"),

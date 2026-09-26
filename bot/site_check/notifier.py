@@ -29,7 +29,7 @@ class Notifier:
         if last is not None and now - last < period:
             return
         self._last[kind] = now
-        # Поправка 2 к задаче 17: то же служебное сообщение, что и у остальных команд — не своя копия сборки.
+        # То же служебное сообщение, что и у остальных команд, — не своя копия сборки.
         message = simple_message(self._brand, self._texts.get(OWNER_LANG, key, **params))
         try:
             await self._messenger.send(self._admin_id, message)

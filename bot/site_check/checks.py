@@ -2,7 +2,7 @@
 
 Пользователь должен быть в базе до записи проверки: `checks.user_id` ссылается на `users(user_id)`, внешние ключи
 включены на каждом соединении (bot/core/db.py). `create` сам его не создаёт — это обязанность вызывающего
-(вызвать `Users.touch` раньше), контракт закреплён тестом на ошибку целостности (поправки 2 и 3 к задаче 15).
+(вызвать `Users.touch` раньше), контракт закреплён тестом на ошибку целостности.
 """
 import json
 from dataclasses import dataclass
@@ -28,7 +28,7 @@ SUMMARY_CODES = {SummaryKind.ALL_GOOD: "ok", SummaryKind.GOOD_WITH_UNKNOWN: "ok"
                  SummaryKind.HAS_BAD: "bad", SummaryKind.CERT_BLOCKS: "bad"}
 GRADE_COLUMNS = ("grade_speed", "grade_mobile", "grade_security", "grade_images")
 
-# Поправка 1 к задаче 15: статусы — только параметрами запроса, литералов вроде 'queued' в SQL не остаётся.
+# Статусы — только параметрами запроса, литералов вроде 'queued' в SQL не остаётся.
 INSERT_CHECK = """
 INSERT INTO checks (user_id, source, domain, url, status, error_code, chat_id, message_id, created_at)
 VALUES (:user_id, :source, :domain, :url, :status, :error_code, :chat_id, :message_id, :now) RETURNING id"""

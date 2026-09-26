@@ -19,7 +19,7 @@ from bot.site_check.net_guard import StreamOpener
 HTTPS_PORT = 443
 HTTP_PORT = 80
 # Второе (непроверенное) соединение за датой сертификата — свой короткий срок: первое уже потратило часть
-# бюджета «до замера», зависшее второе не должно съедать его целиком (задача 14, поправка 6).
+# бюджета «до замера», зависшее второе не должно съедать его целиком.
 UNVERIFIED_CERT_TIMEOUT_SECONDS = 3
 HEADER_END = b"\r\n\r\n"
 REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
@@ -206,7 +206,7 @@ def _header(lines: list[str], name: str) -> str:
 
 async def close_quietly(writer: asyncio.StreamWriter) -> None:
     """Закрывает без ожидания подтверждения: `wait_closed()` может держать несколько секунд, а это время
-    входит в бюджет «до замера» — ждать его незачем, нужный ответ уже прочитан (задача 14, поправка 6)."""
+    входит в бюджет «до замера» — ждать его незачем, нужный ответ уже прочитан."""
     transport = writer.transport
     if transport is None:
         writer.close()

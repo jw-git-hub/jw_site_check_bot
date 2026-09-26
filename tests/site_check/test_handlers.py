@@ -33,7 +33,7 @@ FIRST_MESSAGE_ID = 101  # FakeMessenger нумерует с 101
 
 @pytest.fixture(autouse=True)
 def _no_real_retry_delay(monkeypatch):
-    """Поправка 4: пауза перед второй попыткой — настоящая в проде, в тестах ждать нечего."""
+    """Пауза перед второй попыткой — настоящая в проде, в тестах ждать нечего."""
     monkeypatch.setattr(handlers, "RETRY_DELAY_SECONDS", 0)
 
 
@@ -188,11 +188,8 @@ def test_entity_urls_take_links_and_text_links():
     assert entity_urls(message_text, entities) == ["example.com", "https://site.org/page"]
 
 
-# --- Поправки к задаче 17 (task-17-carries.md) ---
-
-
 async def test_service_down_before_measurement_only_logs_no_owner_notice(world):
-    """Поправка 1: сбой на своей стороне до замера (свой DNS) не выдаётся владельцу за сбой PageSpeed."""
+    """Сбой на своей стороне до замера (свой DNS) не выдаётся владельцу за сбой PageSpeed."""
     world.pipeline.outcomes["example.com"] = CheckFailed("service_down", reached_measurement=False, reason="dns")
     await world.intake.handle_text(link("example.com"))
     await settle(world)
@@ -201,10 +198,10 @@ async def test_service_down_before_measurement_only_logs_no_owner_notice(world):
 
 
 async def test_broken_report_builder_does_not_leave_checking_forever(world, monkeypatch):
-    """Поправка 3: сборка отчёта упала — человек получает measure_failed, а не «Проверяю…» навсегда.
+    """Сборка отчёта упала — человек получает measure_failed, а не «Проверяю…» навсегда.
 
-    Раунд ревью 1, находка 3 (ТЗ Л9): сбой на нашей стороне (отчёт не собрался, хотя замер прошёл) не
-    списывается — как и другие «наши» сбои (service_down)."""
+    Сбой на нашей стороне (отчёт не собрался, хотя замер прошёл, ТЗ Л9) не списывается — как и другие
+    «наши» сбои (service_down)."""
     def boom(*args, **kwargs):
         raise RuntimeError("отчёт не собрался")
 
@@ -216,7 +213,7 @@ async def test_broken_report_builder_does_not_leave_checking_forever(world, monk
 
 
 async def test_final_message_delivery_recovers_after_one_retry(db, settings):
-    """Поправка 4: доставка итога проваливается один раз — вторая попытка проходит."""
+    """Доставка итога проваливается один раз — вторая попытка проходит."""
     inner = FakeMessenger()
 
     class FlakyOnce:
@@ -244,15 +241,15 @@ async def test_final_message_delivery_recovers_after_one_retry(db, settings):
 
 
 async def test_new_user_not_text_refusal_is_recorded(world):
-    """Поправка 7: touch() отмечает человека раньше записи отказа — иначе внешний ключ уронил бы вставку,
-    а best_effort тихо проглотил бы ошибку, не оставив в checks ничего."""
+    """touch() отмечает человека раньше записи отказа — иначе внешний ключ уронил бы вставку, а best_effort
+    тихо проглотил бы ошибку, не оставив в checks ничего."""
     new_user_id = 555
     await world.intake.handle_not_text(new_user_id, new_user_id, "ru")
     assert await rows(world.db, "SELECT status, error_code FROM checks") == [("failed", "not_text")]
 
 
 async def test_on_again_survives_a_stale_callback(db):
-    """Поправка 5: нажатие устаревшей кнопки не должно ронять обработчик."""
+    """Нажатие устаревшей кнопки не должно ронять обработчик."""
     users, messenger = Users(db, FakeClock()), FakeMessenger()
     stale_answer = TelegramBadRequest(method=AnswerCallbackQuery(callback_query_id="1"), message="query is too old")
     bot = fake_bot({"answerCallbackQuery": stale_answer})
@@ -262,7 +259,7 @@ async def test_on_again_survives_a_stale_callback(db):
 
 
 async def test_reservation_is_released_when_building_status_fails(world, monkeypatch):
-    """Поправка 9: любой сбой между reserve и удачным submit освобождает место, ошибка идёт дальше."""
+    """Любой сбой между reserve и удачным submit освобождает место, ошибка идёт дальше."""
     def boom(*args, **kwargs):
         raise RuntimeError("статус не собрался")
 
@@ -273,12 +270,12 @@ async def test_reservation_is_released_when_building_status_fails(world, monkeyp
 
 
 async def test_queue_overflow_with_delivery_failure_releases_reservation_once(world, monkeypatch):
-    """Раунд ревью 1, находка 1: переполнение очереди — release только один. В брифе `_queue_overflow`
-    освобождала место сама, а `edit_or_send` мог бросить DeliveryFailed до `finish_failed` — запись оставалась
-    «queued», исключение уходило в `_enqueue`, и там срабатывал второй release. Между двумя release есть await:
-    если за это время тот же человек забронировал бы место заново, второй release стёр бы уже чужую, свежую
-    бронь (ТЗ Л2 — две проверки разом). Теперь release — один раз, в `_enqueue`, после того как `_start`
-    вернёт, встала ли работа в очередь.
+    """Переполнение очереди — release только один. Если бы `_queue_overflow` освобождала место сама, а
+    `edit_or_send` бросил DeliveryFailed до `finish_failed`, запись осталась бы «queued», исключение ушло бы
+    в `_enqueue`, и там сработал бы второй release. Между двумя release есть await: если за это время тот же
+    человек забронировал бы место заново, второй release стёр бы уже чужую, свежую бронь (ТЗ Л2 — две проверки
+    разом). Поэтому release — один раз, в `_enqueue`, после того как `_start` вернёт, встала ли работа в
+    очередь.
 
     Переполнение задаём напрямую (подменяем `submit`/`is_full` очереди), а не гоняясь за настоящей ёмкостью:
     `_refusal` сама отказывает раньше `_enqueue`, если очередь уже полна — нужен именно случай, когда полна
@@ -314,7 +311,7 @@ async def test_queue_overflow_with_delivery_failure_releases_reservation_once(wo
     assert world.queue.busy_display(overflow_user) == "новая бронь"
 
 
-# Поправка 6: список кодов исходов — из констант самих модулей, не переписан строками заново.
+# Список кодов исходов — из констант самих модулей, не переписан строками заново.
 _CLASSIFY_CODES = set(ERROR_CODES.values()) - {CERT_BLOCKS}
 _PAGE_STATUS_CODES = {classify(LighthouseFailure(ERRORED_DOCUMENT, status))
                       for status in (*BLOCKED_STATUSES, NOT_FOUND_STATUS, FIRST_SERVER_ERROR)}
@@ -328,8 +325,8 @@ PRODUCIBLE_FAILURE_CODES = sorted(_CLASSIFY_CODES | _PAGE_STATUS_CODES | _PROBE_
 @pytest.mark.parametrize("lang", ["ru", "en"])
 @pytest.mark.parametrize("code", PRODUCIBLE_FAILURE_CODES)
 def test_every_producible_failure_code_has_a_reply(code, lang):
-    # Раунд ревью 1, находка 2: без этой строки тест не мог упасть — failure() тихо подменяет неизвестный код
-    # на measure_failed, и "{" not in text была бы верна для любого кода, даже для не заведённого текста.
+    # Без этой строки тест не мог бы упасть: failure() тихо подменяет неизвестный код на measure_failed,
+    # и "{" not in text была бы верна для любого кода, даже для не заведённого текста.
     assert code in replies.FAILURE_CODES
     message_text = rich_text(replies.failure(TEXTS, lang, BRAND, code, status=FIRST_SERVER_ERROR, site="example.com"))
     assert "{" not in message_text

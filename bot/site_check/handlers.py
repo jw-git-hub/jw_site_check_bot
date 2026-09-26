@@ -35,7 +35,7 @@ COMMAND_PREFIX = "/"
 SERVICE_NOTICES = {"quota": "notify_pagespeed_quota", "key": "notify_pagespeed_key"}
 OTHER_SERVICE_NOTICE = "notify_pagespeed_other"
 AUDITS_JOIN = ", "
-RETRY_DELAY_SECONDS = 2  # поправка 4 к задаче 17: 1–3 с — доставка итога повторяется один раз
+RETRY_DELAY_SECONDS = 2  # 1–3 с — доставка итога повторяется один раз
 DELIVERY_ATTEMPTS = 2  # первая попытка плюс одна повторная
 
 router = Router(name="site_check")
@@ -81,7 +81,7 @@ class Intake:
         self._notifier = notifier
 
     async def handle_text(self, incoming: IncomingText) -> None:
-        # Поправка 7: человек отмечен визитом раньше любой записи проверки — до разбора и до отказов.
+        # Человек отмечен визитом раньше любой записи проверки — до разбора и до отказов.
         user = await self._users.touch(incoming.user_id, incoming.language_code)
         parsed = parse_input(incoming.text, incoming.entity_urls)
         if isinstance(parsed, Rejection):
@@ -128,8 +128,8 @@ class Intake:
         await best_effort(self._repo.create(new), "отказ", None)
 
     async def _enqueue(self, chat_id: int, user: User, target: Target) -> None:
-        # Раунд ревью 1, находка 1 (поправка 9): ровно одно освобождение места на любом пути — не встала
-        # работа в очередь по любой причине (включая переполнение) — release здесь и только здесь.
+        # Ровно одно освобождение места на любом пути — не встала работа в очередь по любой причине
+        # (включая переполнение) — release здесь и только здесь.
         self._queue.reserve(user.user_id, target.display)
         submitted = False
         try:
@@ -162,7 +162,7 @@ class Intake:
 
     async def _queue_overflow(self, job: CheckJob) -> None:
         """Очередь заполнилась между reserve и submit: запись закрывается первой, доставка отказа — best
-        effort (раунд ревью 1, находка 1) — release места делает единственный вызывающий, `_enqueue`."""
+        effort — release места делает единственный вызывающий, `_enqueue`."""
         if job.check_id:
             await best_effort(self._repo.finish_failed(job.check_id, QUEUE_FULL, charged=False), "очередь полна", None)
         message = replies.failure(self._texts, job.lang, self._brand, QUEUE_FULL)
@@ -203,15 +203,15 @@ class CheckRunner:
             await self._show(job, replies.checking(self._texts, job.lang, self._brand, job.target.display))
 
     async def _show(self, job: CheckJob, message: dict) -> None:
-        """Статус «Проверяю…»: без повторной попытки — свежий статус важнее старого (поправка 4)."""
+        """Статус «Проверяю…»: без повторной попытки — свежий статус важнее старого."""
         try:
             job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
         except DeliveryFailed as error:
             logger.warning("сообщение проверки {} не доставлено: {}", job.check_id, error)
 
     async def _deliver(self, job: CheckJob, message: dict) -> None:
-        """Итог (отчёт или отказ) — до двух попыток с паузой между ними; не прошли обе — один раз в журнал
-        (поправка 4; раунд ревью 1, находка 4: одна функция вместо пары почти одинаковых)."""
+        """Итог (отчёт или отказ) — до двух попыток с паузой между ними; не прошли обе — один раз в журнал.
+        Одна функция на оба случая (отчёт и отказ) — они доставляются одинаково."""
         for attempt in range(1, DELIVERY_ATTEMPTS + 1):
             try:
                 job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
@@ -224,7 +224,7 @@ class CheckRunner:
 
     def _safe_message(self, build: Callable[[], dict]) -> dict | None:
         """Сборка сообщения — тоже под защитой: неожиданное сочетание находок не должно ронять воркер
-        и оставлять человека со статусом «Проверяю…» навсегда (поправка 3)."""
+        и оставлять человека со статусом «Проверяю…» навсегда."""
         try:
             return build()
         except Exception:  # noqa: BLE001 — падение сборки текста не должно ронять воркер
@@ -236,7 +236,7 @@ class CheckRunner:
                                 result.security, job.is_admin, self._clock.now())
         message = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
         if message is None:
-            # Раунд ревью 1, находка 3 (ТЗ Л9): сбой сборки отчёта — наша сторона, а не сайта, замер не в счёт.
+            # Сбой сборки отчёта (ТЗ Л9) — наша сторона, а не сайта, замер не в счёт.
             await self._finish_failed(job, CheckFailed(MEASURE_FAILED, reached_measurement=False))
             return
         await self._deliver(job, message)
@@ -259,8 +259,8 @@ class CheckRunner:
             await self._notify_service_down(failure)
 
     async def _notify_service_down(self, failure: CheckFailed) -> None:
-        # Поправка 1: владельцу — только о сбое PageSpeed, после того как проверка дошла до замера. Сбой на
-        # своей стороне до замера (например, свой DNS) — в журнал, без уведомления.
+        # Владельцу — только о сбое PageSpeed, после того как проверка дошла до замера. Сбой на своей
+        # стороне до замера (например, свой DNS) — в журнал, без уведомления.
         if not failure.reached_measurement:
             logger.warning("свой сбой до замера: {}", failure.reason or "")
             return
@@ -296,7 +296,7 @@ async def on_other(message: Message, intake: Intake) -> None:
 
 @router.callback_query(F.data == AGAIN_CALLBACK)
 async def on_again(callback: CallbackQuery, users: Users, messenger: Messenger, texts: Texts, brand: Brand) -> None:
-    # Поправка 5: устаревшее нажатие («Проверить другой сайт» на старом отчёте) не должно ронять обработчик.
+    # Устаревшее нажатие («Проверить другой сайт» на старом отчёте) не должно ронять обработчик.
     with contextlib.suppress(TelegramAPIError):
         await callback.answer()
     user = await users.touch(callback.from_user.id, callback.from_user.language_code)

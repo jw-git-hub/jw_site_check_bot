@@ -39,8 +39,8 @@ class Limits:
         self._memory: deque[tuple[datetime, int]] = deque()
 
     def remember_charge(self, user_id: int) -> None:
-        # Поправка 8 к задаче 17: та же обрезка, что и в _memory_counts — иначе при исправной базе, где
-        # _memory_counts не вызывается, deque рос бы всю жизнь процесса.
+        # Та же обрезка, что и в _memory_counts — иначе при исправной базе, где _memory_counts не
+        # вызывается, deque рос бы всю жизнь процесса.
         now = self._clock.now()
         self._forget_before(now - WINDOW)
         self._memory.append((now, user_id))

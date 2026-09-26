@@ -40,7 +40,7 @@ async def test_lang_choice_and_callback_switch_language(db):
 
 
 async def test_lang_chosen_survives_a_stale_callback(db):
-    """Поправка 5 к задаче 17: устаревшее нажатие («query is too old») не должно ронять выбор языка."""
+    """Устаревшее нажатие («query is too old») не должно ронять выбор языка."""
     messenger, users = FakeMessenger(), Users(db, FakeClock())
     stale_answer = TelegramBadRequest(method=AnswerCallbackQuery(callback_query_id="1"), message="query is too old")
     callback = make_callback("lang:en", user_id=500).as_(fake_bot({"answerCallbackQuery": stale_answer}))

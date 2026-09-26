@@ -259,7 +259,7 @@ def test_corrupt_wasted_bytes_text_gives_zero_savings_not_crash():
     assert facts.images.compress_ratio == 1
 
 
-@pytest.mark.skipif(not PAGE_FIXTURES, reason="нет записанных ответов PageSpeed (задача 2)")
+@pytest.mark.skipif(not PAGE_FIXTURES, reason="нет записанных ответов PageSpeed (см. scripts/record_fixtures.py)")
 @pytest.mark.parametrize("path", PAGE_FIXTURES, ids=lambda path: path.stem)
 def test_recorded_answers_parse_completely(path):
     recorded = json.loads(path.read_text(encoding="utf-8"))

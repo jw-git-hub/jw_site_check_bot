@@ -6,7 +6,7 @@ from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, rich_text
 
 
 async def test_first_notification_reuses_the_shared_service_message():
-    """Поправка 2: то же сообщение, что и у остальных служебных команд — не своя копия сборки."""
+    """То же сообщение, что и у остальных служебных команд, — не своя копия сборки."""
     messenger, clock = FakeMessenger(), FakeClock()
     notifier = Notifier(messenger, ADMIN_ID, clock, TEXTS, BRAND)
     await notifier.notify("pagespeed", "notify_pagespeed_key", DAY)

@@ -18,9 +18,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @dataclass(frozen=True)
 class _LoggingState:
-    """Всё, что setup_logging меняет глобально (раунд 2 обзора задачи 19, находка 2 — открытая часть):
-    перехватчики потоков/финализаторов, обработчики и уровень корневого логгера stdlib, уровни «тихих»
-    логгеров (QUIET_LOGGERS)."""
+    """Всё, что setup_logging меняет глобально: перехватчики потоков/финализаторов, обработчики и уровень
+    корневого логгера stdlib, уровни «тихих» логгеров (QUIET_LOGGERS)."""
     hooks: tuple
     root_handlers: list
     root_level: int
@@ -35,10 +34,9 @@ def _capture_hooks() -> _LoggingState:
 
 
 def _restore_hooks(state: _LoggingState) -> None:
-    """Обратная сторона setup_logging (раунд 1 обзора задачи 19, находка 2; раунд 2 — root-логгер и
-    QUIET_LOGGERS туда же). Без возврата всё это остаётся подменено на весь процесс pytest, и следующие
-    файлы тестов теряют собственный перехват pytest ошибок в потоках/финализаторах, а заодно и корневой
-    логгер stdlib — с чужим обработчиком и уровнем."""
+    """Обратная сторона setup_logging — хуки потоков/финализаторов, root-логгер и QUIET_LOGGERS. Без возврата
+    всё это остаётся подменено на весь процесс pytest, и следующие файлы тестов теряют собственный перехват
+    pytest ошибок в потоках/финализаторах, а заодно и корневой логгер stdlib — с чужим обработчиком и уровнем."""
     sys.excepthook, threading.excepthook, sys.unraisablehook = state.hooks
     logging.captureWarnings(False)
     root = logging.getLogger()
@@ -58,11 +56,11 @@ def fresh_logging():
 
 
 def test_restore_hooks_reverts_setup_logging_globals():
-    """Раунд 1 обзора задачи 19 (находка 2): setup_logging переставляет sys.excepthook, threading.excepthook,
-    sys.unraisablehook и включает logging.captureWarnings — фикстура должна вернуть их в teardown, иначе они
-    утекают на весь процесс pytest (наблюдалось: следующие файлы тестов теряли перехват pytest ошибок
-    в потоках/финализаторах). Раунд 2: то же для обработчиков и уровня корневого логгера stdlib и уровней
-    QUIET_LOGGERS (был найден стойкий root level=INFO и чужой обработчик после test_logging.py)."""
+    """setup_logging переставляет sys.excepthook, threading.excepthook, sys.unraisablehook и включает
+    logging.captureWarnings — фикстура должна вернуть их в teardown, иначе они утекают на весь процесс pytest
+    (наблюдалось: следующие файлы тестов теряли перехват pytest ошибок в потоках/финализаторах). То же верно
+    для обработчиков и уровня корневого логгера stdlib и уровней QUIET_LOGGERS (стойкий root level=INFO и
+    чужой обработчик после test_logging.py)."""
     baseline = _capture_hooks()
     setup_logging("DEBUG")
     root = logging.getLogger()
@@ -117,7 +115,7 @@ def test_mask_function_for_other_texts():
 
 
 def test_thread_exception_is_masked_and_logged(capsys):
-    """Поправка 3 к задаче 19: threading.excepthook — тот же журнал с маской, не падение молча в stderr."""
+    """threading.excepthook — тот же журнал с маской, не падение молча в stderr."""
     def boom():
         raise RuntimeError(f"ключ {fake_google_key()} в потоке")
 
@@ -131,7 +129,7 @@ def test_thread_exception_is_masked_and_logged(capsys):
 
 
 def test_unraisable_exception_is_masked_and_logged(capsys):
-    """Поправка 3 к задаче 19: sys.unraisablehook — ошибка в __del__ тоже уходит в журнал с маской."""
+    """sys.unraisablehook — ошибка в __del__ тоже уходит в журнал с маской."""
     class Boom:
         def __del__(self):
             raise RuntimeError(f"ключ {fake_google_key()} в деструкторе")
@@ -144,10 +142,10 @@ def test_unraisable_exception_is_masked_and_logged(capsys):
 
 
 def test_warnings_are_masked_only_when_capture_is_enabled():
-    """Раунд 1 обзора задачи 19: без logging.captureWarnings(True) предупреждение уходит в сырой stderr —
-    первый прогон подтверждает это (иначе тест не ловил бы регресс), второй — что setup_logging чинит это
-    на обоих потоках. warnings.warn проверяется в отдельном процессе: внутри самого теста pytest подменяет
-    warnings.showwarning на своё на время тела теста (см. документацию pytest о перехвате предупреждений)."""
+    """Без logging.captureWarnings(True) предупреждение уходит в сырой stderr — первый прогон подтверждает
+    это (иначе тест не ловил бы регресс), второй — что setup_logging чинит это на обоих потоках. warnings.warn
+    проверяется в отдельном процессе: внутри самого теста pytest подменяет warnings.showwarning на своё на
+    время тела теста (см. документацию pytest о перехвате предупреждений)."""
     key = fake_google_key()
     warn = f"import warnings; warnings.simplefilter('always'); warnings.warn('осторожно: {key}')\n"
 
@@ -164,8 +162,8 @@ def test_warnings_are_masked_only_when_capture_is_enabled():
 
 
 def test_broken_log_record_does_not_leak_raw_arguments(capsys):
-    """Раунд 1 обзора задачи 19 (Сек7): logging.Handler.handleError печатает record.msg/record.args в сыром
-    stderr, в обход маски — секрет из аргументов записи не должен утечь ни в один поток."""
+    """logging.Handler.handleError печатает record.msg/record.args в сыром stderr, в обход маски (ТЗ, Сек7) —
+    секрет из аргументов записи не должен утечь ни в один поток."""
     key = fake_google_key()
     broken = logging.LogRecord("t", logging.WARNING, __file__, 1, "%s и %s", (key,), None)
     _StdlibToLoguru().emit(broken)  # не должно бросить исключение
@@ -175,9 +173,9 @@ def test_broken_log_record_does_not_leak_raw_arguments(capsys):
 
 
 def test_broken_log_record_is_masked_end_to_end_in_a_real_process():
-    """Раунд 1 обзора задачи 19 (Сек7): тот же случай, что нашёл ревьюер — getLogger(...).warning с
-    несовпадающим числом %s и секретом в аргументах, настоящим процессом (Logger.callHandlers, не только
-    emit напрямую)."""
+    """Тот же случай (ТЗ, Сек7), что и test_broken_log_record_does_not_leak_raw_arguments —
+    getLogger(...).warning с несовпадающим числом %s и секретом в аргументах, настоящим процессом
+    (Logger.callHandlers, не только emit напрямую)."""
     key = fake_google_key()
     script = ("from bot.core.logging import add_secret_values, setup_logging; setup_logging('DEBUG')\n"
              f"add_secret_values(['{key}'])\n"
@@ -189,9 +187,9 @@ def test_broken_log_record_is_masked_end_to_end_in_a_real_process():
 
 
 def test_handle_error_does_not_raise_when_the_sink_itself_fails():
-    """Раунд 2 обзора задачи 19 (правило контролёра к поправке 3): «ошибка оформления записи не должна ронять
-    программу» — это верно и когда сам сток loguru, вызванный из handleError, тоже падает. catch=False на
-    стоке нужен явно: по умолчанию loguru сама глушит ошибки стока и не даёт им дойти до нашего вызова."""
+    """«Ошибка оформления записи не должна ронять программу» верно и когда сам сток loguru, вызванный из
+    handleError, тоже падает. catch=False на стоке нужен явно: по умолчанию loguru сама глушит ошибки стока
+    и не даёт им дойти до нашего вызова."""
     logger.remove()
 
     def failing_sink(message: str) -> None:

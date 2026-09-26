@@ -92,6 +92,22 @@ def test_happy_path_checks_out_exact_commit_then_restarts(project):
     assert "/srv/bot\\ folder" in commands[0]
 
 
+def test_missing_network_isolation_stops_before_touching_server(project):
+    """Выкладка на сервер без включённой изоляции сети — контейнер поднялся бы без защиты (ТЗ, С11)."""
+    ssh_script = """#!/usr/bin/env bash
+command="${@: -1}"
+case "$command" in
+  *"systemctl is-active"*) exit 3 ;;
+  *) exit 0 ;;
+esac
+"""
+    result = deploy_with_ssh_script(project, ssh_script)
+    assert result.returncode == 1
+    assert "изоляция сети не включена" in result.stderr
+    assert "sudo deploy/firewall.sh" in result.stderr
+    assert "откат" not in result.stderr.lower()  # сервер ещё не тронут — подсказка не к месту
+
+
 def test_dirty_tree_stops_before_touching_server(project):
     (project / "new.txt").write_text("x", encoding="utf-8")
     result, commands = deploy(project)
@@ -102,8 +118,8 @@ def test_dirty_tree_stops_before_touching_server(project):
 
 
 def test_unpushed_commit_stops(project):
-    """Обзор задачи 22, раунд 1: без аргумента --is-ancestor принимал бы и отставший от origin/main
-    HEAD (просто более старый коммит в его истории) — выкладка отставшего коммита прошла бы молча."""
+    """Без аргумента --is-ancestor принимал бы и отставший от origin/main HEAD (просто более старый коммит
+    в его истории) — выкладка отставшего коммита прошла бы молча."""
     commit(project, "two.txt")
     result, commands = deploy(project)
     assert result.returncode == 1
@@ -152,17 +168,17 @@ def test_deploy_never_copies_env():
 
 
 def test_health_wait_is_sixty_seconds_per_c17():
-    """Поправка 1: решение C17 (ТЗ 13.2 п.5) — ждать healthy до 60 секунд, не 90."""
+    """Решение C17 (ТЗ 13.2 п.5) — ждать healthy до 60 секунд, не 90."""
     script = (ROOT / "deploy" / "deploy.sh").read_text(encoding="utf-8")
     assert "HEALTH_WAIT_SECONDS=60" in script
 
 
 def test_unreachable_host_hints_at_tailscale(project):
-    """Поправка 2: имя сервера в Tailscale может не находиться, если Tailscale на Маке выключен."""
+    """Имя сервера в Tailscale может не находиться, если Tailscale на Маке выключен."""
     result = deploy_with_ssh_exit_code(project, 255)
     assert result.returncode == 1
     assert "Tailscale" in result.stderr
-    # Обзор, раунд 1: имя — в Tailscale, оно резолвится только когда он включён, в том числе и дома.
+    # Имя — в Tailscale, оно резолвится только когда он включён, в том числе и дома.
     assert "если вы не дома" not in result.stderr
 
 
@@ -175,9 +191,9 @@ def test_remote_check_failure_keeps_specific_message_when_not_a_connection_error
 
 
 def test_health_wait_uses_a_real_deadline_not_loop_count(project):
-    """Обзор, раунд 1: цикл считал попытки (`for … in $(seq 60)`), а каждый docker compose ps добавляет
-    время — реальное ожидание могло заметно превышать заявленные 60 секунд. Нужен настоящий предел
-    по часам (SECONDS или его аналог), а не количество проходов цикла."""
+    """Цикл, считающий попытки (`for … in $(seq 60)`), а не часы, — ложный предел: каждый docker compose ps
+    добавляет время, и реальное ожидание может заметно превышать заявленные 60 секунд. Нужен настоящий
+    предел по часам (SECONDS или его аналог), а не количество проходов цикла."""
     script = (ROOT / "deploy" / "deploy.sh").read_text(encoding="utf-8")
     assert "SECONDS" in script
     assert "seq $HEALTH_WAIT_SECONDS" not in script
@@ -185,15 +201,15 @@ def test_health_wait_uses_a_real_deadline_not_loop_count(project):
 
 
 def test_deploy_has_a_single_helper_for_remote_failures():
-    """Обзор, раунд 1: один помощник на все удалённые шаги, а не копия проверки кода 255 на каждый."""
+    """Один помощник на все удалённые шаги, а не копия проверки кода 255 на каждый."""
     script = (ROOT / "deploy" / "deploy.sh").read_text(encoding="utf-8")
     assert script.count("SSH_UNREACHABLE_EXIT_CODE") == 2  # константа + одна проверка внутри помощника
     assert "check_remote" not in script  # старое имя поглощено общим помощником
 
 
 def test_connection_lost_mid_deploy_still_hints_at_tailscale(project):
-    """Поправка 4 (раунд 1): обрыв связи не только на первой проверке, но и на любом позднем шаге
-    (например, сборке) должен показывать ту же подсказку про Tailscale, а не голый вывод docker/git."""
+    """Обрыв связи не только на первой проверке, но и на любом позднем шаге (например, сборке) должен
+    показывать ту же подсказку про Tailscale, а не голый вывод docker/git."""
     ssh_script = """#!/usr/bin/env bash
 command="${@: -1}"
 case "$command" in
@@ -208,8 +224,8 @@ esac
 
 
 def test_failure_after_server_touched_suggests_rollback_to_previous_sha(project):
-    """Поправка 5 (раунд 1): если что-то сломалось уже после того, как сервер тронули (после снимка
-    его состояния), сообщение должно подсказать, чем откатиться — прошлым sha, который там был."""
+    """Если что-то сломалось уже после того, как сервер тронули (после снимка его состояния), сообщение
+    должно подсказать, чем откатиться — прошлым sha, который там был."""
     previous_sha = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"
     ssh_script = """#!/usr/bin/env bash
 command="${@: -1}"
@@ -226,8 +242,8 @@ esac
 
 
 def test_failure_after_server_touched_on_first_deploy_says_nothing_to_roll_back_to(project):
-    """Поправка 5 (раунд 1): если контейнера на сервере ещё не было — это первая выкладка, откатывать
-    некуда, и сообщение не должно предлагать sha, которого не было."""
+    """Если контейнера на сервере ещё не было — это первая выкладка, откатывать некуда, и сообщение не
+    должно предлагать sha, которого не было."""
     ssh_script = """#!/usr/bin/env bash
 command="${@: -1}"
 case "$command" in

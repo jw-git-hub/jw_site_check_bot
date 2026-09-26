@@ -160,6 +160,17 @@ def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
     assert "0 секунд" not in text
 
 
+def test_expired_certificate_with_a_future_leaf_date_uses_no_date_text():
+    """Код ошибки 10 (истёк) может относиться к промежуточному сертификату цепочки — read_cert_unverified читает
+    лист, и его срок ещё не кончился. Дата листа тут ни при чём: с ней текст выглядел бы как «истёк 25 октября
+    2026», хотя эта дата ещё не наступила."""
+    facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, cert(days_left=30)),),
+                          (RedirectState.REDIRECTS,), ())
+    text = rich_text(report("ru", page(), facts))
+    assert "Сертификат истёк: браузер показывает предупреждение во весь экран" in text
+    assert "октября" not in text
+
+
 def test_expired_certificate_without_parseable_data_uses_no_date_text():
     """read_cert_unverified может не разобрать сертификат и отдать cert=None — тогда без пустой даты в предложении."""
     failed_cert = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, None),), (RedirectState.REDIRECTS,), ())
@@ -214,8 +225,8 @@ def test_wrong_host_and_incomplete_chain_state_both_consequences():
 
 
 def test_no_https_with_secure_redirect_elsewhere_report():
-    """Голый домен без https, переадресация на защищённую версию на другом хосте — «стоит поправить», не «плохо»
-    (задача 13a); дата сертификата берётся у итогового хоста."""
+    """Голый домен без https, переадресация на защищённую версию на другом хосте — «стоит поправить», не «плохо»;
+    дата сертификата берётся у итогового хоста."""
     facts = two_host_security(TlsOutcome.NO_HTTPS, TlsOutcome.OK, first_cert=False)
     result_page = page(final_url="https://www.site.test/")
     text_ru = rich_text(report("ru", result_page, facts))

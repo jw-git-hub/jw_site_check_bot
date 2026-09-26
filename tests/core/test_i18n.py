@@ -64,3 +64,11 @@ def test_locales_have_same_keys():
 def test_texts_have_no_emoji():
     all_texts = [*ru.TEXTS.values(), *en.TEXTS.values()]
     assert not [text for text in all_texts if any(ord(char) >= EMOJI_START for char in text)]
+
+
+def test_notify_home_ip_says_the_protection_is_off_while_the_address_is_unknown():
+    """Текст читался наоборот: «работает без него» вместо того, что защита выключена, пока адрес не узнан."""
+    assert "не работает" in ru.TEXTS["notify_home_ip"]
+    assert "работает без" not in ru.TEXTS["notify_home_ip"]
+    assert "doesn't work" in en.TEXTS["notify_home_ip"]
+    assert "works without" not in en.TEXTS["notify_home_ip"]

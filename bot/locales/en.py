@@ -191,14 +191,15 @@ TEXTS = {
     "queue_full": "Lots of checks right now. Try again in a couple of minutes.",
     "busy": "Let me finish {site} first — send the new link once the report is in.",
     "interrupted": "The check was interrupted. Send the link again — this attempt wasn't counted.",
+    "unexpected_error": "Something went wrong. Please try again.",
     "notify_pagespeed_quota": "PageSpeed refused: the key's quota is used up. Checks don't work until it resets.",
     "notify_pagespeed_key": "PageSpeed rejected the key. Check PAGESPEED_API_KEY in .env on the server.",
     "notify_pagespeed_other": "PageSpeed misbehaves ({reason}). Checks are temporarily down.",
     "notify_global_limit": "The overall cap was hit: {checks} a day. New checks are waiting.",
     "notify_audits_missing": "The PageSpeed answer (Lighthouse {version}) lacks audits: {audits}. These report blocks "
                              "now say \"couldn't check\".",
-    "notify_home_ip": "Couldn't learn the home's external address: protection against loops through the router works "
-                      "without it.",
+    "notify_home_ip": "Couldn't learn the home's external address: until it's known, protection against loops "
+                      "through the router doesn't work.",
     "stats_title": "Stats for {days}",
     "stats_label": "Label",
     "stats_new": "New",

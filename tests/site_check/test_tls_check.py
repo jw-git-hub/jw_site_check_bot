@@ -147,7 +147,7 @@ def test_request_asks_only_for_root():
     assert root_request(HOST).startswith(b"GET / HTTP/1.1\r\nHost: site.test\r\n")
 
 
-# --- Задача 14, поправка 6: срок второго соединения не съедает известный исход первой проверки ---
+# --- Срок второго соединения не съедает известный исход первой проверки ---
 
 async def test_unverified_second_connection_has_its_own_short_timeout(monkeypatch):
     """Первая проверка уже дала исход (сертификат не проходит проверку) — зависшее второе соединение (за датой
@@ -180,11 +180,11 @@ class _RecordingWriter:
 
 
 async def test_close_quietly_does_not_wait_for_a_clean_shutdown():
-    """close_quietly не должен ждать wait_closed(): каждое ожидание съедает срок «до замера» (поправка 6)."""
+    """close_quietly не должен ждать wait_closed(): каждое ожидание съедает срок «до замера»."""
     writer = _RecordingWriter()
     await close_quietly(writer)
     assert writer.transport.aborted
 
 
-# Перевод хоста в ASCII (IDNA) — задача url_input.py (разбор ввода уже это делает); тесты там же, без второй
-# копии здесь (обзор задачи 14, находка 2).
+# Перевод хоста в ASCII (IDNA) — дело url_input.py (разбор ввода уже это делает); тесты там же, без второй
+# копии здесь.

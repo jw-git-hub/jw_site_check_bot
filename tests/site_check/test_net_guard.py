@@ -100,6 +100,18 @@ async def test_open_stream_connects_to_checked_address():
         writer.close()
 
 
+async def test_open_stream_refuses_a_private_address_without_connecting(monkeypatch):
+    """Имя резолвится в приватный адрес: соединение не должно открываться вовсе — отказ приходит уже с резолва."""
+    guard = AddressGuard(resolver_for({"internal.test": ["192.168.1.5"]}))
+
+    async def fail_if_called(*args, **kwargs):
+        raise AssertionError("соединение не должно было открываться для приватного адреса")
+
+    monkeypatch.setattr(asyncio, "open_connection", fail_if_called)
+    with pytest.raises(PrivateAddress):
+        await guard.open_stream("internal.test", 443, None)
+
+
 @pytest.mark.parametrize(("body", "address"), [
     ("fl=1\nip=93.184.215.14\nts=1", PUBLIC), ("93.184.215.14\n", PUBLIC), ("<html>error</html>", None),
     ("ip=2001:db8::1", None), ("ip=10.0.0.1", None), ("0.0.0.0", None), ("ip=100.64.0.1", None),

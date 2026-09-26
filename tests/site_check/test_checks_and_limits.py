@@ -118,12 +118,9 @@ async def test_limits_fall_back_to_memory_when_database_is_down():
     assert (await limits.decide(USER)).code == LIMIT_USER
 
 
-# --- Поправки к задаче 15 (task-15-carries.md) ---
-
-
 async def test_mark_running_status_is_covered_by_interrupt(repo):
-    """Поправка 1: статусы идут в SQL только через константы. Проверяем, что RUNNING в MARK_RUNNING и
-    INTERRUPT — один и тот же код, а не разные литералы: проверка, помеченная running, тоже прерывается."""
+    """Статусы идут в SQL только через константы. Проверяем, что RUNNING в MARK_RUNNING и INTERRUPT — один
+    и тот же код, а не разные литералы: проверка, помеченная running, тоже прерывается."""
     check_id = await repo.create(NewCheck(USER, "channel", parse_input("site.org", []), QUEUED, chat_id=USER,
                                           message_id=11))
     await repo.mark_running(check_id)
@@ -133,20 +130,20 @@ async def test_mark_running_status_is_covered_by_interrupt(repo):
 
 
 async def test_remember_charge_forgets_entries_older_than_the_window(repo):
-    """Поправка 8: remember_charge пишется при каждой списанной проверке, в том числе при исправной базе, когда
+    """remember_charge пишется при каждой списанной проверке, в том числе при исправной базе, когда
     _memory_counts (со своей обрезкой) не вызывается ни разу — без своей обрезки deque рос бы всю жизнь процесса."""
     clock = FakeClock()
     limits = Limits(repo, clock, user_daily=1000, global_daily=1000, admin_id=ADMIN_ID)
     limits.remember_charge(USER)
     clock.advance(timedelta(hours=25).total_seconds())
     limits.remember_charge(USER)
-    assert len(limits._memory) == 1  # поправка 8: старая запись выброшена, а не накопилась рядом с новой
+    assert len(limits._memory) == 1  # старая запись выброшена, а не накопилась рядом с новой
 
 
 async def test_create_rejects_check_for_unknown_user(repo):
-    """Поправки 2 и 3: пользователь должен быть в базе до записи проверки (Users.touch — обязанность вызывающего,
+    """Пользователь должен быть в базе до записи проверки (Users.touch — обязанность вызывающего,
     ChecksRepo.create его не создаёт сам), а внешние ключи (PRAGMA foreign_keys=ON) действительно применяются на
     каждом соединении — запись проверки с несуществующим user_id падает ошибкой целостности, а не молча проходит.
-    Вызываем репозиторий напрямую (не через best_effort, поправка 4), иначе ошибку тест бы не увидел."""
+    Вызываем репозиторий напрямую (не через best_effort), иначе ошибку тест бы не увидел."""
     with pytest.raises(IntegrityError):
         await repo.create(NewCheck(UNKNOWN_USER_ID, "channel", parse_input("site.org", []), QUEUED))

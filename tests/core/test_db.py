@@ -66,7 +66,7 @@ async def test_daily_copies_keep_last_seven(engine, tmp_path):
 
 
 async def test_failed_backup_keeps_previous_copy(engine, tmp_path, monkeypatch):
-    """Поправка 4 к задаче 19: копия пишется во временный файл, старую нельзя потерять при сбое посередине."""
+    """Копия пишется во временный файл, старую нельзя потерять при сбое посередине."""
     backups = tmp_path / "backups"
     backups.mkdir()
     target = backups / "keep.db"

@@ -14,6 +14,7 @@ NEIGHBOUR_IMAGE="jw_site_check_bot:latest"  # уже собран локальн
 NEIGHBOUR_PORT=8080  # высокий порт: контейнер не root (Dockerfile — USER 10001), 80 ему не поднять
 NEIGHBOUR_READY_ATTEMPTS=10  # короткое ограниченное ожидание, пока слушатель поднимется после run -d
 NEIGHBOUR_READY_INTERVAL_SECONDS=0.3
+ROUTER_PORTS=(80 443 8080 53)  # веб-интерфейс роутера бывает не только на 80 — пробуем весь список
 # Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker exec, трасса Python)
 # не должна выдаваться за «закрыто»: голый except это делал бы.
 PROBE='import socket, sys
@@ -132,7 +133,11 @@ server_ip="$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i < NF; i++) if ($i == 
 gateway_ip="$(ip -4 -o addr show dev "$BRIDGE_INTERFACE" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1)" || true
 tailscale_ip="$(tailscale ip -4 2>/dev/null | head -n 1 || true)"
 
-require_address "$router_ip" "адрес роутера" && expect_closed "$router_ip" 80 "роутер" router
+if require_address "$router_ip" "адрес роутера"; then
+  for router_port in "${ROUTER_PORTS[@]}"; do
+    expect_closed "$router_ip" "$router_port" "роутер, порт $router_port" router
+  done
+fi
 require_address "$server_ip" "адрес сервера в домашней сети" && expect_closed "$server_ip" 22 "сервер по адресу в домашней сети" server
 require_address "$gateway_ip" "шлюз Docker для сервера" && expect_closed "$gateway_ip" 22 "сервер через шлюз Docker" server
 require_address "$tailscale_ip" "адрес сервера в Tailscale" && expect_closed "$tailscale_ip" 22 "сервер в Tailscale" tailscale

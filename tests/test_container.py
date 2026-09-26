@@ -1,5 +1,5 @@
 """Контейнер (ТЗ, 13.3): образ, compose и .dockerignore проверяются статически — Docker на Маке нет,
-сборка образа — на сервере (задача 23)."""
+сборка образа — на сервере."""
 import re
 from pathlib import Path
 
@@ -10,8 +10,7 @@ COMPOSE = yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8
 BOT = COMPOSE["services"]["bot"]
 DOCKERFILE = (ROOT / "Dockerfile").read_text(encoding="utf-8")
 
-# Поправка 1 к задаче 20: до этой версии ipaddress.is_global давал неверный ответ для части адресов,
-# на нём стоит защита сети (проверка задачи 8).
+# До этой версии ipaddress.is_global давал неверный ответ для части адресов, на нём стоит защита сети.
 MIN_PYTHON_VERSION = (3, 12, 4)
 
 
@@ -52,8 +51,8 @@ def test_base_python_version_is_pinned_and_not_older_than_required():
 
 
 def test_certificates_are_not_stripped_from_base_image():
-    # Поправка 2 к задаче 20: хранилище сертификатов — системное, из пакета ca-certificates. В slim-образе
-    # он есть по умолчанию; смотрим только инструкции, не комментарии, — иначе их же слова роняли бы тест.
+    # Хранилище сертификатов — системное, из пакета ca-certificates. В slim-образе он есть по умолчанию;
+    # смотрим только инструкции, не комментарии, — иначе их же слова роняли бы тест.
     instructions = "\n".join(line for line in DOCKERFILE.splitlines() if not line.strip().startswith("#"))
     assert "alpine" not in instructions
     assert "apt-get remove" not in instructions

@@ -5,15 +5,17 @@ import pytest
 
 from bot.site_check import pipeline as pipeline_module
 from bot.site_check import probe as probe_module
-from bot.site_check.net_guard import NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
+from bot.site_check.net_guard import AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
 from bot.site_check.pagespeed import MEASURE_FAILED, LighthouseFailure, PageSpeedUnavailable
 from bot.site_check.pipeline import AFTER_TIMEOUT_SECONDS, CHECK_DEADLINE_SECONDS, CheckFailed, Pipeline
-from bot.site_check.probe import ProbeRejected, probe
+from bot.site_check.probe import GuardedProbes, ProbeRejected, probe
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import Target
 from bot.site_check.verdict import Block, Finding, Grade, SummaryKind, UnknownReason
 from tests.builders import audit, cert, lighthouse
 from tests.fakes import FakeClock
+
+PUBLIC_ADDRESS = "93.184.215.14"
 
 OK_TLS = TlsFacts("site.test", TlsOutcome.OK, cert())
 PAGE_AUDITS = {"largest_contentful_paint": audit(value=1400), "total_byte_weight": audit(value=265_789)}
@@ -55,7 +57,7 @@ class FakePageSpeed:
 
 
 def target(scheme="https", scheme_given=False) -> Target:
-    """Цель собрана напрямую: зона .test — служебная, разбор ввода её бы отбраковал (задача 7)."""
+    """Цель собрана напрямую: зона .test — служебная, разбор ввода (url_input.py) её бы отбраковал."""
     return Target(scheme, scheme_given, "site.test", "site.test", "/", "")
 
 
@@ -81,6 +83,59 @@ async def test_site_silent_for_us_is_left_to_pagespeed():
 async def test_given_http_scheme_is_measured_as_given():
     result = await probe(target("http", scheme_given=True), FakeProbes(tls={"site.test": OK_TLS}))
     assert result.url == "http://site.test/"
+
+
+# --- http:// прислан явно, а своя проверка 443 не проходит: сайт всё равно отвечает, порт 80 это подтверждает ---
+
+async def test_given_http_scheme_with_unreachable_tls_but_port_80_plain_is_no_https():
+    probes = FakeProbes(tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED)},
+                        redirects={"site.test": RedirectState.NO_REDIRECT})
+    result = await probe(target("http", scheme_given=True), probes)
+    assert result.url == "http://site.test/"
+    assert result.tls.outcome is TlsOutcome.NO_HTTPS
+
+
+async def test_given_http_scheme_with_unreachable_tls_and_closed_port_80_stays_unknown():
+    """80 тоже не отвечает — сайт правда недоступен нашими запросами, а не «нет https»: прежний исход."""
+    probes = FakeProbes(tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED)},
+                        redirects={"site.test": RedirectState.CLOSED})
+    result = await probe(target("http", scheme_given=True), probes)
+    assert result.url == "http://site.test/"
+    assert result.tls.outcome is TlsOutcome.CONNECT_FAILED
+
+
+async def test_given_https_scheme_with_unreachable_tls_is_left_to_pagespeed():
+    """https:// прислан явно — адрес для PageSpeed остаётся https, порт 80 не проверяется: решает сам PageSpeed."""
+    probes = FakeProbes(tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED)},
+                        redirects={"site.test": RedirectState.NO_REDIRECT})
+    result = await probe(target("https", scheme_given=True), probes)
+    assert result.url == "https://site.test/"
+    assert result.tls.outcome is TlsOutcome.CONNECT_FAILED
+    assert ("redirect", "site.test") not in probes.calls
+
+
+async def test_given_http_scheme_unreachable_tls_and_redirect_to_https_www_is_worth_fixing():
+    probes = FakeProbes(
+        tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),
+             "www.site.test": TlsFacts("www.site.test", TlsOutcome.OK, cert())},
+        redirects={"site.test": RedirectState.REDIRECTS, "www.site.test": RedirectState.REDIRECTS},
+    )
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://www.site.test/", **PAGE_AUDITS))
+    result = await Pipeline(probes, pagespeed, FakeClock()).run(target("http", scheme_given=True))
+    assert pagespeed.urls == ["http://site.test/"]
+    security = result.verdict.blocks[Block.SECURITY]
+    assert [item.finding for item in security.findings] == [Finding.HTTPS_AFTER_REDIRECT]
+    assert result.verdict.summary is SummaryKind.ONLY_FIX
+
+
+async def test_given_http_scheme_unreachable_tls_and_plain_port_80_is_bad():
+    probes = FakeProbes(tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED)},
+                        redirects={"site.test": RedirectState.NO_REDIRECT})
+    pagespeed = FakePageSpeed(lighthouse(final_url="http://site.test/", **PAGE_AUDITS))
+    result = await Pipeline(probes, pagespeed, FakeClock()).run(target("http", scheme_given=True))
+    security = result.verdict.blocks[Block.SECURITY]
+    assert [item.finding for item in security.findings] == [Finding.NO_HTTPS]
+    assert result.verdict.summary is SummaryKind.HAS_BAD
 
 
 @pytest.mark.parametrize(("error", "code"), [
@@ -148,7 +203,7 @@ async def test_certificate_blocking_gives_security_only_report():
     assert result.verdict.blocks[Block.MOBILE].grade is Grade.UNKNOWN
 
 
-# --- Поправка 1: срок PageSpeed оставляет запас для проверок после замера ---
+# --- Срок PageSpeed оставляет запас для проверок после замера ---
 
 async def test_pagespeed_deadline_reserves_time_for_after_checks():
     clock = FakeClock()
@@ -158,9 +213,9 @@ async def test_pagespeed_deadline_reserves_time_for_after_checks():
     assert pagespeed.deadlines == [clock.monotonic() + CHECK_DEADLINE_SECONDS - AFTER_TIMEOUT_SECONDS]
 
 
-# --- Поправка 2: наш DNS не ответил — причина "dns" доходит до CheckFailed (задача 17 её отличит) ---
+# --- Наш DNS не ответил — причина "dns" доходит до CheckFailed, отдельно от сбоя PageSpeed ---
 
-async def test_our_dns_failure_is_flagged_with_reason_for_task_17():
+async def test_our_dns_failure_is_flagged_with_a_reason_distinct_from_pagespeed():
     pagespeed = FakePageSpeed(PAGE)
     probes = FakeProbes(resolve_error=NameLookupFailed("x"))
     with pytest.raises(CheckFailed) as failed:
@@ -169,7 +224,7 @@ async def test_our_dns_failure_is_flagged_with_reason_for_task_17():
     assert pagespeed.urls == []
 
 
-# --- Поправка 3: схема не указана, 443 не отвечает — 80 отвечает и переадресацией, не только напрямую ---
+# --- Схема не указана, 443 не отвечает — 80 отвечает и переадресацией, не только напрямую ---
 
 async def test_scheme_not_given_443_closed_80_redirects_gives_http():
     probes = FakeProbes(tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED)},
@@ -194,7 +249,7 @@ async def test_bare_domain_443_closed_80_redirects_to_www_is_worth_fixing_not_ba
     assert result.verdict.summary is SummaryKind.ONLY_FIX
 
 
-# --- Поправка 4: PageSpeed не называет плохой сертификат отдельным кодом ---
+# --- PageSpeed не называет плохой сертификат отдельным кодом ---
 
 async def test_failed_document_request_with_bad_cert_before_is_cert_blocks():
     expired = TlsFacts("site.test", TlsOutcome.EXPIRED, cert(days_left=-3))
@@ -210,7 +265,7 @@ async def test_failed_document_request_with_good_cert_before_stays_unreachable()
     assert failed.value.code == "unreachable"
 
 
-# --- Поправка 5: адрес не уходит в PageSpeed, пока DNS не проверен в пределах срока «до замера» ---
+# --- Адрес не уходит в PageSpeed, пока DNS не проверен в пределах срока «до замера» ---
 
 async def test_dns_timeout_within_probe_budget_fails_before_pagespeed(monkeypatch):
     monkeypatch.setattr(pipeline_module, "PROBE_TIMEOUT_SECONDS", 0.01)
@@ -241,7 +296,7 @@ async def test_timeout_after_dns_falls_back_to_measuring_without_own_tls(monkeyp
     assert result.verdict.blocks[Block.SECURITY].unknown_reason is UnknownReason.OWN_CHECKS_FAILED
 
 
-# --- Обзор задачи 14, находка 1: 443, который тихо роняет пакеты, не должен блокировать проверку 80 ---
+# --- 443, который тихо роняет пакеты, не должен блокировать проверку 80 ---
 
 @pytest.mark.parametrize("redirect_state", [RedirectState.NO_REDIRECT, RedirectState.REDIRECTS])
 async def test_hanging_tls_check_falls_back_to_http_within_its_own_budget(monkeypatch, redirect_state):
@@ -280,10 +335,11 @@ async def test_measure_step_gets_only_the_remaining_probe_budget_after_dns(monke
     assert result.verdict.blocks[Block.SECURITY].unknown_reason is UnknownReason.OWN_CHECKS_FAILED
 
 
-# --- Поправка 6 (tls_check.py) — тесты в tests/site_check/test_tls_check.py ---
+# --- Свой короткий срок второго соединения за датой сертификата (tls_check.py) — тесты в
+# tests/site_check/test_tls_check.py ---
 
 
-# --- Поправка 7: итоговый хост юникодом не роняет проверки после замера ---
+# --- Итоговый хост юникодом не роняет проверки после замера ---
 
 async def test_unicode_final_host_that_fails_idna_does_not_crash_after_checks():
     probes = FakeProbes(tls={"site.test": OK_TLS}, redirects={"site.test": RedirectState.REDIRECTS})
@@ -295,8 +351,8 @@ async def test_unicode_final_host_that_fails_idna_does_not_crash_after_checks():
 
 
 async def test_unicode_final_host_that_translates_reaches_checks_in_punycode():
-    """Обзор задачи 14, находка 2: юникодный, но переводимый хост доходит до check_tls/check_redirect уже
-    в punycode — не как есть, юникодом."""
+    """Юникодный, но переводимый хост доходит до check_tls/check_redirect уже в punycode — не как есть,
+    юникодом."""
     ascii_final_host = "xn--e1afmkfd.xn--p1ai"
     probes = FakeProbes(
         tls={"site.test": OK_TLS, ascii_final_host: TlsFacts(ascii_final_host, TlsOutcome.OK, cert())},
@@ -309,7 +365,7 @@ async def test_unicode_final_host_that_translates_reaches_checks_in_punycode():
     assert result.security.tls[-1].host == ascii_final_host
 
 
-# --- Поправка 8: пустой замер не даёт ложное «всё хорошо» ---
+# --- Пустой замер не даёт ложное «всё хорошо» ---
 
 async def test_empty_measurement_gives_no_report():
     empty_page = lighthouse(viewport_insight=audit(mode="error"))
@@ -319,18 +375,18 @@ async def test_empty_measurement_gives_no_report():
     assert (failed.value.code, failed.value.reached_measurement) == (MEASURE_FAILED, True)
 
 
-# --- Поправка 9: разбор ответа не роняет проверку ---
+# --- Разбор ответа не роняет проверку ---
 
 async def test_broken_pagespeed_response_does_not_crash_the_check():
-    """Раунд ревью 1, находка 5 (ТЗ Л9): нечитаемый ответ Google — наша сторона, а не сайта, замер не в счёт
-    (в отличие от пустого замера — там сайт правда ничего не показал, и он остаётся списанным)."""
+    """Нечитаемый ответ Google (ТЗ Л9) — наша сторона, а не сайта, замер не в счёт (в отличие от пустого
+    замера — там сайт правда ничего не показал, и он остаётся списанным)."""
     pagespeed = FakePageSpeed(result=None)  # подложенный битый ответ: parse_lighthouse получит не словарь
     with pytest.raises(CheckFailed) as failed:
         await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), pagespeed, FakeClock()).run(target())
     assert (failed.value.code, failed.value.reached_measurement) == (MEASURE_FAILED, False)
 
 
-# --- Поправка 10: дата «сегодня» — по UTC, без сдвига на локальные сутки ---
+# --- Дата «сегодня» — по UTC, без сдвига на локальные сутки ---
 
 async def test_today_for_cert_expiry_uses_utc_not_a_local_day_shift():
     clock = FakeClock(now=datetime(2026, 9, 25, 23, 30, tzinfo=UTC))
@@ -340,10 +396,11 @@ async def test_today_for_cert_expiry_uses_utc_not_a_local_day_shift():
     assert result.verdict.blocks[Block.SECURITY].grade is Grade.GOOD
 
 
-# --- Поправка 11 (verdict.py) — тест в tests/site_check/test_verdict.py ---
+# --- Хост итогового адреса переводится в ASCII той же функцией, что и при разборе ввода (verdict.py) —
+# тест в tests/site_check/test_verdict.py ---
 
 
-# --- Обзор задачи 14, находка 3: своя NO_HTTPS устаревает, если PageSpeed открыл https на том же хосте ---
+# --- Своя NO_HTTPS устаревает, если PageSpeed открыл https на том же хосте ---
 
 class ImprovingTlsProbes(FakeProbes):
     """Первая проверка (до замера) — CONNECT_FAILED, все следующие — OK: имитирует TLS, который наш «почерк» не
@@ -380,8 +437,8 @@ async def test_same_host_recheck_still_unreachable_leaves_security_unknown():
 
 
 async def test_different_host_redirect_keeps_https_after_redirect_finding():
-    """Контроль: переадресация на ДРУГОЙ хост не должна попадать под перепроверку находки 3 — здесь остаётся
-    находка HTTPS_AFTER_REDIRECT из поправки 3."""
+    """Контроль: переадресация на ДРУГОЙ хост не должна попадать под перепроверку устаревшей NO_HTTPS выше —
+    здесь остаётся находка HTTPS_AFTER_REDIRECT (голый домен без https с переадресацией на другой хост)."""
     probes = FakeProbes(
         tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),
              "www.site.test": TlsFacts("www.site.test", TlsOutcome.OK, cert())},
@@ -394,11 +451,11 @@ async def test_different_host_redirect_keeps_https_after_redirect_finding():
     assert security.grade is Grade.FIX
 
 
-# --- Обзор задачи 14, раунд 2: перепроверка находки 3 не должна сама съедать бюджет «после замера» ---
+# --- Перепроверка устаревшей NO_HTTPS не должна сама съедать бюджет «после замера» ---
 
 async def test_same_host_recheck_that_hangs_does_not_reinstate_no_https(monkeypatch):
-    """Требование (а) обзора: перепроверка после замера использует тот же короткий срок TLS-проверки, что и
-    до замера (probe.py), — иначе зависший check_tls дотянул бы до внешнего AFTER_TIMEOUT_SECONDS."""
+    """Перепроверка после замера использует тот же короткий срок TLS-проверки, что и до замера (probe.py), —
+    иначе зависший check_tls дотянул бы до внешнего AFTER_TIMEOUT_SECONDS."""
     monkeypatch.setattr(probe_module, "TLS_CHECK_TIMEOUT_SECONDS", 0.02)
 
     class HangingRecheckProbes(FakeProbes):
@@ -417,9 +474,9 @@ async def test_same_host_recheck_that_hangs_does_not_reinstate_no_https(monkeypa
 
 
 async def test_after_timeout_does_not_reinstate_a_contradicted_no_https(monkeypatch):
-    """Требование (б) обзора: даже если после успешной перепроверки зависнет что-то другое (здесь — вторая
-    проверка переадресации) и сработает внешний AFTER_TIMEOUT_SECONDS, устаревшую NO_HTTPS, которую PageSpeed уже
-    опроверг, нельзя возвращать обратно — откат должен использовать тот же признак «PageSpeed не согласен»."""
+    """Даже если после успешной перепроверки зависнет что-то другое (здесь — вторая проверка переадресации) и
+    сработает внешний AFTER_TIMEOUT_SECONDS, устаревшую NO_HTTPS, которую PageSpeed уже опроверг, нельзя
+    возвращать обратно — откат должен использовать тот же признак «PageSpeed не согласен»."""
     monkeypatch.setattr(pipeline_module, "AFTER_TIMEOUT_SECONDS", 0.02)
 
     class HangingSecondRedirectProbes(FakeProbes):
@@ -444,3 +501,60 @@ async def test_after_timeout_does_not_reinstate_a_contradicted_no_https(monkeypa
     result = await Pipeline(probes, pagespeed, FakeClock()).run(target())
     findings = [item.finding for item in result.verdict.blocks[Block.SECURITY].findings]
     assert Finding.NO_HTTPS not in findings
+
+
+# --- Проверка переадресации после замера не имеет своего срока на чтение (check_http_redirect читает без
+# предела) — зависший на 80 сервер не должен ронять уже готовые результаты других проверок ---
+
+async def test_redirect_check_after_measurement_has_its_own_short_timeout(monkeypatch):
+    """Порт 80 итогового хоста принимает соединение, но не отвечает: без собственного срока эта проверка сама
+    съела бы весь бюджет «после замера» — и потерялась бы уже готовая проверка сертификата того же хоста."""
+    monkeypatch.setattr(probe_module, "REDIRECT_CHECK_TIMEOUT_SECONDS", 0.02)
+    monkeypatch.setattr(pipeline_module, "AFTER_TIMEOUT_SECONDS", 1)
+
+    class HangingFinalRedirectProbes(FakeProbes):
+        async def check_redirect(self, host):
+            self.calls.append(("redirect", host))
+            if host == "site.test":
+                return RedirectState.REDIRECTS
+            await asyncio.sleep(0.05)
+            raise AssertionError("проверка переадресации итогового хоста не должна была дождаться ответа")
+
+    probes = HangingFinalRedirectProbes(
+        tls={"site.test": TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),
+             "www.site.test": TlsFacts("www.site.test", TlsOutcome.OK, cert())})
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://www.site.test/", **PAGE_AUDITS))
+    result = await Pipeline(probes, pagespeed, FakeClock()).run(target())
+    assert result.security.tls[-1] == TlsFacts("www.site.test", TlsOutcome.OK, cert())
+    assert result.security.redirects == (RedirectState.REDIRECTS, RedirectState.UNKNOWN)
+
+
+# --- ТЗ С7: Pipeline → GuardedProbes → AddressGuard.open_stream целиком, не через FakeProbes ---
+
+def _resolver_for(addresses: dict[str, list[str]]):
+    async def resolve(host: str) -> list[str]:
+        return addresses[host]
+    return resolve
+
+
+@pytest.mark.parametrize(("final_url", "blocked_host", "blocked_address"), [
+    ("https://nas.test/", "nas.test", "192.168.1.5"),
+    ("https://127.0.0.1/", "127.0.0.1", "127.0.0.1"),
+])
+async def test_pipeline_never_connects_to_a_private_address_behind_pagespeeds_final_url(
+        monkeypatch, final_url, blocked_host, blocked_address):
+    """Все остальные тесты этого файла идут через FakeProbes — сама защита (AddressGuard.open_stream) в них не
+    участвует. Итоговый адрес, который называет PageSpeed (finalDisplayedUrl), может вести куда угодно, в том
+    числе в домашнюю сеть или на loopback: соединение должно остановиться на резолве, до открытия сокета."""
+    guard = AddressGuard(_resolver_for({"site.test": [PUBLIC_ADDRESS], blocked_host: [blocked_address]}))
+    opened: list[str] = []
+
+    async def spy_open_connection(host, port, **kwargs):
+        opened.append(host)
+        raise ConnectionRefusedError
+
+    monkeypatch.setattr(asyncio, "open_connection", spy_open_connection)
+    pagespeed = FakePageSpeed(lighthouse(final_url=final_url, **PAGE_AUDITS))
+    await Pipeline(GuardedProbes(guard), pagespeed, FakeClock()).run(target())
+    assert PUBLIC_ADDRESS in opened  # проверенный публичный адрес соединение всё же пробует (иначе тест не о том)
+    assert opened == [PUBLIC_ADDRESS] * len(opened)  # и больше никакого другого адреса

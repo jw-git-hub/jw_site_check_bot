@@ -215,7 +215,7 @@ def test_classify(code, status, expected):
     assert classify(LighthouseFailure(code, status)) == expected
 
 
-@pytest.mark.skipif(not FIXTURES, reason="нет записанных ответов PageSpeed (задача 2)")
+@pytest.mark.skipif(not FIXTURES, reason="нет записанных ответов PageSpeed (см. scripts/record_fixtures.py)")
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda path: path.stem)
 def test_recorded_answers_are_understood(path):
     recorded = json.loads(path.read_text(encoding="utf-8"))

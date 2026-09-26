@@ -62,8 +62,8 @@ async def test_only_owner_passes_the_filter(settings):
     assert not await IsAdmin()(make_message("/stats", user_id=500), settings=settings)
 
 
-# Поправка 1 к задаче 18: /site показывает ключевые цифры (время до главного на экране и вес страницы),
-# теми же функциями форматирования, что и отчёт.
+# /site показывает ключевые цифры (время до главного на экране и вес страницы), теми же функциями
+# форматирования, что и отчёт.
 async def test_site_shows_lcp_seconds_and_page_weight(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
@@ -71,7 +71,7 @@ async def test_site_shows_lcp_seconds_and_page_weight(db):
     assert "1,4 секунды · 260 КБ" in messenger.last()
 
 
-# Поправка 1 к задаче 18: нет цифры в metrics (проверка упала до замера) — прочерк, без падения.
+# Нет цифры в metrics (проверка упала до замера) — прочерк, без падения.
 async def test_site_shows_a_dash_when_key_numbers_are_missing(db):
     clock = FakeClock()
     await Users(db, clock).touch(77, "ru", "channel")
@@ -84,7 +84,7 @@ async def test_site_shows_a_dash_when_key_numbers_are_missing(db):
     assert "— · —" in messenger.last()
 
 
-# Поправка 2 к задаче 18: служебное сообщение «пришлите домен» собрано через simple_message, не своей копией.
+# Служебное сообщение «пришлите домен» собрано через simple_message, не своей копией.
 async def test_site_usage_message_is_built_with_simple_message(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site", user_id=ADMIN_ID), CommandObject(command="site", args=None),
@@ -92,9 +92,9 @@ async def test_site_usage_message_is_built_with_simple_message(db):
     assert messenger.sent[-1][1] == simple_message(BRAND, TEXTS.get(OWNER_LANG, "site_usage"))
 
 
-# Поправка 2 к задаче 18: usage-сообщение собрано вызовом simple_message, SECTION_SIZE и ITEMS_JOIN — из
-# bot.site_check.report, не свои копии. Разница не видна в тексте сообщения (простое сообщение выглядит так
-# же), поэтому проверяем источник модуля.
+# usage-сообщение собрано вызовом simple_message, SECTION_SIZE и ITEMS_JOIN — из bot.site_check.report, не
+# свои копии. Разница не видна в тексте сообщения (простое сообщение выглядит так же), поэтому проверяем
+# источник модуля.
 def test_admin_reuses_simple_message_and_report_constants_instead_of_redeclaring_them():
     source = inspect.getsource(admin)
     assert "simple_message(" in source

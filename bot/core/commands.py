@@ -78,7 +78,7 @@ async def on_lang(message: Message, users: Users, messenger: Messenger, texts: T
 async def on_lang_chosen(callback: CallbackQuery, users: Users, messenger: Messenger, texts: Texts,
                          brand: Brand) -> None:
     lang = callback.data.removeprefix(LANG_CALLBACK_PREFIX)
-    # Поправка 5 к задаче 17: устаревшее нажатие не должно ронять обработчик выбора языка.
+    # Устаревшее нажатие («query is too old») не должно ронять обработчик выбора языка.
     with contextlib.suppress(TelegramAPIError):
         await callback.answer()
     if lang not in LANGUAGES:

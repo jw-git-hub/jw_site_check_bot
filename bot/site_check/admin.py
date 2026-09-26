@@ -15,7 +15,7 @@ from bot.core.messenger import Messenger
 from bot.site_check.checks import ChecksRepo, DomainCheck, LabelStats
 from bot.site_check.notifier import OWNER_LANG
 from bot.site_check.post_numbers import OWNER_TIMEZONE, TIME_FORMAT
-# Поправка 2 к задаче 18: те же константы, что и в отчёте, не свои копии.
+# Те же константы, что и в отчёте, не свои копии.
 from bot.site_check.report import ITEMS_JOIN, SECTION_SIZE
 from bot.site_check.url_input import Target, parse_input
 
@@ -95,12 +95,12 @@ def _site_row(texts: Texts, check: DomainCheck) -> list[str]:
 
 
 def _lcp_text(texts: Texts, metrics: dict[str, Any]) -> str:
-    """Время до главного на экране (LCP) — поправка 1 к задаче 18. Нет цифры — прочерк, без падения."""
+    """Время до главного на экране (LCP). Нет цифры (проверка упала до замера) — прочерк, без падения."""
     lcp_ms = metrics.get("lcp_ms")
     return texts.seconds(OWNER_LANG, lcp_ms) if lcp_ms is not None else NO_VALUE
 
 
 def _weight_text(texts: Texts, metrics: dict[str, Any]) -> str:
-    """Вес страницы — поправка 1 к задаче 18. Нет цифры — прочерк, без падения."""
+    """Вес страницы. Нет цифры (проверка упала до замера) — прочерк, без падения."""
     page_bytes = metrics.get("page_bytes")
     return texts.size(OWNER_LANG, page_bytes) if page_bytes is not None else NO_VALUE

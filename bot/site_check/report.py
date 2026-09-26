@@ -148,7 +148,8 @@ def _tails(texts: Texts, lang: Lang, items: list[FindingItem]) -> str:
 def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> str:
     main = verdict.findings[0] if verdict.findings else None
     if main and main.grade is Grade.BAD:
-        return _security_bad_text(texts, lang, main, verdict.findings[1:])
+        today = request.measured_at.date()
+        return _security_bad_text(texts, lang, main, verdict.findings[1:], today)
     tails = [item for item in verdict.findings if item.finding is not Finding.INCOMPLETE_CHAIN]
     opening = _security_opening(texts, lang, request, verdict)
     if not tails:
@@ -156,28 +157,33 @@ def _security_text(texts: Texts, lang: Lang, request: ReportRequest, verdict: Bl
     return SENTENCE_GAP.join([opening, texts.get(lang, "security_but", problems=_tails(texts, lang, tails))])
 
 
-def _security_bad_text(texts: Texts, lang: Lang, main: FindingItem, rest: tuple[FindingItem, ...]) -> str:
+def _security_bad_text(texts: Texts, lang: Lang, main: FindingItem, rest: tuple[FindingItem, ...],
+                       today: date) -> str:
     # Сертификат «плохо» не должен молча прятать остальные находки блока — те же слова («Кроме того, …»),
     # что и в _mobile_text, чтобы у каждой находки было своё последствие. INCOMPLETE_CHAIN здесь не исключаем
     # (в отличие от ветки «хорошо/стоит поправить» — там его накрывает открывающее предложение
     # `security_incomplete_chain`, здесь открывающего предложения нет): у него есть свой `tail_*`.
-    sentence = _security_bad_sentence(texts, lang, main)
+    sentence = _security_bad_sentence(texts, lang, main, today)
     tails = _tails(texts, lang, _fix_grade_findings(rest))
     if not tails:
         return sentence
     return SENTENCE_GAP.join([sentence, texts.get(lang, "also", problems=tails)])
 
 
-def _security_bad_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
+def _security_bad_sentence(texts: Texts, lang: Lang, item: FindingItem, today: date) -> str:
     if item.finding is Finding.CERT_INVALID:
-        return _cert_invalid_sentence(texts, lang, item)
+        return _cert_invalid_sentence(texts, lang, item, today)
     return texts.get(lang, f"security_{item.finding}")
 
 
-def _cert_invalid_sentence(texts: Texts, lang: Lang, item: FindingItem) -> str:
+def _cert_invalid_sentence(texts: Texts, lang: Lang, item: FindingItem, today: date) -> str:
     # read_cert_unverified возвращает cert=None по замыслу, когда второе соединение не удалось — без даты
-    # предложение о просрочке подставляет пустую строку, отсюда отдельный текст без {date}.
-    if item.cert_problem is TlsOutcome.EXPIRED and item.until is None:
+    # предложение о просрочке подставляет пустую строку, отсюда отдельный текст без {date}. Код ошибки 10
+    # (истёк) может относиться к промежуточному сертификату цепочки, а прочитанный сертификат — всегда лист:
+    # если его срок ещё не кончился, дата — не про этот код ошибки и показывать её нельзя (иначе «истёк» с
+    # датой в будущем).
+    no_reliable_date = item.until is None or item.until > today
+    if item.cert_problem is TlsOutcome.EXPIRED and no_reliable_date:
         return texts.get(lang, "security_cert_expired_no_date")
     until = texts.date(lang, item.until) if item.until else ""
     return texts.get(lang, f"security_cert_{item.cert_problem}", date=until)

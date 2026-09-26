@@ -91,10 +91,10 @@ def test_check_isolation_treats_an_undetermined_address_as_a_failure_not_a_skip(
 
 
 def test_check_isolation_always_uses_a_controlled_temporary_neighbour():
-    """Обзор задачи 22, раунд 1: настоящий сосед из `docker ps` мог ничего не слушать на :80 — тогда
-    «закрыто» получалось что при рабочей изоляции (timeout), что без неё (refused), и группа
-    подтверждалась независимо от сети. Скрипт больше не ищет случайный контейнер — всегда поднимает
-    свой, заведомо слушающий порт, и проверяет его обычным expect_closed (не отдельным дублем case)."""
+    """Настоящий сосед из `docker ps` мог ничего не слушать на :80 — тогда «закрыто» получалось что при
+    рабочей изоляции (timeout), что без неё (refused), и группа подтверждалась независимо от сети. Скрипт
+    больше не ищет случайный контейнер — всегда поднимает свой, заведомо слушающий порт, и проверяет его
+    обычным expect_closed (не отдельным дублем case)."""
     script = read("check_isolation.sh")
     assert "find_neighbour_container_ip" not in script
     assert "docker ps -q" not in script
@@ -156,3 +156,11 @@ def test_check_isolation_verdict_requires_every_group_confirmed_and_no_failures(
 def test_check_isolation_header_mentions_nftables_restart():
     header = "\n".join(read("check_isolation.sh").splitlines()[:6])
     assert "nftables" in header
+
+
+def test_check_isolation_tries_several_router_ports_not_just_80():
+    """Веб-интерфейс роутера бывает не только на 80 — группа «роутер» должна подтверждаться и тогда."""
+    script = read("check_isolation.sh")
+    assert re.search(r"^ROUTER_PORTS=\(80 443 8080 53\)", script, re.MULTILINE)
+    assert 'for router_port in "${ROUTER_PORTS[@]}"' in script
+    assert 'expect_closed "$router_ip" "$router_port" "роутер, порт $router_port" router' in script

@@ -9,7 +9,8 @@ import aiohttp
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.enums import ChatType
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import CallbackQuery, TelegramObject
+from aiogram.types import CallbackQuery, ErrorEvent, TelegramObject, Update
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from bot.brand import BRAND
@@ -88,14 +89,39 @@ def _checking(settings: Settings, clock: Clock, users: Users, repo: ChecksRepo, 
 
 def build_dispatcher(settings: Settings, users: Users, repo: ChecksRepo, messenger: Messenger, intake: Intake,
                      clock: Clock) -> Dispatcher:
-    """Данные диспетчера — зависимости обработчиков по имени параметра (задачи 6, 17, 18)."""
+    """Данные диспетчера — зависимости обработчиков по имени параметра."""
     dispatcher = Dispatcher()
     dispatcher.workflow_data.update(settings=settings, texts=TEXTS, brand=BRAND, users=users, repo=repo,
                                     messenger=messenger, intake=intake, clock=clock)
     dispatcher.message.filter(F.chat.type == ChatType.PRIVATE)  # только личка (ТЗ, Р6)
     dispatcher.callback_query.filter(F.message.chat.type == ChatType.PRIVATE)
     dispatcher.include_router(private_chats(settings, users, messenger))
+    dispatcher.errors.register(on_unexpected_error)  # последний рубеж (ТЗ, раздел 12)
     return dispatcher
+
+
+async def on_unexpected_error(event: ErrorEvent, messenger: Messenger) -> None:
+    """Последний рубеж (ТЗ, раздел 12): необработанная ошибка обработчика не должна обрываться без ответа
+    человеку — короткий отказ вместо тишины, а подробности идут в журнал. Сбой самой отправки этого отказа
+    подавляется: если сообщение не доставить, помочь тут уже нечем."""
+    logger.exception("необработанная ошибка обработчика: {}", event.exception)
+    recipient = _error_recipient(event.update)
+    if recipient is None:
+        return
+    chat_id, language_code = recipient
+    text = TEXTS.get(detect_lang(language_code), "unexpected_error")
+    with contextlib.suppress(TelegramAPIError, DeliveryFailed):
+        await messenger.send(chat_id, commands.simple_message(BRAND, text))
+
+
+def _error_recipient(update: Update) -> tuple[int, str | None] | None:
+    """Чат и язык человека, которому ответить, — message и callback_query единственные типы обновлений, которые
+    вообще доходят до бота (ALLOWED_UPDATES)."""
+    if update.message:
+        return update.message.chat.id, update.message.from_user.language_code
+    if update.callback_query and update.callback_query.message:
+        return update.callback_query.message.chat.id, update.callback_query.from_user.language_code
+    return None
 
 
 def private_chats(settings: Settings, users: Users, messenger: Messenger) -> Router:
@@ -112,15 +138,14 @@ def private_chats(settings: Settings, users: Users, messenger: Messenger) -> Rou
 
 
 def throttle_notice(language_code: str | None) -> str:
-    # Поправка 2 к задаче 19: язык выбранный через /lang (Р11) здесь недоступен без запроса к базе на каждое
-    # частое нажатие — тот самый случай, где брифовый вариант (по language_code Telegram) осознанно оставлен;
-    # подробности и обоснование — в отчёте задачи 19.
+    # Язык, выбранный через /lang (Р11), здесь недоступен без запроса к базе на каждое частое нажатие — решение
+    # взять язык из language_code Telegram осознанное: частое нажатие не стоит лишнего похода в базу.
     return TEXTS.get(detect_lang(language_code), "throttled")
 
 
 def _throttle_notice_sender(messenger: Messenger) -> Callable[[int, str], Awaitable[None]]:
-    """send_notice для ThrottleMiddleware (поправка 1 к задаче 19): то же rich-сообщение с шапкой (ТЗ, 7.1),
-    доставка best-effort — предупреждение о частоте не должно ронять обработку из-за DeliveryFailed."""
+    """send_notice для ThrottleMiddleware: то же rich-сообщение с шапкой (ТЗ, 7.1), доставка best-effort —
+    предупреждение о частоте не должно ронять обработку из-за DeliveryFailed."""
     async def send(chat_id: int, text: str) -> None:
         with contextlib.suppress(DeliveryFailed):
             await messenger.send(chat_id, commands.simple_message(BRAND, text))
@@ -162,6 +187,14 @@ async def refresh_home_ip(guard: AddressGuard, http: aiohttp.ClientSession, noti
         await update_home_ip(guard, http, notifier)
 
 
+async def setup_commands_best_effort(bot: Bot, admin_id: int) -> None:
+    """Меню команд — косметика: сбой Telegram здесь не повод для петли перезапусков бота (ТЗ, раздел 12)."""
+    try:
+        await commands.setup_commands(bot, TEXTS, admin_id, ADMIN_COMMANDS)
+    except TelegramAPIError as error:
+        logger.warning("не удалось настроить меню команд: {}", error)
+
+
 async def daily_backups(engine: AsyncEngine, backup_dir: Path, clock: Clock) -> None:
     """Копия за день — одна: если бот падает и поднимается, хорошая утренняя копия не затирается."""
     while True:
@@ -176,7 +209,7 @@ async def run(settings: Settings) -> None:
     parts = await build(settings, clock)
     await close_interrupted(parts.repo, parts.messenger)
     await update_home_ip(parts.guard, parts.http, parts.notifier)  # адрес дома — до первой проверки
-    await commands.setup_commands(parts.bot, TEXTS, settings.admin_id, ADMIN_COMMANDS)
+    await setup_commands_best_effort(parts.bot, settings.admin_id)
     await parts.bot.delete_webhook(drop_pending_updates=False)  # присланное, пока бот лежал, — ответить (ТЗ, Л6)
     background = _start_background(parts, settings, clock)
     try:
