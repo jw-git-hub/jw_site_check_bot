@@ -10,6 +10,10 @@ TODAY = date(2026, 9, 25)
 MB = 1024 * 1024
 VIEWPORT_OK = '<meta name="viewport" content="width=device-width,initial-scale=1">'
 JW_DEV_PRO_HEAVIEST = (("00-oblozhka.webp", 112_654),)
+# Записанные ответы PageSpeed (tests/fixtures/pagespeed), где страницу не измерить, и ожидаемый исход.
+# Просроченный сертификат и несуществующий домен PageSpeed называет одинаково — FAILED_DOCUMENT_REQUEST:
+# различают их свои проверки бота до замера.
+RECORDED_FAILURES = {"not_found": "not_found", "blocked": "blocked", "cert": "unreachable", "no_domain": "unreachable"}
 
 
 def audit(score=1, mode="numeric", value=None, lcp_savings=None, items=None) -> dict:

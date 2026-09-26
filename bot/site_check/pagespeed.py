@@ -33,6 +33,7 @@ READ_CHUNK_BYTES = 64 * 1024
 MAX_ATTEMPTS = 2
 RETRY_MIN_REMAINING_SECONDS = 40
 HTTP_OK = 200
+FIRST_ERROR_STATUS = 400
 TOO_MANY_REQUESTS = 429
 FIRST_SERVER_ERROR = 500
 KEY_PROBLEM_STATUSES = frozenset({400, 401, 403})
@@ -167,7 +168,18 @@ def _checked_result(result: dict[str, Any]) -> dict[str, Any]:
     code = runtime.get("code")
     if code and code != NO_ERROR:
         raise LighthouseFailure(code, _page_status(str(runtime.get("message", ""))))
+    _raise_error_page(result.get("runWarnings"))
     return result
+
+
+def _raise_error_page(warnings: Any) -> None:
+    # Страницу 404 или заглушку защиты от ботов PageSpeed меряет как обычную, код ответа — только в runWarnings.
+    if not isinstance(warnings, list):
+        return
+    for warning in warnings:
+        status = _page_status(warning) if isinstance(warning, str) else None
+        if status is not None and status >= FIRST_ERROR_STATUS:
+            raise LighthouseFailure(ERRORED_DOCUMENT, status)
 
 
 def _raise_service_problem(status: int, message: str) -> None:

@@ -9,11 +9,11 @@ from aiohttp.test_utils import TestServer
 
 from bot.site_check.pagespeed import (FIELDS, KEY_HEADER, RETRY_MIN_REMAINING_SECONDS, LighthouseFailure,
                                       PageSpeedClient, PageSpeedUnavailable, classify, interpret)
+from tests.builders import RECORDED_FAILURES
 from tests.fakes import FakeClock, fake_google_key
 
 RESULT = {"lighthouseResult": {"lighthouseVersion": "13.5.0", "finalDisplayedUrl": "https://site.test/", "audits": {}}}
 FIXTURES = sorted((Path(__file__).parents[1] / "fixtures" / "pagespeed").glob("*.json"))
-EXPECTED_FAILURES = {"not_found": "not_found", "cert": "cert_blocks", "no_domain": "unreachable_dns"}
 
 
 def lighthouse_error(code: str, page_status: int | None = None) -> dict:
@@ -86,6 +86,25 @@ async def test_runtime_error_inside_200_is_site_failure(run_client):
     body = {"lighthouseResult": {"runtimeError": {"code": "NO_FCP", "message": "No content"}}}
     with pytest.raises(LighthouseFailure, match="NO_FCP"):
         await run_client(FakePageSpeed((200, body)))
+
+
+def result_with_warnings(warnings) -> bytes:
+    return json.dumps({"lighthouseResult": {**RESULT["lighthouseResult"], "runWarnings": warnings}}).encode()
+
+
+@pytest.mark.parametrize(("page_status", "expected"), [(404, "not_found"), (403, "blocked"), (503, "server_error")])
+def test_error_page_status_in_run_warnings_is_site_failure(page_status, expected):
+    # Страницу 404 или заглушку защиты от ботов PageSpeed меряет как обычную: код виден только в runWarnings.
+    warning = f"Lighthouse was unable to reliably load the page you requested. (Status code: {page_status})"
+    with pytest.raises(LighthouseFailure) as failure:
+        interpret(200, result_with_warnings([warning]))
+    assert classify(failure.value) == expected
+
+
+@pytest.mark.parametrize("warnings", [["The page was redirected to https://site.test/"], ["(Status code: 200)"],
+                                      "(Status code: 404)", [404]])
+def test_other_run_warnings_keep_the_result(warnings):
+    assert "audits" in interpret(200, result_with_warnings(warnings))
 
 
 async def test_quota_is_our_problem_without_retry(run_client):
@@ -201,7 +220,7 @@ def test_classify(code, status, expected):
 def test_recorded_answers_are_understood(path):
     recorded = json.loads(path.read_text(encoding="utf-8"))
     body = json.dumps(recorded["response"]).encode()
-    expected = EXPECTED_FAILURES.get(path.stem)
+    expected = RECORDED_FAILURES.get(path.stem)
     if expected is None:
         assert "audits" in interpret(recorded["http_status"], body)
         return

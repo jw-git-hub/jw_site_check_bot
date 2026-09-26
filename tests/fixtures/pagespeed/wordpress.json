@@ -1,0 +1,2439 @@
+{
+ "http_status": 200,
+ "response": {
+  "lighthouseResult": {
+   "requestedUrl": "https://wordpress.org/",
+   "finalDisplayedUrl": "https://wordpress.org/",
+   "lighthouseVersion": "13.5.0",
+   "runWarnings": [],
+   "audits": {
+    "largest-contentful-paint": {
+     "id": "largest-contentful-paint",
+     "title": "Largest Contentful Paint",
+     "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+     "score": 0.11,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "6.2 s",
+     "numericValue": 6162.133724838451,
+     "numericUnit": "millisecond"
+    },
+    "first-contentful-paint": {
+     "id": "first-contentful-paint",
+     "title": "First Contentful Paint",
+     "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+     "score": 0.85,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "2.0 s",
+     "numericValue": 1962.037717262127,
+     "numericUnit": "millisecond"
+    },
+    "total-blocking-time": {
+     "id": "total-blocking-time",
+     "title": "Total Blocking Time",
+     "description": "Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms, expressed in milliseconds. [Learn more about the Total Blocking Time metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/).",
+     "score": 0.86,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "230 ms",
+     "numericValue": 233.50000000000045,
+     "numericUnit": "millisecond"
+    },
+    "cumulative-layout-shift": {
+     "id": "cumulative-layout-shift",
+     "title": "Cumulative Layout Shift",
+     "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0",
+     "details": {
+      "type": "debugdata",
+      "items": [
+       {
+        "newEngineResultDiffered": false,
+        "newEngineResult": {
+         "cumulativeLayoutShiftMainFrame": 0,
+         "cumulativeLayoutShift": 0
+        },
+        "cumulativeLayoutShiftMainFrame": 0
+       }
+      ]
+     },
+     "numericValue": 0,
+     "numericUnit": "unitless"
+    },
+    "speed-index": {
+     "id": "speed-index",
+     "title": "Speed Index",
+     "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+     "score": 0.76,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "4.3 s",
+     "numericValue": 4299.141776907888,
+     "numericUnit": "millisecond"
+    },
+    "server-response-time": {
+     "id": "server-response-time",
+     "title": "Initial server response time was short",
+     "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Root document took 260 ms",
+     "metricSavings": {
+      "LCP": 150,
+      "FCP": 150
+     },
+     "details": {
+      "items": [
+       {
+        "url": "https://wordpress.org/",
+        "responseTime": 264
+       }
+      ],
+      "overallSavingsMs": 164,
+      "headings": [
+       {
+        "key": "url",
+        "valueType": "url",
+        "label": "URL"
+       },
+       {
+        "valueType": "timespanMs",
+        "label": "Time Spent",
+        "key": "responseTime"
+       }
+      ],
+      "type": "opportunity"
+     },
+     "numericValue": 264,
+     "numericUnit": "millisecond"
+    },
+    "image-delivery-insight": {
+     "id": "image-delivery-insight",
+     "title": "Improve image delivery",
+     "description": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 524 KiB",
+     "metricSavings": {
+      "LCP": 700,
+      "FCP": 0
+     },
+     "details": {
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 536321
+      },
+      "items": [
+       {
+        "url": "https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png",
+        "subItems": {
+         "items": [
+          {
+           "reason": "Increasing the image compression factor could improve this image's download size.",
+           "wastedBytes": 110256
+          },
+          {
+           "reason": "This image file is larger than it needs to be (768x375) for its displayed dimensions (651x318). Use responsive images to reduce the image download size.",
+           "wastedBytes": 44546
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "lhId": "page-0-IMG",
+         "boundingRect": {
+          "height": 182,
+          "width": 372,
+          "right": 392,
+          "bottom": 4636,
+          "left": 20,
+          "top": 4454
+         },
+         "selector": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-39810",
+         "nodeLabel": "A black and white photograph of excited, applauding attendees in the audience a…",
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,5,DIV,1,DIV,1,DIV,0,FIGURE,0,IMG",
+         "snippet": "<img width=\"1216\" height=\"593\" src=\"https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png?resize…\" alt=\"A black and white photograph of excited, applauding attendees in the audie…\" class=\"wp-image-39810\" srcset=\"https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png?w=1216…\" sizes=\"(max-width: 1216px) 100vw, 1216px\">",
+         "type": "node"
+        },
+        "wastedBytes": 123767,
+        "totalBytes": 158256
+       },
+       {
+        "url": "https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png",
+        "node": {
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,7,DIV,0,DIV,1,DIV,0,FIGURE,0,IMG",
+         "type": "node",
+         "selector": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-53226",
+         "boundingRect": {
+          "width": 372,
+          "left": 20,
+          "bottom": 6020,
+          "height": 123,
+          "top": 5897,
+          "right": 392
+         },
+         "snippet": "<img width=\"1476\" height=\"489\" src=\"https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png?resize=76…\" alt=\"Green &quot;Gone Coding&quot; hat between &quot;Better Web&quot; and &quot;Gone Coding&quot; patches\" class=\"wp-image-53226\" srcset=\"https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png?w=1476&amp;ss…\" sizes=\"(max-width: 1476px) 100vw, 1476px\">",
+         "nodeLabel": "Green \"Gone Coding\" hat between \"Better Web\" and \"Gone Coding\" patches",
+         "lhId": "page-1-IMG"
+        },
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 104898,
+           "reason": "Increasing the image compression factor could improve this image's download size."
+          },
+          {
+           "wastedBytes": 38412,
+           "reason": "This image file is larger than it needs to be (767x254) for its displayed dimensions (651x216). Use responsive images to reduce the image download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "totalBytes": 137368,
+        "wastedBytes": 113978
+       },
+       {
+        "wastedBytes": 76616,
+        "node": {
+         "boundingRect": {
+          "left": 0,
+          "right": 412,
+          "top": 3708,
+          "height": 76,
+          "width": 412,
+          "bottom": 3784
+         },
+         "lhId": "page-2-IMG",
+         "selector": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22641",
+         "snippet": "<img width=\"2640\" height=\"484\" src=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png?resi…\" alt=\"\" class=\"wp-image-22641\" srcset=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png?w=26…\" sizes=\"(max-width: 2640px) 100vw, 2640px\">",
+         "type": "node",
+         "nodeLabel": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22641",
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,4,DIV,1,DIV,0,DIV,1,FIGURE,0,IMG"
+        },
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "reason": "Increasing the image compression factor could improve this image's download size.",
+           "wastedBytes": 76616
+          }
+         ]
+        },
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png",
+        "totalBytes": 94664
+       },
+       {
+        "wastedBytes": 71362,
+        "totalBytes": 89282,
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png",
+        "node": {
+         "nodeLabel": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22644",
+         "snippet": "<img width=\"2660\" height=\"484\" src=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png?re…\" alt=\"\" class=\"wp-image-22644\" srcset=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png?w=…\" sizes=\"(max-width: 2660px) 100vw, 2660px\">",
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,4,DIV,1,DIV,0,DIV,0,FIGURE,0,IMG",
+         "boundingRect": {
+          "height": 75,
+          "width": 412,
+          "right": 412,
+          "top": 3613,
+          "bottom": 3688,
+          "left": 0
+         },
+         "type": "node",
+         "lhId": "page-3-IMG",
+         "selector": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22644"
+        },
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 71362,
+           "reason": "Increasing the image compression factor could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        }
+       },
+       {
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 59526,
+           "reason": "This image file is larger than it needs to be (768x803) for its displayed dimensions (75x79). Use responsive images to reduce the image download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "totalBytes": 60102,
+        "wastedBytes": 59526,
+        "node": {
+         "type": "node",
+         "nodeLabel": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-52112",
+         "boundingRect": {
+          "bottom": 133,
+          "right": 62,
+          "top": 89,
+          "left": 20,
+          "width": 42,
+          "height": 44
+         },
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,0,DIV,0,FIGURE,0,IMG",
+         "selector": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-52112",
+         "snippet": "<img width=\"1000\" height=\"1046\" src=\"https://i0.wp.com/wordpress.org/files/2026/06/WCUS-2026.png?resize=768%2C8…\" alt=\"\" class=\"wp-image-52112\" srcset=\"https://i0.wp.com/wordpress.org/files/2026/06/WCUS-2026.png?w=1000&amp;ssl=1 1…\" sizes=\"(max-width: 1000px) 100vw, 1000px\">",
+         "lhId": "page-4-IMG"
+        },
+        "url": "https://i0.wp.com/wordpress.org/files/2026/06/WCUS-2026.png"
+       },
+       {
+        "totalBytes": 98264,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "reason": "Increasing the image compression factor could improve this image's download size.",
+           "wastedBytes": 43064
+          },
+          {
+           "reason": "This image file is larger than it needs to be (720x460) for its displayed dimensions (651x416). Use responsive images to reduce the image download size.",
+           "wastedBytes": 17935
+          }
+         ]
+        },
+        "node": {
+         "snippet": "<img width=\"720\" height=\"460\" src=\"https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png?w=720&amp;s…\" alt=\"\" class=\"wp-image-48981\" srcset=\"https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png?w=720&amp;s…\" sizes=\"(max-width: 720px) 100vw, 720px\">",
+         "lhId": "page-5-IMG",
+         "type": "node",
+         "boundingRect": {
+          "right": 392,
+          "bottom": 1849,
+          "top": 1611,
+          "left": 20,
+          "width": 372,
+          "height": 238
+         },
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,3,DIV,0,DIV,2,DIV,0,FIGURE,0,IMG",
+         "nodeLabel": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-48981",
+         "selector": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-48981"
+        },
+        "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png",
+        "wastedBytes": 53139
+       },
+       {
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-bottom-row.png",
+        "totalBytes": 45140,
+        "wastedBytes": 30804,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "wastedBytes": 30804,
+           "reason": "Increasing the image compression factor could improve this image's download size."
+          }
+         ]
+        },
+        "node": {
+         "lhId": "page-6-IMG",
+         "selector": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22642",
+         "nodeLabel": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22642",
+         "boundingRect": {
+          "height": 60,
+          "width": 412,
+          "left": 0,
+          "top": 3804,
+          "right": 412,
+          "bottom": 3864
+         },
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,4,DIV,1,DIV,0,DIV,2,FIGURE,0,IMG",
+         "snippet": "<img width=\"2640\" height=\"384\" src=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-bottom-row.png?resi…\" alt=\"\" class=\"wp-image-22642\" srcset=\"https://i0.wp.com/wordpress.org/files/2023/10/showcase-bottom-row.png?w=26…\" sizes=\"(max-width: 2640px) 100vw, 2640px\">",
+         "type": "node"
+        }
+       },
+       {
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 5929,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "url": "https://wordpress.org/files/2023/10/NASA-1.png",
+        "node": {
+         "nodeLabel": "NASA logo",
+         "lhId": "page-7-IMG",
+         "selector": "div.wp-block-group > div.wp-block-group > figure.wp-block-image > img.wp-image-22635",
+         "type": "node",
+         "snippet": "<img width=\"192\" height=\"160\" src=\"https://wordpress.org/files/2023/10/NASA-1.png\" alt=\"NASA logo\" class=\"wp-image-22635\" style=\"object-fit:contain;width:96px;height:96px\">",
+         "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,4,DIV,0,DIV,1,DIV,2,FIGURE,0,IMG",
+         "boundingRect": {
+          "right": 154,
+          "top": 3236,
+          "height": 96,
+          "bottom": 3332,
+          "left": 58,
+          "width": 96
+         }
+        },
+        "wastedBytes": 7129,
+        "totalBytes": 11049
+       }
+      ],
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "key": "url",
+        "valueType": "url",
+        "subItemsHeading": {
+         "key": "reason",
+         "valueType": "text"
+        },
+        "label": "URL"
+       },
+       {
+        "valueType": "bytes",
+        "key": "totalBytes",
+        "label": "Resource Size"
+       },
+       {
+        "label": "Est Savings",
+        "subItemsHeading": {
+         "valueType": "bytes",
+         "key": "wastedBytes"
+        },
+        "key": "wastedBytes",
+        "valueType": "bytes"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "lcp-discovery-insight": {
+     "id": "lcp-discovery-insight",
+     "title": "LCP request discovery",
+     "description": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading",
+     "score": 0,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "LCP": 0
+     },
+     "details": {
+      "type": "list",
+      "items": [
+       {
+        "items": {
+         "requestDiscoverable": {
+          "value": true,
+          "label": "Request is discoverable in initial document"
+         },
+         "priorityHinted": {
+          "value": false,
+          "label": "fetchpriority=high should be applied"
+         },
+         "eagerlyLoaded": {
+          "value": true,
+          "label": "LCP resources should not use loading=lazy"
+         }
+        },
+        "type": "checklist"
+       },
+       {
+        "lhId": "page-8-IMG",
+        "boundingRect": {
+         "left": 20,
+         "right": 392,
+         "height": 238,
+         "top": 650,
+         "width": 372,
+         "bottom": 888
+        },
+        "selector": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-48979",
+        "snippet": "<img width=\"720\" height=\"460\" src=\"https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-design.png?w=720&amp;ss…\" alt=\"\" class=\"wp-image-48979\" srcset=\"https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-design.png?w=720&amp;ss…\" sizes=\"(max-width: 720px) 100vw, 720px\">",
+        "nodeLabel": "div.wp-block-columns > div.wp-block-column > figure.wp-block-image > img.wp-image-48979",
+        "path": "1,HTML,1,BODY,3,DIV,1,MAIN,0,DIV,3,DIV,0,DIV,0,DIV,0,FIGURE,0,IMG",
+        "type": "node"
+       }
+      ]
+     }
+    },
+    "render-blocking-insight": {
+     "id": "render-blocking-insight",
+     "title": "Render-blocking requests",
+     "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 2,410 ms",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 2400
+     },
+     "details": {
+      "type": "table",
+      "items": [
+       {
+        "totalBytes": 36212,
+        "url": "https://wordpress.org/wp-content/themes/wporg-main-2022/build/style/style-index.css",
+        "wastedMs": 1384
+       },
+       {
+        "totalBytes": 43357,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifSC/style.css",
+        "wastedMs": 1384
+       },
+       {
+        "wastedMs": 1042,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifKR/style.css",
+        "totalBytes": 33541
+       },
+       {
+        "wastedMs": 2067,
+        "totalBytes": 35505,
+        "url": "https://wordpress.org/wp-includes/css/dashicons.min.css"
+       },
+       {
+        "totalBytes": 3816,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/block-styles.css",
+        "wastedMs": 1042
+       },
+       {
+        "wastedMs": 1042,
+        "totalBytes": 8332,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/style.css"
+       },
+       {
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/navigation/style.min.css",
+        "wastedMs": 359,
+        "totalBytes": 2962
+       },
+       {
+        "totalBytes": 34515,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifJP/style.css",
+        "wastedMs": 1042
+       },
+       {
+        "wastedMs": 359,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css",
+        "totalBytes": 6531
+       },
+       {
+        "wastedMs": 1042,
+        "totalBytes": 1868,
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/social-links/style.min.css"
+       },
+       {
+        "totalBytes": 1986,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css",
+        "wastedMs": 1042
+       }
+      ],
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "valueType": "bytes",
+        "key": "totalBytes"
+       },
+       {
+        "valueType": "timespanMs",
+        "key": "wastedMs",
+        "label": "Duration"
+       }
+      ]
+     }
+    },
+    "unused-javascript": {
+     "id": "unused-javascript",
+     "title": "Reduce unused JavaScript",
+     "description": "Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. [Learn how to reduce unused JavaScript](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/).",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 138 KiB",
+     "metricSavings": {
+      "LCP": 300,
+      "FCP": 0
+     },
+     "details": {
+      "overallSavingsBytes": 141684,
+      "headings": [
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url",
+        "subItemsHeading": {
+         "valueType": "code",
+         "key": "source"
+        }
+       },
+       {
+        "key": "totalBytes",
+        "label": "Transfer Size",
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "key": "sourceBytes"
+        }
+       },
+       {
+        "subItemsHeading": {
+         "key": "sourceWastedBytes"
+        },
+        "key": "wastedBytes",
+        "label": "Est Savings",
+        "valueType": "bytes"
+       }
+      ],
+      "debugData": {
+       "type": "debugdata",
+       "metricSavings": {
+        "LCP": 300,
+        "FCP": 0
+       }
+      },
+      "sortedBy": [
+       "wastedBytes"
+      ],
+      "items": [
+       {
+        "totalBytes": 187973,
+        "url": "https://www.googletagmanager.com/gtag/js",
+        "wastedPercent": 41.02347097011591,
+        "wastedBytes": 77113
+       },
+       {
+        "totalBytes": 135415,
+        "wastedBytes": 64571,
+        "url": "https://www.googletagmanager.com/gtm.js",
+        "wastedPercent": 47.68406348594687
+       }
+      ],
+      "type": "opportunity",
+      "overallSavingsMs": 300
+     },
+     "numericValue": 300,
+     "numericUnit": "millisecond"
+    },
+    "legacy-javascript-insight": {
+     "id": "legacy-javascript-insight",
+     "title": "Legacy JavaScript",
+     "description": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "headings": [
+       {
+        "key": "url",
+        "subItemsHeading": {
+         "key": "location",
+         "valueType": "source-location"
+        },
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": null,
+        "subItemsHeading": {
+         "key": "signal"
+        },
+        "valueType": "code"
+       },
+       {
+        "valueType": "bytes",
+        "label": "Wasted bytes",
+        "key": "wastedBytes"
+       }
+      ],
+      "items": [],
+      "type": "table",
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      }
+     }
+    },
+    "duplicated-javascript-insight": {
+     "id": "duplicated-javascript-insight",
+     "title": "Duplicated JavaScript",
+     "description": "Remove large, [duplicate JavaScript modules](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) from bundles to reduce unnecessary bytes consumed by network activity.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "key": "source",
+        "valueType": "code",
+        "label": "Source",
+        "subItemsHeading": {
+         "key": "url",
+         "valueType": "url"
+        }
+       },
+       {
+        "key": "wastedBytes",
+        "label": "Duplicated bytes",
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "key": "sourceTransferBytes"
+        },
+        "granularity": 10
+       }
+      ],
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      },
+      "items": []
+     }
+    },
+    "document-latency-insight": {
+     "id": "document-latency-insight",
+     "title": "Document request latency",
+     "description": "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "debugData": {
+       "serverResponseTime": 264,
+       "type": "debugdata",
+       "redirectDuration": 0,
+       "wastedBytes": 0,
+       "uncompressedResponseBytes": 0
+      },
+      "type": "checklist",
+      "items": {
+       "serverResponseIsFast": {
+        "value": true,
+        "label": "Server responds quickly (observed 264 ms)"
+       },
+       "usesCompression": {
+        "label": "Applies text compression",
+        "value": true
+       },
+       "noRedirects": {
+        "value": true,
+        "label": "Avoids redirects"
+       }
+      }
+     }
+    },
+    "third-parties-insight": {
+     "id": "third-parties-insight",
+     "title": "3rd parties",
+     "description": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developer.chrome.com/docs/performance/insights/third-parties) to prioritize your page's content.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "entity": "Google Tag Manager",
+        "subItems": {
+         "items": [
+          {
+           "transferSize": 188662,
+           "mainThreadTime": 277.41799995303154,
+           "url": "https://www.googletagmanager.com/gtag/js"
+          },
+          {
+           "url": "https://www.googletagmanager.com/gtm.js",
+           "transferSize": 136146,
+           "mainThreadTime": 191.85499997437
+          }
+         ],
+         "type": "subitems"
+        },
+        "transferSize": 324808,
+        "mainThreadTime": 469.27299992740154
+       },
+       {
+        "transferSize": 2121,
+        "entity": "WordPress Site Stats",
+        "mainThreadTime": 2.3679999858140945,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "transferSize": 1873,
+           "url": "https://stats.wp.com/e-202639.js",
+           "mainThreadTime": 2.3679999858140945
+          },
+          {
+           "transferSize": 248,
+           "url": "https://pixel.wp.com/g.gif",
+           "mainThreadTime": 0
+          }
+         ]
+        }
+       },
+       {
+        "transferSize": 836104,
+        "mainThreadTime": 0,
+        "subItems": {
+         "items": [
+          {
+           "transferSize": 158871,
+           "url": "https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png",
+           "mainThreadTime": 0
+          },
+          {
+           "url": "https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png",
+           "mainThreadTime": 0,
+           "transferSize": 137980
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 98854,
+           "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png"
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png",
+           "transferSize": 95280
+          },
+          {
+           "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png",
+           "transferSize": 89900,
+           "mainThreadTime": 0
+          },
+          {
+           "url": "https://i0.wp.com/wordpress.org/files/2026/06/WCUS-2026.png",
+           "transferSize": 60685,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://i0.wp.com/wordpress.org/files/2024/04/brush.png",
+           "transferSize": 60536
+          },
+          {
+           "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-build.png",
+           "transferSize": 51712,
+           "mainThreadTime": 0
+          },
+          {
+           "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-bottom-row.png",
+           "mainThreadTime": 0,
+           "transferSize": 45756
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://i0.wp.com/wordpress.org/files/2026/08/Whats-new-visual-7.1.webp",
+           "transferSize": 17369
+          },
+          {
+           "url": "https://s.w.org/style/images/code-is-poetry-for-dark-bg.svg",
+           "mainThreadTime": 0,
+           "transferSize": 5934
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 5033,
+           "url": "https://i0.wp.com/wordpress.org/files/2023/12/rolling-stone.png"
+          },
+          {
+           "transferSize": 3845,
+           "url": "https://i0.wp.com/wordpress.org/files/2023/10/Harvard.png",
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 2358,
+           "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-design.png"
+          },
+          {
+           "transferSize": 1991,
+           "mainThreadTime": 0,
+           "url": "https://i0.wp.com/wordpress.org/files/2023/10/Microsoft.png"
+          }
+         ],
+         "type": "subitems"
+        },
+        "entity": "WordPress"
+       },
+       {
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "transferSize": 797,
+           "mainThreadTime": 0,
+           "url": "https://analytics.google.com/g/collect"
+          },
+          {
+           "transferSize": 797,
+           "mainThreadTime": 0,
+           "url": "https://analytics.google.com/g/collect"
+          }
+         ]
+        },
+        "entity": "Google Analytics",
+        "mainThreadTime": 0,
+        "transferSize": 1594
+       }
+      ],
+      "isEntityGrouped": true,
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "text",
+        "label": "3rd party",
+        "subItemsHeading": {
+         "valueType": "url",
+         "key": "url"
+        },
+        "key": "entity"
+       },
+       {
+        "label": "Transfer size",
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "key": "transferSize"
+        },
+        "key": "transferSize",
+        "granularity": 1
+       },
+       {
+        "subItemsHeading": {
+         "key": "mainThreadTime"
+        },
+        "valueType": "ms",
+        "key": "mainThreadTime",
+        "granularity": 1,
+        "label": "Main thread time"
+       }
+      ]
+     }
+    },
+    "viewport-insight": {
+     "id": "viewport-insight",
+     "title": "Optimize viewport for mobile",
+     "description": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "INP": 0
+     },
+     "details": {
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       }
+      ],
+      "items": [
+       {
+        "node": {
+         "nodeLabel": "head > meta",
+         "boundingRect": {
+          "height": 0,
+          "right": 0,
+          "left": 0,
+          "bottom": 0,
+          "top": 0,
+          "width": 0
+         },
+         "lhId": "page-12-META",
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+         "selector": "head > meta",
+         "type": "node",
+         "path": "1,HTML,0,HEAD,1,META"
+        }
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "target-size": {
+     "id": "target-size",
+     "title": "Touch targets have sufficient size and spacing.",
+     "description": "Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. [Learn more about touch targets](https://dequeuniversity.com/rules/axe/4.13/target-size).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "key": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "label": "Failing Elements"
+       }
+      ]
+     }
+    },
+    "meta-viewport": {
+     "id": "meta-viewport",
+     "title": "`[user-scalable=\"no\"]` is not used in the `<meta name=\"viewport\">` element and the `[maximum-scale]` attribute is not less than 5.",
+     "description": "Disabling zooming is problematic for users with low vision who rely on screen magnification to properly see the contents of a web page. [Learn more about the viewport meta tag](https://dequeuniversity.com/rules/axe/4.13/meta-viewport).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "is-on-https": {
+     "id": "is-on-https",
+     "title": "Uses HTTPS",
+     "description": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more about HTTPS](https://developer.chrome.com/docs/lighthouse/pwa/is-on-https/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "url",
+        "key": "url",
+        "label": "Insecure URL"
+       },
+       {
+        "valueType": "text",
+        "label": "Request Resolution",
+        "key": "resolution"
+       }
+      ]
+     }
+    },
+    "total-byte-weight": {
+     "id": "total-byte-weight",
+     "title": "Avoids enormous network payloads",
+     "description": "Large network payloads cost users real money and are highly correlated with long load times. [Learn how to reduce payload sizes](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Total size was 2,020 KiB",
+     "details": {
+      "sortedBy": [
+       "totalBytes"
+      ],
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "key": "totalBytes",
+        "valueType": "bytes"
+       }
+      ],
+      "items": [
+       {
+        "url": "https://wordpress.org/files/2026/06/wcus_map.png",
+        "totalBytes": 426352
+       },
+       {
+        "totalBytes": 188662,
+        "url": "https://www.googletagmanager.com/gtag/js"
+       },
+       {
+        "totalBytes": 158871,
+        "url": "https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png"
+       },
+       {
+        "totalBytes": 137980,
+        "url": "https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png"
+       },
+       {
+        "totalBytes": 136146,
+        "url": "https://www.googletagmanager.com/gtm.js"
+       },
+       {
+        "totalBytes": 111056,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/EB-Garamond/EBGaramond-latin.woff2"
+       },
+       {
+        "totalBytes": 98854,
+        "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png"
+       },
+       {
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png",
+        "totalBytes": 95280
+       },
+       {
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png",
+        "totalBytes": 89900
+       },
+       {
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-latin.woff2",
+        "totalBytes": 77855
+       }
+      ],
+      "type": "table"
+     },
+     "numericValue": 2068725,
+     "numericUnit": "byte"
+    },
+    "resource-summary": {
+     "id": "resource-summary",
+     "title": "Resources Summary",
+     "description": "Aggregates all network requests and groups them by type",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "type": "table",
+      "items": [
+       {
+        "label": "Total",
+        "resourceType": "total",
+        "requestCount": 51,
+        "transferSize": 2068725
+       },
+       {
+        "resourceType": "image",
+        "label": "Image",
+        "transferSize": 1277466,
+        "requestCount": 22
+       },
+       {
+        "resourceType": "script",
+        "transferSize": 354558,
+        "requestCount": 9,
+        "label": "Script"
+       },
+       {
+        "transferSize": 211022,
+        "requestCount": 12,
+        "label": "Stylesheet",
+        "resourceType": "stylesheet"
+       },
+       {
+        "resourceType": "font",
+        "transferSize": 191597,
+        "requestCount": 3,
+        "label": "Font"
+       },
+       {
+        "requestCount": 1,
+        "transferSize": 32156,
+        "resourceType": "document",
+        "label": "Document"
+       },
+       {
+        "resourceType": "other",
+        "requestCount": 4,
+        "label": "Other",
+        "transferSize": 1926
+       },
+       {
+        "resourceType": "media",
+        "label": "Media",
+        "transferSize": 0,
+        "requestCount": 0
+       },
+       {
+        "label": "Third-party",
+        "transferSize": 1164627,
+        "requestCount": 22,
+        "resourceType": "third-party"
+       }
+      ],
+      "headings": [
+       {
+        "label": "Resource Type",
+        "valueType": "text",
+        "key": "label"
+       },
+       {
+        "key": "requestCount",
+        "label": "Requests",
+        "valueType": "numeric"
+       },
+       {
+        "key": "transferSize",
+        "label": "Transfer Size",
+        "valueType": "bytes"
+       }
+      ]
+     }
+    },
+    "network-requests": {
+     "id": "network-requests",
+     "title": "Network Requests",
+     "description": "Lists the network requests that were made during page load.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "headings": [
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": "protocol",
+        "valueType": "text",
+        "label": "Protocol"
+       },
+       {
+        "granularity": 1,
+        "valueType": "ms",
+        "label": "Network Request Time",
+        "key": "networkRequestTime"
+       },
+       {
+        "granularity": 1,
+        "key": "networkEndTime",
+        "valueType": "ms",
+        "label": "Network End Time"
+       },
+       {
+        "label": "Transfer Size",
+        "granularity": 1,
+        "displayUnit": "kb",
+        "valueType": "bytes",
+        "key": "transferSize"
+       },
+       {
+        "label": "Resource Size",
+        "key": "resourceSize",
+        "granularity": 1,
+        "displayUnit": "kb",
+        "valueType": "bytes"
+       },
+       {
+        "valueType": "text",
+        "key": "statusCode",
+        "label": "Status Code"
+       },
+       {
+        "valueType": "text",
+        "key": "mimeType",
+        "label": "MIME Type"
+       },
+       {
+        "valueType": "text",
+        "key": "resourceType",
+        "label": "Resource Type"
+       }
+      ],
+      "items": [
+       {
+        "priority": "VeryHigh",
+        "statusCode": 200,
+        "transferSize": 32156,
+        "networkEndTime": 873.2999999821186,
+        "experimentalFromMainFrame": true,
+        "entity": "wordpress.org",
+        "protocol": "h2",
+        "finished": true,
+        "resourceSize": 165017,
+        "networkRequestTime": 12.406999990344048,
+        "resourceType": "Document",
+        "mimeType": "text/html",
+        "url": "https://wordpress.org/",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "rendererStartTime": 0
+       },
+       {
+        "entity": "wordpress.org",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-latin.woff2",
+        "finished": true,
+        "protocol": "h2",
+        "transferSize": 77855,
+        "experimentalFromMainFrame": true,
+        "priority": "High",
+        "networkEndTime": 2060.6449999958277,
+        "sessionTargetType": "page",
+        "networkRequestTime": 906.2569999843836,
+        "rendererStartTime": 902.9489999860525,
+        "resourceSize": 77524,
+        "resourceType": "Font",
+        "cache": "none",
+        "isLinkPreload": true,
+        "statusCode": 200,
+        "mimeType": "application/font-woff2"
+       },
+       {
+        "finished": true,
+        "transferSize": 111056,
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 906.5729999989271,
+        "cache": "none",
+        "resourceSize": 110724,
+        "priority": "High",
+        "networkEndTime": 2085.5329999923706,
+        "isLinkPreload": true,
+        "statusCode": 200,
+        "resourceType": "Font",
+        "mimeType": "application/font-woff2",
+        "entity": "wordpress.org",
+        "rendererStartTime": 903.5080000013113,
+        "sessionTargetType": "page",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/EB-Garamond/EBGaramond-latin.woff2"
+       },
+       {
+        "rendererStartTime": 903.7140000015497,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "resourceSize": 20776,
+        "mimeType": "text/css",
+        "networkRequestTime": 906.7319999933243,
+        "transferSize": 2962,
+        "entity": "wordpress.org",
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "cache": "none",
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/navigation/style.min.css",
+        "networkEndTime": 1487.820999994874,
+        "resourceType": "Stylesheet",
+        "priority": "VeryHigh"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/social-links/style.min.css",
+        "mimeType": "text/css",
+        "resourceType": "Stylesheet",
+        "cache": "none",
+        "networkRequestTime": 906.8789999932051,
+        "finished": true,
+        "resourceSize": 11762,
+        "rendererStartTime": 903.865999981761,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "statusCode": 200,
+        "transferSize": 1868,
+        "networkEndTime": 1121.9569999873638,
+        "priority": "VeryHigh",
+        "entity": "wordpress.org"
+       },
+       {
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css",
+        "entity": "wordpress.org",
+        "priority": "VeryHigh",
+        "cache": "none",
+        "resourceSize": 34703,
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 1108.0819999873638,
+        "transferSize": 1986,
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/css",
+        "rendererStartTime": 903.9860000014305,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "networkRequestTime": 907.0109999924898,
+        "resourceType": "Stylesheet"
+       },
+       {
+        "resourceType": "Stylesheet",
+        "priority": "VeryHigh",
+        "statusCode": 200,
+        "protocol": "h2",
+        "cache": "none",
+        "networkEndTime": 1674.3540000021458,
+        "finished": true,
+        "networkRequestTime": 907.1579999923706,
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "transferSize": 3816,
+        "mimeType": "text/css",
+        "rendererStartTime": 904.1339999884367,
+        "entity": "wordpress.org",
+        "resourceSize": 18693,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/block-styles.css"
+       },
+       {
+        "resourceType": "Stylesheet",
+        "statusCode": 200,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "finished": true,
+        "rendererStartTime": 904.3039999902248,
+        "networkRequestTime": 907.3550000041723,
+        "priority": "VeryHigh",
+        "experimentalFromMainFrame": true,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/style.css",
+        "transferSize": 8332,
+        "cache": "none",
+        "networkEndTime": 1515.0600000023842,
+        "resourceSize": 67640,
+        "entity": "wordpress.org",
+        "mimeType": "text/css"
+       },
+       {
+        "url": "https://wordpress.org/wp-includes/css/dashicons.min.css",
+        "networkRequestTime": 907.6089999973774,
+        "protocol": "h2",
+        "finished": true,
+        "priority": "VeryHigh",
+        "resourceType": "Stylesheet",
+        "entity": "wordpress.org",
+        "rendererStartTime": 904.4489999860525,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "resourceSize": 59004,
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "mimeType": "text/css",
+        "networkEndTime": 1766.5029999911785,
+        "transferSize": 35505
+       },
+       {
+        "url": "https://wordpress.org/wp-content/themes/wporg-main-2022/build/style/style-index.css",
+        "priority": "VeryHigh",
+        "networkRequestTime": 907.9949999898672,
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 2155.8569999933243,
+        "resourceType": "Stylesheet",
+        "entity": "wordpress.org",
+        "mimeType": "text/css",
+        "resourceSize": 100980,
+        "cache": "none",
+        "rendererStartTime": 904.6169999837875,
+        "experimentalFromMainFrame": true,
+        "transferSize": 36212,
+        "sessionTargetType": "page",
+        "statusCode": 200
+       },
+       {
+        "priority": "VeryHigh",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css",
+        "networkEndTime": 1181.4270000010729,
+        "resourceType": "Stylesheet",
+        "finished": true,
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "entity": "wordpress.org",
+        "resourceSize": 47167,
+        "mimeType": "text/css",
+        "sessionTargetType": "page",
+        "rendererStartTime": 904.7609999924898,
+        "networkRequestTime": 908.3680000007153,
+        "transferSize": 6531,
+        "statusCode": 200
+       },
+       {
+        "mimeType": "application/javascript",
+        "entity": "wordpress.org",
+        "cache": "none",
+        "resourceType": "Script",
+        "statusCode": 200,
+        "rendererStartTime": 904.934999987483,
+        "sessionTargetType": "page",
+        "networkEndTime": 2368.2589999884367,
+        "networkRequestTime": 2163.430999994278,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/language-suggest/build/front.js",
+        "priority": "Low",
+        "transferSize": 1004,
+        "finished": true,
+        "protocol": "h2",
+        "resourceSize": 1360,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "protocol": "h2",
+        "isLinkPreload": true,
+        "finished": true,
+        "statusCode": 200,
+        "resourceSize": 40140,
+        "experimentalFromMainFrame": true,
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/modules/interactivity/index.min.js",
+        "transferSize": 16019,
+        "networkEndTime": 2433.4189999848604,
+        "priority": "Low",
+        "entity": "wordpress.org",
+        "networkRequestTime": 2219.7269999980927,
+        "mimeType": "application/javascript",
+        "sessionTargetType": "page",
+        "rendererStartTime": 905.0819999873638,
+        "resourceType": "Script",
+        "cache": "none"
+       },
+       {
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "resourceSize": 60102,
+        "rendererStartTime": 905.2489999979734,
+        "finished": true,
+        "protocol": "h2",
+        "networkRequestTime": 908.488999992609,
+        "transferSize": 60685,
+        "priority": "Medium",
+        "cache": "none",
+        "statusCode": 200,
+        "url": "https://i0.wp.com/wordpress.org/files/2026/06/WCUS-2026.png",
+        "entity": "WordPress",
+        "networkEndTime": 938.8530000001192,
+        "resourceType": "Image",
+        "mimeType": "image/webp"
+       },
+       {
+        "mimeType": "image/webp",
+        "networkEndTime": 939.3999999910593,
+        "entity": "WordPress",
+        "resourceType": "Image",
+        "cache": "none",
+        "url": "https://i0.wp.com/wordpress.org/files/2024/04/brush.png",
+        "priority": "Medium",
+        "transferSize": 60536,
+        "sessionTargetType": "page",
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "rendererStartTime": 905.4039999991655,
+        "networkRequestTime": 908.6379999816418,
+        "resourceSize": 59934,
+        "statusCode": 200
+       },
+       {
+        "rendererStartTime": 905.5439999848604,
+        "sessionTargetType": "page",
+        "finished": true,
+        "protocol": "h2",
+        "priority": "Medium",
+        "resourceType": "Image",
+        "cache": "none",
+        "resourceSize": 1770,
+        "networkRequestTime": 945.2360000014305,
+        "experimentalFromMainFrame": true,
+        "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-design.png",
+        "transferSize": 2358,
+        "networkEndTime": 963.195999994874,
+        "entity": "WordPress",
+        "statusCode": 200,
+        "mimeType": "image/webp"
+       },
+       {
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "networkEndTime": 1081.3259999901056,
+        "rendererStartTime": 905.6779999881983,
+        "mimeType": "image/webp",
+        "entity": "WordPress",
+        "resourceType": "Image",
+        "networkRequestTime": 945.4809999912977,
+        "finished": true,
+        "resourceSize": 51124,
+        "protocol": "h2",
+        "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-build.png",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "transferSize": 51712,
+        "priority": "Medium"
+       },
+       {
+        "resourceSize": 98264,
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/webp",
+        "cache": "none",
+        "transferSize": 98854,
+        "networkRequestTime": 966.4819999933243,
+        "entity": "WordPress",
+        "rendererStartTime": 905.8249999880791,
+        "finished": true,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "url": "https://i0.wp.com/wordpress.org/files/2025/12/wporg-69-publish.png",
+        "resourceType": "Image",
+        "priority": "Medium",
+        "networkEndTime": 987.2029999941587
+       },
+       {
+        "transferSize": 17369,
+        "url": "https://i0.wp.com/wordpress.org/files/2026/08/Whats-new-visual-7.1.webp",
+        "mimeType": "image/webp",
+        "resourceSize": 16752,
+        "networkEndTime": 2262.2849999964237,
+        "cache": "none",
+        "finished": true,
+        "protocol": "h2",
+        "networkRequestTime": 2233.4710000008345,
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "rendererStartTime": 905.9319999963045,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "priority": "Low",
+        "entity": "WordPress"
+       },
+       {
+        "mimeType": "image/webp",
+        "cache": "none",
+        "transferSize": 5033,
+        "entity": "WordPress",
+        "resourceSize": 4426,
+        "resourceType": "Image",
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 906.0479999929667,
+        "sessionTargetType": "page",
+        "priority": "Low",
+        "url": "https://i0.wp.com/wordpress.org/files/2023/12/rolling-stone.png",
+        "networkEndTime": 2260.646999999881,
+        "protocol": "h2",
+        "statusCode": 200,
+        "finished": true,
+        "networkRequestTime": 2233.6489999890327
+       },
+       {
+        "resourceType": "Image",
+        "priority": "Low",
+        "networkRequestTime": 2233.712999984622,
+        "statusCode": 200,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "transferSize": 1282,
+        "mimeType": "image/png",
+        "entity": "wordpress.org",
+        "rendererStartTime": 906.1409999877214,
+        "resourceSize": 925,
+        "sessionTargetType": "page",
+        "networkEndTime": 2446.8869999945164,
+        "url": "https://wordpress.org/files/2022/08/Time-Magazine.png",
+        "cache": "none"
+       },
+       {
+        "priority": "Low",
+        "resourceType": "Image",
+        "entity": "wordpress.org",
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 2447.2999999970198,
+        "url": "https://wordpress.org/files/2023/10/NASA-1.png",
+        "mimeType": "image/png",
+        "resourceSize": 11049,
+        "cache": "none",
+        "networkRequestTime": 2233.7810000032187,
+        "transferSize": 11408,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "rendererStartTime": 906.2299999892712
+       },
+       {
+        "resourceType": "Image",
+        "finished": true,
+        "protocol": "h2",
+        "priority": "Low",
+        "transferSize": 1991,
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/Microsoft.png",
+        "networkEndTime": 2264.9930000007153,
+        "experimentalFromMainFrame": true,
+        "entity": "WordPress",
+        "resourceSize": 1388,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "mimeType": "image/webp",
+        "rendererStartTime": 906.3219999969006,
+        "networkRequestTime": 2233.861999988556,
+        "statusCode": 200
+       },
+       {
+        "mimeType": "image/png",
+        "resourceType": "Image",
+        "cache": "none",
+        "networkEndTime": 2433.9930000007153,
+        "statusCode": 200,
+        "url": "https://wordpress.org/files/2023/10/tech-crunch.png",
+        "networkRequestTime": 2234.031999990344,
+        "transferSize": 744,
+        "priority": "Low",
+        "entity": "wordpress.org",
+        "finished": true,
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 906.4150000065565,
+        "protocol": "h2",
+        "resourceSize": 387
+       },
+       {
+        "sessionTargetType": "page",
+        "rendererStartTime": 906.5179999917746,
+        "transferSize": 3845,
+        "networkRequestTime": 2234.1449999958277,
+        "networkEndTime": 2262.872999995947,
+        "cache": "none",
+        "resourceSize": 3220,
+        "mimeType": "image/webp",
+        "entity": "WordPress",
+        "protocol": "h2",
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/Harvard.png",
+        "resourceType": "Image",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "statusCode": 200,
+        "priority": "Low"
+       },
+       {
+        "entity": "WordPress",
+        "transferSize": 89900,
+        "sessionTargetType": "page",
+        "mimeType": "image/webp",
+        "rendererStartTime": 906.6330000013113,
+        "resourceSize": 89282,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "finished": true,
+        "networkEndTime": 2263.6579999923706,
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-top-row-full.png",
+        "resourceType": "Image",
+        "networkRequestTime": 2234.2529999911785,
+        "cache": "none",
+        "statusCode": 200,
+        "priority": "Low"
+       },
+       {
+        "networkEndTime": 2264.13599999249,
+        "statusCode": 200,
+        "networkRequestTime": 2234.4149999916553,
+        "resourceType": "Image",
+        "rendererStartTime": 906.9249999970198,
+        "mimeType": "image/webp",
+        "sessionTargetType": "page",
+        "cache": "none",
+        "entity": "WordPress",
+        "resourceSize": 94664,
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "transferSize": 95280,
+        "priority": "Low",
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-middle-row.png"
+       },
+       {
+        "finished": true,
+        "protocol": "h2",
+        "resourceType": "Image",
+        "url": "https://i0.wp.com/wordpress.org/files/2023/10/showcase-bottom-row.png",
+        "entity": "WordPress",
+        "sessionTargetType": "page",
+        "priority": "Low",
+        "rendererStartTime": 907.0919999927282,
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2264.6389999985695,
+        "statusCode": 200,
+        "transferSize": 45756,
+        "networkRequestTime": 2234.8779999911785,
+        "mimeType": "image/webp",
+        "resourceSize": 45140
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 2235.037000000477,
+        "priority": "Low",
+        "cache": "none",
+        "statusCode": 200,
+        "protocol": "h2",
+        "url": "https://i0.wp.com/wordpress.org/files/2024/04/photo-community-1.png",
+        "resourceType": "Image",
+        "finished": true,
+        "resourceSize": 158256,
+        "entity": "WordPress",
+        "mimeType": "image/webp",
+        "networkEndTime": 2265.9419999867678,
+        "transferSize": 158871,
+        "sessionTargetType": "page",
+        "rendererStartTime": 907.2129999995232
+       },
+       {
+        "transferSize": 137980,
+        "sessionTargetType": "page",
+        "url": "https://i0.wp.com/wordpress.org/files/2026/08/merch-items-03.png",
+        "rendererStartTime": 907.3240000009537,
+        "resourceSize": 137368,
+        "mimeType": "image/webp",
+        "networkRequestTime": 2235.326999992132,
+        "resourceType": "Image",
+        "finished": true,
+        "protocol": "h2",
+        "priority": "Low",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "entity": "WordPress",
+        "networkEndTime": 2266.9210000038147
+       },
+       {
+        "priority": "Low",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "finished": true,
+        "entity": "WordPress",
+        "protocol": "h2",
+        "url": "https://s.w.org/style/images/code-is-poetry-for-dark-bg.svg",
+        "resourceType": "Image",
+        "mimeType": "image/svg+xml",
+        "sessionTargetType": "page",
+        "rendererStartTime": 907.445999994874,
+        "resourceSize": 15570,
+        "statusCode": 200,
+        "networkRequestTime": 2235.4379999935627,
+        "networkEndTime": 2286.724000006914,
+        "transferSize": 5934
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 2235.5439999848604,
+        "transferSize": 1465,
+        "cache": "none",
+        "mimeType": "application/javascript",
+        "resourceSize": 3070,
+        "url": "https://wordpress.org/wp-content/plugins/gutenberg/build/modules/block-library/navigation/view.min.js",
+        "protocol": "h2",
+        "resourceType": "Script",
+        "finished": true,
+        "networkEndTime": 2439.874999985099,
+        "sessionTargetType": "page",
+        "rendererStartTime": 907.5699999928474,
+        "statusCode": 200,
+        "priority": "Low",
+        "entity": "wordpress.org"
+       },
+       {
+        "protocol": "h2",
+        "resourceType": "Script",
+        "networkRequestTime": 2235.6369999945164,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "priority": "Low",
+        "rendererStartTime": 907.7079999893904,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "transferSize": 875,
+        "entity": "wordpress.org",
+        "networkEndTime": 2438.332000002265,
+        "cache": "none",
+        "mimeType": "application/javascript",
+        "resourceSize": 1098
+       },
+       {
+        "networkEndTime": 2263.185000002384,
+        "priority": "Low",
+        "resourceType": "Script",
+        "url": "https://stats.wp.com/e-202639.js",
+        "entity": "WordPress Site Stats",
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "resourceSize": 3812,
+        "networkRequestTime": 2235.751999989152,
+        "mimeType": "application/javascript",
+        "statusCode": 200,
+        "transferSize": 1873,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "rendererStartTime": 907.8969999849796
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "mimeType": "application/javascript",
+        "networkRequestTime": 990.8629999905825,
+        "resourceType": "Script",
+        "networkEndTime": 2155.223999992013,
+        "cache": "none",
+        "entity": "wordpress.org",
+        "priority": "Medium",
+        "resourceSize": 8505,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js",
+        "rendererStartTime": 908.0049999952316,
+        "finished": true,
+        "transferSize": 2888
+       },
+       {
+        "mimeType": "application/javascript",
+        "networkRequestTime": 2236.4789999872446,
+        "statusCode": 200,
+        "resourceSize": 415210,
+        "entity": "Google Tag Manager",
+        "transferSize": 136146,
+        "cache": "none",
+        "networkEndTime": 2269.1259999871254,
+        "priority": "Low",
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 912.765000000596,
+        "resourceType": "Script",
+        "url": "https://www.googletagmanager.com/gtm.js"
+       },
+       {
+        "finished": true,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/print.css",
+        "protocol": "h2",
+        "resourceType": "Stylesheet",
+        "rendererStartTime": 919.9589999914169,
+        "statusCode": 200,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "networkEndTime": 2440.617999985814,
+        "priority": "VeryLow",
+        "resourceSize": 6311,
+        "networkRequestTime": 2236.5830000042915,
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/css",
+        "transferSize": 2397,
+        "entity": "wordpress.org"
+       },
+       {
+        "mimeType": "text/css",
+        "resourceType": "Stylesheet",
+        "networkRequestTime": 1111.8439999967813,
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifJP/style.css",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "entity": "wordpress.org",
+        "rendererStartTime": 1110.044999986887,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "priority": "VeryHigh",
+        "transferSize": 34515,
+        "networkEndTime": 1423.2360000014305,
+        "finished": true,
+        "resourceSize": 92552,
+        "protocol": "h2"
+       },
+       {
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifKR/style.css",
+        "resourceType": "Stylesheet",
+        "mimeType": "text/css",
+        "entity": "wordpress.org",
+        "networkRequestTime": 1111.9679999947548,
+        "networkEndTime": 2156.604999989271,
+        "priority": "VeryHigh",
+        "experimentalFromMainFrame": true,
+        "transferSize": 33541,
+        "sessionTargetType": "page",
+        "rendererStartTime": 1110.2919999957085,
+        "finished": true,
+        "statusCode": 200,
+        "resourceSize": 91358,
+        "protocol": "h2",
+        "cache": "none"
+       },
+       {
+        "transferSize": 43357,
+        "mimeType": "text/css",
+        "resourceSize": 116682,
+        "rendererStartTime": 1110.419999986887,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "networkEndTime": 2215.734999999404,
+        "priority": "VeryHigh",
+        "cache": "none",
+        "resourceType": "Stylesheet",
+        "networkRequestTime": 1112.2009999901056,
+        "entity": "wordpress.org",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifSC/style.css",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "protocol": "h2"
+       },
+       {
+        "resourceSize": 394,
+        "priority": "High",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/images/search-for-light-bg.svg",
+        "transferSize": 714,
+        "networkEndTime": 2468.7660000026226,
+        "networkRequestTime": 2265.34699998796,
+        "protocol": "h2",
+        "finished": true,
+        "cache": "none",
+        "entity": "wordpress.org",
+        "mimeType": "image/svg+xml",
+        "sessionTargetType": "page",
+        "resourceType": "Image",
+        "statusCode": 200,
+        "rendererStartTime": 2260.527999997139,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "entity": "wordpress.org",
+        "transferSize": 426352,
+        "statusCode": 200,
+        "mimeType": "image/png",
+        "resourceSize": 425992,
+        "protocol": "h2",
+        "finished": true,
+        "resourceType": "Image",
+        "networkEndTime": 2798.130999997258,
+        "sessionTargetType": "page",
+        "url": "https://wordpress.org/files/2026/06/wcus_map.png",
+        "rendererStartTime": 2261.2749999910593,
+        "networkRequestTime": 2268.137999996543,
+        "priority": "High"
+       },
+       {
+        "statusCode": 200,
+        "entity": "wordpress.org",
+        "sessionTargetType": "page",
+        "rendererStartTime": 2265.8849999904633,
+        "priority": "Low",
+        "protocol": "h2",
+        "networkRequestTime": 2273.8649999946356,
+        "finished": true,
+        "resourceType": "Image",
+        "networkEndTime": 2780.305999994278,
+        "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/images/dots-banner.svg",
+        "mimeType": "image/svg+xml",
+        "resourceSize": 2352,
+        "experimentalFromMainFrame": true,
+        "transferSize": 614,
+        "cache": "none"
+       },
+       {
+        "resourceSize": 2356,
+        "mimeType": "application/font-woff2",
+        "rendererStartTime": 2276.660999983549,
+        "transferSize": 2686,
+        "sessionTargetType": "page",
+        "priority": "VeryHigh",
+        "cache": "none",
+        "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-arrows.woff2",
+        "networkEndTime": 2470.665999993682,
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "entity": "wordpress.org",
+        "finished": true,
+        "resourceType": "Font",
+        "protocol": "h2",
+        "networkRequestTime": 2277.540999993682
+       },
+       {
+        "mimeType": "application/javascript",
+        "networkEndTime": 2683.2960000038147,
+        "statusCode": 200,
+        "resourceType": "Script",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "resourceSize": 570705,
+        "networkRequestTime": 2634.619999989867,
+        "priority": "Low",
+        "rendererStartTime": 2626.978000000119,
+        "sessionTargetType": "page",
+        "finished": true,
+        "transferSize": 188662,
+        "url": "https://www.googletagmanager.com/gtag/js",
+        "protocol": "h2",
+        "entity": "Google Tag Manager"
+       },
+       {
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "finished": true,
+        "protocol": "h2",
+        "transferSize": 248,
+        "networkEndTime": 2680.240999996662,
+        "priority": "Low",
+        "networkRequestTime": 2658.0999999940395,
+        "resourceSize": 50,
+        "url": "https://pixel.wp.com/g.gif",
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "rendererStartTime": 2655.1069999933243,
+        "entity": "WordPress Site Stats",
+        "mimeType": "image/gif"
+       },
+       {
+        "protocol": "blob",
+        "finished": true,
+        "networkRequestTime": 2681.2059999853373,
+        "resourceSize": 1326,
+        "networkEndTime": 3086.788999989629,
+        "transferSize": -1,
+        "priority": "VeryLow",
+        "url": "blob:https://wordpress.org/ea50ebca-f933-4011-916f-2648d155c101",
+        "cache": "none",
+        "rendererStartTime": 2681.2059999853373,
+        "sessionTargetType": "worker",
+        "mimeType": "text/javascript",
+        "statusCode": 200,
+        "resourceType": "Script"
+       },
+       {
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2887.576999992132,
+        "url": "https://wordpress.org/lang-guess/lang-guess-ajax.php",
+        "transferSize": 332,
+        "finished": true,
+        "statusCode": 200,
+        "resourceSize": 0,
+        "sessionTargetType": "page",
+        "rendererStartTime": 2676.8579999804497,
+        "networkRequestTime": 2688.574999988079,
+        "priority": "High",
+        "cache": "none",
+        "resourceType": "Fetch",
+        "entity": "wordpress.org",
+        "mimeType": "text/html"
+       },
+       {
+        "mimeType": "text/plain",
+        "resourceType": "Fetch",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "networkEndTime": 3051.012999996543,
+        "sessionTargetType": "page",
+        "rendererStartTime": 3000.365999981761,
+        "entity": "Google Analytics",
+        "statusCode": 204,
+        "priority": "High",
+        "transferSize": 797,
+        "url": "https://analytics.google.com/g/collect",
+        "protocol": "h2",
+        "finished": true,
+        "networkRequestTime": 3002.740999996662,
+        "resourceSize": 0
+       },
+       {
+        "cache": "none",
+        "rendererStartTime": 3003.378999993205,
+        "sessionTargetType": "page",
+        "resourceSize": 0,
+        "finished": true,
+        "priority": "VeryLow",
+        "transferSize": 0,
+        "url": "https://stats.g.doubleclick.net/g/collect",
+        "entity": "Google/Doubleclick Ads",
+        "networkEndTime": 3040.865999996662,
+        "statusCode": -1,
+        "networkRequestTime": 3003.378999993205,
+        "experimentalFromMainFrame": true,
+        "resourceType": "Ping"
+       },
+       {
+        "entity": "Google Analytics",
+        "priority": "High",
+        "resourceSize": 0,
+        "experimentalFromMainFrame": true,
+        "statusCode": 204,
+        "transferSize": 797,
+        "protocol": "h2",
+        "cache": "none",
+        "finished": true,
+        "networkEndTime": 3051.502000004053,
+        "sessionTargetType": "page",
+        "rendererStartTime": 3021.8759999871254,
+        "mimeType": "text/plain",
+        "resourceType": "Fetch",
+        "networkRequestTime": 3025.0519999861717,
+        "url": "https://analytics.google.com/g/collect"
+       },
+       {
+        "priority": "Low",
+        "networkRequestTime": 3092.3029999881983,
+        "rendererStartTime": 3088.1019999831915,
+        "networkEndTime": 3302.443999990821,
+        "sessionTargetType": "page",
+        "finished": true,
+        "resourceType": "Script",
+        "entity": "wordpress.org",
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "resourceSize": 22752,
+        "mimeType": "application/javascript",
+        "statusCode": 200,
+        "cache": "none",
+        "transferSize": 5626,
+        "url": "https://wordpress.org/wp-includes/js/wp-emoji-release.min.js"
+       }
+      ],
+      "debugData": {
+       "networkStartTimeTs": 114160041312,
+       "initiators": [
+        {
+         "lineNumber": 5,
+         "columnNumber": 173,
+         "url": "https://wordpress.org/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 6,
+         "columnNumber": 184,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "columnNumber": 187,
+         "lineNumber": 39,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 88,
+         "columnNumber": 191,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 133,
+         "columnNumber": 163,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 134,
+         "type": "parser",
+         "columnNumber": 175,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 135,
+         "type": "parser",
+         "columnNumber": 166,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "lineNumber": 136,
+         "type": "parser",
+         "columnNumber": 139
+        },
+        {
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "columnNumber": 174,
+         "lineNumber": 137
+        },
+        {
+         "url": "https://wordpress.org/",
+         "columnNumber": 192,
+         "lineNumber": 139,
+         "type": "parser"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "columnNumber": 205,
+         "type": "parser",
+         "lineNumber": 144
+        },
+        {
+         "lineNumber": 353,
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "columnNumber": 217
+        },
+        {
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "columnNumber": 605,
+         "lineNumber": 462
+        },
+        {
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "columnNumber": 554,
+         "lineNumber": 484
+        },
+        {
+         "lineNumber": 498,
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "columnNumber": 400
+        },
+        {
+         "columnNumber": 397,
+         "type": "parser",
+         "lineNumber": 512,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "columnNumber": 403,
+         "lineNumber": 530,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 566,
+         "columnNumber": 913,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "lineNumber": 596,
+         "columnNumber": 472,
+         "type": "parser"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "columnNumber": 222,
+         "lineNumber": 600,
+         "type": "parser"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "columnNumber": 226,
+         "lineNumber": 604,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 456,
+         "url": "https://wordpress.org/",
+         "type": "parser",
+         "lineNumber": 608
+        },
+        {
+         "lineNumber": 612,
+         "columnNumber": 217,
+         "url": "https://wordpress.org/",
+         "type": "parser"
+        },
+        {
+         "columnNumber": 429,
+         "type": "parser",
+         "lineNumber": 616,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "columnNumber": 848,
+         "lineNumber": 634,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "columnNumber": 834,
+         "lineNumber": 638,
+         "url": "https://wordpress.org/",
+         "type": "parser"
+        },
+        {
+         "columnNumber": 834,
+         "lineNumber": 642,
+         "url": "https://wordpress.org/",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "columnNumber": 714,
+         "url": "https://wordpress.org/",
+         "lineNumber": 676
+        },
+        {
+         "type": "parser",
+         "lineNumber": 750,
+         "url": "https://wordpress.org/",
+         "columnNumber": 877
+        },
+        {
+         "type": "parser",
+         "columnNumber": 5,
+         "lineNumber": 921,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 931,
+         "columnNumber": 307,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "lineNumber": 935,
+         "type": "parser",
+         "columnNumber": 180,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "lineNumber": 957,
+         "columnNumber": 120,
+         "type": "parser"
+        },
+        {
+         "lineNumber": 962,
+         "columnNumber": 156,
+         "type": "parser",
+         "url": "https://wordpress.org/"
+        },
+        {
+         "columnNumber": 168,
+         "lineNumber": 138,
+         "url": "https://wordpress.org/",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "columnNumber": 0,
+         "lineNumber": 0,
+         "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css"
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 0,
+         "type": "parser",
+         "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css"
+        },
+        {
+         "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css",
+         "type": "parser",
+         "columnNumber": 0,
+         "lineNumber": 0
+        },
+        {
+         "type": "parser",
+         "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css"
+        },
+        {
+         "type": "parser",
+         "lineNumber": 951,
+         "columnNumber": 0,
+         "url": "https://wordpress.org/"
+        },
+        {
+         "url": "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/block-styles.css",
+         "type": "parser"
+        },
+        {
+         "url": "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css",
+         "type": "parser"
+        },
+        {
+         "url": "https://wordpress.org/",
+         "type": "other"
+        }
+       ],
+       "type": "debugdata"
+      },
+      "type": "table"
+     }
+    }
+   }
+  }
+ }
+}

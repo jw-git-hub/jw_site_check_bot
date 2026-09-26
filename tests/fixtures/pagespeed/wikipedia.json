@@ -1,0 +1,1619 @@
+{
+ "http_status": 200,
+ "response": {
+  "lighthouseResult": {
+   "requestedUrl": "https://ru.wikipedia.org/",
+   "finalDisplayedUrl": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+   "lighthouseVersion": "13.5.0",
+   "runWarnings": [
+    "The page may not be loading as expected because your test URL (https://ru.wikipedia.org/) was redirected to https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0. Try testing the second URL directly."
+   ],
+   "audits": {
+    "largest-contentful-paint": {
+     "id": "largest-contentful-paint",
+     "title": "Largest Contentful Paint",
+     "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+     "score": 0.93,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "2.3 s",
+     "numericValue": 2310.6291124847794,
+     "numericUnit": "millisecond"
+    },
+    "first-contentful-paint": {
+     "id": "first-contentful-paint",
+     "title": "First Contentful Paint",
+     "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+     "score": 0.86,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "1.9 s",
+     "numericValue": 1917.787455669365,
+     "numericUnit": "millisecond"
+    },
+    "total-blocking-time": {
+     "id": "total-blocking-time",
+     "title": "Total Blocking Time",
+     "description": "Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms, expressed in milliseconds. [Learn more about the Total Blocking Time metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "30 ms",
+     "numericValue": 26.5,
+     "numericUnit": "millisecond"
+    },
+    "cumulative-layout-shift": {
+     "id": "cumulative-layout-shift",
+     "title": "Cumulative Layout Shift",
+     "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0",
+     "details": {
+      "type": "debugdata",
+      "items": [
+       {
+        "newEngineResultDiffered": false,
+        "cumulativeLayoutShiftMainFrame": 0,
+        "newEngineResult": {
+         "cumulativeLayoutShiftMainFrame": 0,
+         "cumulativeLayoutShift": 0
+        }
+       }
+      ]
+     },
+     "numericValue": 0,
+     "numericUnit": "unitless"
+    },
+    "speed-index": {
+     "id": "speed-index",
+     "title": "Speed Index",
+     "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+     "score": 0.6,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "5.2 s",
+     "numericValue": 5183.680735887438,
+     "numericUnit": "millisecond"
+    },
+    "server-response-time": {
+     "id": "server-response-time",
+     "title": "Initial server response time was short",
+     "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Root document took 380 ms",
+     "metricSavings": {
+      "LCP": 300,
+      "FCP": 300
+     },
+     "details": {
+      "type": "opportunity",
+      "items": [
+       {
+        "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+        "responseTime": 380
+       }
+      ],
+      "overallSavingsMs": 280,
+      "headings": [
+       {
+        "valueType": "url",
+        "key": "url",
+        "label": "URL"
+       },
+       {
+        "label": "Time Spent",
+        "valueType": "timespanMs",
+        "key": "responseTime"
+       }
+      ]
+     },
+     "numericValue": 380,
+     "numericUnit": "millisecond"
+    },
+    "image-delivery-insight": {
+     "id": "image-delivery-insight",
+     "title": "Improve image delivery",
+     "description": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
+     "score": 0.5,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 427 KiB",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 437457
+      },
+      "items": [
+       {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg/1920px-002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg",
+        "totalBytes": 382484,
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 364873,
+           "reason": "This image file is larger than it needs to be (1920x1280) for its displayed dimensions (412x275). Use responsive images to reduce the image download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "nodeLabel": "Бразильский ябиру (Jabiru mycteria) кормит птенцов в Парке штата Энконтро-дас-А…",
+         "selector": "div.main-box-imageContent > figure.mw-halign-center > a.mw-file-description > img.mw-file-element",
+         "lhId": "page-10-IMG",
+         "type": "node",
+         "path": "1,HTML,1,BODY,1,DIV,0,DIV,2,MAIN,1,DIV,0,DIV,0,DIV,0,SECTION,5,DIV,0,DIV,7,DIV,2,DIV,0,DIV,0,FIGURE,0,A,0,IMG",
+         "snippet": "<img resource=\"https://ru.wikipedia.org/wiki/Файл:002_Jabiru_feeding_its_babies_in_their_…\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feedin…\" decoding=\"async\" loading=\"lazy\" srcset=\"//thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feeding_its_…\" alt=\"Бразильский ябиру (Jabiru mycteria) кормит птенцов в Парке штата Энконтро-…\" data-file-width=\"5851\" data-file-height=\"3901\" data-file-type=\"bitmap\" height=\"500\" width=\"750\" class=\"mw-file-element\">",
+         "boundingRect": {
+          "right": 412,
+          "height": 275,
+          "width": 412,
+          "top": 3041,
+          "bottom": 3316,
+          "left": 0
+         }
+        },
+        "wastedBytes": 364873
+       },
+       {
+        "node": {
+         "lhId": "page-11-IMG",
+         "type": "node",
+         "path": "1,HTML,1,BODY,1,DIV,0,DIV,2,MAIN,1,DIV,0,DIV,0,DIV,0,SECTION,5,DIV,0,DIV,1,DIV,2,DIV,0,FIGURE,0,A,0,IMG",
+         "boundingRect": {
+          "right": 296,
+          "left": 116,
+          "height": 186,
+          "top": 347,
+          "width": 180,
+          "bottom": 533
+         },
+         "snippet": "<img resource=\"https://ru.wikipedia.org/wiki/Файл:DinaRubina26_(cropped).jpg\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28c…\" decoding=\"async\" loading=\"lazy\" srcset=\"//thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28cropped…\" alt=\"Дина Рубина в 2026 году\" data-file-width=\"904\" data-file-height=\"933\" data-file-type=\"bitmap\" height=\"186\" width=\"180\" class=\"mw-file-element\">",
+         "nodeLabel": "Дина Рубина в 2026 году",
+         "selector": "div.main-box-content > figure.mw-halign-right > a.mw-file-description > img.mw-file-element"
+        },
+        "totalBytes": 52422,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28cropped%29.jpg/500px-DinaRubina26_%28cropped%29.jpg",
+        "wastedBytes": 46850,
+        "subItems": {
+         "items": [
+          {
+           "reason": "Increasing the image compression factor could improve this image's download size.",
+           "wastedBytes": 9422
+          },
+          {
+           "wastedBytes": 45628,
+           "reason": "This image file is larger than it needs to be (500x516) for its displayed dimensions (180x186). Use responsive images to reduce the image download size."
+          }
+         ],
+         "type": "subitems"
+        }
+       },
+       {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg/250px-R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg",
+        "totalBytes": 23995,
+        "wastedBytes": 20673,
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 9578,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          },
+          {
+           "reason": "This image file is larger than it needs to be (250x346) for its displayed dimensions (120x166). Use responsive images to reduce the image download size.",
+           "wastedBytes": 18467
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "nodeLabel": "Роуса Бьёрк Бриньоульфсдоуттир в 2017 году",
+         "snippet": "<img resource=\"https://ru.wikipedia.org/wiki/Файл:Rósa_Björk_Brynjólfsdóttir_2017.jpg\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B…\" decoding=\"async\" loading=\"lazy\" srcset=\"//thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B6rk_Br…\" alt=\"Роуса Бьёрк Бриньоульфсдоуттир в 2017&nbsp;году\" data-file-width=\"2559\" data-file-height=\"3543\" data-file-type=\"bitmap\" height=\"166\" width=\"120\" class=\"mw-file-element\">",
+         "selector": "div.main-box-content > figure.mw-halign-right > a.mw-file-description > img.mw-file-element",
+         "path": "1,HTML,1,BODY,1,DIV,0,DIV,2,MAIN,1,DIV,0,DIV,0,DIV,0,SECTION,5,DIV,1,DIV,1,DIV,2,DIV,0,FIGURE,0,A,0,IMG",
+         "lhId": "page-12-IMG",
+         "type": "node",
+         "boundingRect": {
+          "top": 3533,
+          "bottom": 3699,
+          "right": 396,
+          "width": 120,
+          "height": 166,
+          "left": 276
+         }
+        }
+       },
+       {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg/120px-Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg",
+        "wastedBytes": 5061,
+        "totalBytes": 6861,
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 5061,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "nodeLabel": "Декоративное изображение",
+         "path": "1,HTML,1,BODY,1,DIV,0,DIV,2,MAIN,1,DIV,0,DIV,0,DIV,0,SECTION,5,DIV,0,DIV,5,DIV,0,DIV,1,DIV,1,UL,1,LI,0,DIV,0,FIGURE,0,A,0,IMG",
+         "selector": "div.main-featuredLists-image > figure.mw-halign-center > a.mw-file-description > img.mw-file-element",
+         "lhId": "page-13-IMG",
+         "type": "node",
+         "snippet": "<img resource=\"https://ru.wikipedia.org/wiki/Файл:Curling,_overall_view_of_the_Tim_Horton…\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overal…\" decoding=\"async\" loading=\"lazy\" srcset=\"//thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overall_view…\" alt=\"Декоративное изображение\" data-file-width=\"640\" data-file-height=\"480\" data-file-type=\"bitmap\" height=\"38\" width=\"50\" class=\"mw-file-element\">",
+         "boundingRect": {
+          "bottom": 2815,
+          "right": 66,
+          "width": 50,
+          "top": 2777,
+          "height": 38,
+          "left": 16
+         }
+        }
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "key": "url",
+        "subItemsHeading": {
+         "valueType": "text",
+         "key": "reason"
+        },
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": "totalBytes",
+        "label": "Resource Size",
+        "valueType": "bytes"
+       },
+       {
+        "key": "wastedBytes",
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "valueType": "bytes",
+         "key": "wastedBytes"
+        },
+        "label": "Est Savings"
+       }
+      ]
+     }
+    },
+    "lcp-discovery-insight": {
+     "id": "lcp-discovery-insight",
+     "title": "LCP request discovery",
+     "description": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "render-blocking-insight": {
+     "id": "render-blocking-insight",
+     "title": "Render-blocking requests",
+     "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 490 ms",
+     "metricSavings": {
+      "LCP": 500,
+      "FCP": 500
+     },
+     "details": {
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "key": "totalBytes",
+        "valueType": "bytes"
+       },
+       {
+        "valueType": "timespanMs",
+        "key": "wastedMs",
+        "label": "Duration"
+       }
+      ],
+      "type": "table",
+      "items": [
+       {
+        "wastedMs": 539,
+        "totalBytes": 2667,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "wastedMs": 539,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "totalBytes": 25010
+       },
+       {
+        "wastedMs": 539,
+        "totalBytes": 1577,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       }
+      ]
+     }
+    },
+    "unused-javascript": {
+     "id": "unused-javascript",
+     "title": "Reduce unused JavaScript",
+     "description": "Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. [Learn how to reduce unused JavaScript](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/).",
+     "score": 0.5,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 167 KiB",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "sortedBy": [
+       "wastedBytes"
+      ],
+      "items": [
+       {
+        "wastedBytes": 170566,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "totalBytes": 373163,
+        "wastedPercent": 45.70806222299832
+       }
+      ],
+      "debugData": {
+       "type": "debugdata",
+       "metricSavings": {
+        "LCP": 0,
+        "FCP": 0
+       }
+      },
+      "type": "opportunity",
+      "overallSavingsMs": 0,
+      "headings": [
+       {
+        "label": "URL",
+        "subItemsHeading": {
+         "key": "source",
+         "valueType": "code"
+        },
+        "key": "url",
+        "valueType": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "key": "totalBytes",
+        "subItemsHeading": {
+         "key": "sourceBytes"
+        },
+        "valueType": "bytes"
+       },
+       {
+        "valueType": "bytes",
+        "key": "wastedBytes",
+        "subItemsHeading": {
+         "key": "sourceWastedBytes"
+        },
+        "label": "Est Savings"
+       }
+      ],
+      "overallSavingsBytes": 170566
+     },
+     "numericValue": 0,
+     "numericUnit": "millisecond"
+    },
+    "legacy-javascript-insight": {
+     "id": "legacy-javascript-insight",
+     "title": "Legacy JavaScript",
+     "description": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "headings": [
+       {
+        "valueType": "url",
+        "key": "url",
+        "label": "URL",
+        "subItemsHeading": {
+         "key": "location",
+         "valueType": "source-location"
+        }
+       },
+       {
+        "valueType": "code",
+        "subItemsHeading": {
+         "key": "signal"
+        },
+        "key": null
+       },
+       {
+        "label": "Wasted bytes",
+        "key": "wastedBytes",
+        "valueType": "bytes"
+       }
+      ],
+      "type": "table",
+      "items": [],
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      }
+     }
+    },
+    "duplicated-javascript-insight": {
+     "id": "duplicated-javascript-insight",
+     "title": "Duplicated JavaScript",
+     "description": "Remove large, [duplicate JavaScript modules](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) from bundles to reduce unnecessary bytes consumed by network activity.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "type": "table",
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 0
+      },
+      "items": [],
+      "headings": [
+       {
+        "key": "source",
+        "subItemsHeading": {
+         "valueType": "url",
+         "key": "url"
+        },
+        "valueType": "code",
+        "label": "Source"
+       },
+       {
+        "key": "wastedBytes",
+        "granularity": 10,
+        "subItemsHeading": {
+         "key": "sourceTransferBytes"
+        },
+        "label": "Duplicated bytes",
+        "valueType": "bytes"
+       }
+      ]
+     }
+    },
+    "document-latency-insight": {
+     "id": "document-latency-insight",
+     "title": "Document request latency",
+     "description": "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 580 ms",
+     "metricSavings": {
+      "LCP": 600,
+      "FCP": 600
+     },
+     "details": {
+      "items": {
+       "noRedirects": {
+        "value": false,
+        "label": "Had redirects (1 redirects, +575 ms)"
+       },
+       "usesCompression": {
+        "label": "Applies text compression",
+        "value": true
+       },
+       "serverResponseIsFast": {
+        "value": true,
+        "label": "Server responds quickly (observed 380 ms)"
+       }
+      },
+      "debugData": {
+       "uncompressedResponseBytes": 0,
+       "wastedBytes": 0,
+       "type": "debugdata",
+       "serverResponseTime": 380,
+       "redirectDuration": 575
+      },
+      "type": "checklist"
+     }
+    },
+    "third-parties-insight": {
+     "id": "third-parties-insight",
+     "title": "3rd parties",
+     "description": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developer.chrome.com/docs/performance/insights/third-parties) to prioritize your page's content.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "headings": [
+       {
+        "key": "entity",
+        "valueType": "text",
+        "subItemsHeading": {
+         "key": "url",
+         "valueType": "url"
+        },
+        "label": "3rd party"
+       },
+       {
+        "valueType": "bytes",
+        "key": "transferSize",
+        "granularity": 1,
+        "label": "Transfer size",
+        "subItemsHeading": {
+         "key": "transferSize"
+        }
+       },
+       {
+        "subItemsHeading": {
+         "key": "mainThreadTime"
+        },
+        "granularity": 1,
+        "key": "mainThreadTime",
+        "label": "Main thread time",
+        "valueType": "ms"
+       }
+      ],
+      "type": "table",
+      "isEntityGrouped": true,
+      "items": [
+       {
+        "transferSize": 480807,
+        "subItems": {
+         "items": [
+          {
+           "transferSize": 384785,
+           "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg/1920px-002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg",
+           "mainThreadTime": 0
+          },
+          {
+           "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28cropped%29.jpg/500px-DinaRubina26_%28cropped%29.jpg",
+           "mainThreadTime": 0,
+           "transferSize": 54648
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 26237,
+           "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg/250px-R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg"
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg/120px-Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg",
+           "transferSize": 9128
+          },
+          {
+           "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/GetOutFilm.jpg/120px-GetOutFilm.jpg",
+           "mainThreadTime": 0,
+           "transferSize": 4358
+          },
+          {
+           "transferSize": 1651,
+           "mainThreadTime": 0,
+           "url": "https://auth.wikimedia.org/metawiki/wiki/Special:CentralAutoLogin/checkLoggedIn"
+          }
+         ],
+         "type": "subitems"
+        },
+        "entity": "wikimedia.org",
+        "mainThreadTime": 0
+       }
+      ]
+     }
+    },
+    "viewport-insight": {
+     "id": "viewport-insight",
+     "title": "Optimize viewport for mobile",
+     "description": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "INP": 0
+     },
+     "details": {
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       }
+      ],
+      "items": [
+       {
+        "node": {
+         "selector": "head > meta",
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.…\">",
+         "path": "1,HTML,0,HEAD,24,META",
+         "lhId": "page-14-META",
+         "type": "node",
+         "boundingRect": {
+          "width": 0,
+          "height": 0,
+          "left": 0,
+          "top": 0,
+          "bottom": 0,
+          "right": 0
+         },
+         "nodeLabel": "head > meta"
+        }
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "target-size": {
+     "id": "target-size",
+     "title": "Touch targets have sufficient size and spacing.",
+     "description": "Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. [Learn more about touch targets](https://dequeuniversity.com/rules/axe/4.13/target-size).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "valueType": "node"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "meta-viewport": {
+     "id": "meta-viewport",
+     "title": "`[user-scalable=\"no\"]` is not used in the `<meta name=\"viewport\">` element and the `[maximum-scale]` attribute is not less than 5.",
+     "description": "Disabling zooming is problematic for users with low vision who rely on screen magnification to properly see the contents of a web page. [Learn more about the viewport meta tag](https://dequeuniversity.com/rules/axe/4.13/meta-viewport).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node"
+       }
+      ]
+     }
+    },
+    "is-on-https": {
+     "id": "is-on-https",
+     "title": "Uses HTTPS",
+     "description": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more about HTTPS](https://developer.chrome.com/docs/lighthouse/pwa/is-on-https/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "label": "Insecure URL",
+        "key": "url",
+        "valueType": "url"
+       },
+       {
+        "label": "Request Resolution",
+        "key": "resolution",
+        "valueType": "text"
+       }
+      ]
+     }
+    },
+    "total-byte-weight": {
+     "id": "total-byte-weight",
+     "title": "Avoids enormous network payloads",
+     "description": "Large network payloads cost users real money and are highly correlated with long load times. [Learn how to reduce payload sizes](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Total size was 991 KiB",
+     "details": {
+      "type": "table",
+      "items": [
+       {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg/1920px-002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg",
+        "totalBytes": 384785
+       },
+       {
+        "totalBytes": 377110,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "totalBytes": 61870,
+        "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+       },
+       {
+        "totalBytes": 54648,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28cropped%29.jpg/500px-DinaRubina26_%28cropped%29.jpg"
+       },
+       {
+        "totalBytes": 26237,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg/250px-R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg"
+       },
+       {
+        "totalBytes": 25010,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "totalBytes": 22434,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "totalBytes": 9880,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "totalBytes": 9128,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg/120px-Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg"
+       },
+       {
+        "totalBytes": 8746,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       }
+      ],
+      "sortedBy": [
+       "totalBytes"
+      ],
+      "headings": [
+       {
+        "valueType": "url",
+        "key": "url",
+        "label": "URL"
+       },
+       {
+        "valueType": "bytes",
+        "key": "totalBytes",
+        "label": "Transfer Size"
+       }
+      ]
+     },
+     "numericValue": 1014341,
+     "numericUnit": "byte"
+    },
+    "resource-summary": {
+     "id": "resource-summary",
+     "title": "Resources Summary",
+     "description": "Aggregates all network requests and groups them by type",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "headings": [
+       {
+        "label": "Resource Type",
+        "key": "label",
+        "valueType": "text"
+       },
+       {
+        "label": "Requests",
+        "key": "requestCount",
+        "valueType": "numeric"
+       },
+       {
+        "key": "transferSize",
+        "label": "Transfer Size",
+        "valueType": "bytes"
+       }
+      ],
+      "items": [
+       {
+        "label": "Total",
+        "resourceType": "total",
+        "transferSize": 1014341,
+        "requestCount": 28
+       },
+       {
+        "transferSize": 496248,
+        "resourceType": "image",
+        "requestCount": 16,
+        "label": "Image"
+       },
+       {
+        "resourceType": "script",
+        "transferSize": 423990,
+        "requestCount": 6,
+        "label": "Script"
+       },
+       {
+        "transferSize": 61870,
+        "resourceType": "document",
+        "requestCount": 1,
+        "label": "Document"
+       },
+       {
+        "label": "Stylesheet",
+        "requestCount": 3,
+        "transferSize": 29254,
+        "resourceType": "stylesheet"
+       },
+       {
+        "requestCount": 2,
+        "label": "Other",
+        "resourceType": "other",
+        "transferSize": 2979
+       },
+       {
+        "label": "Media",
+        "transferSize": 0,
+        "resourceType": "media",
+        "requestCount": 0
+       },
+       {
+        "resourceType": "font",
+        "transferSize": 0,
+        "requestCount": 0,
+        "label": "Font"
+       },
+       {
+        "requestCount": 6,
+        "label": "Third-party",
+        "transferSize": 480807,
+        "resourceType": "third-party"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "network-requests": {
+     "id": "network-requests",
+     "title": "Network Requests",
+     "description": "Lists the network requests that were made during page load.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "cache": "none",
+        "mimeType": "text/html",
+        "statusCode": 301,
+        "experimentalFromMainFrame": true,
+        "protocol": "http/1.1",
+        "entity": "wikipedia.org",
+        "transferSize": 1785,
+        "sessionTargetType": "page",
+        "url": "https://ru.wikipedia.org/",
+        "rendererStartTime": 0,
+        "resourceSize": 0,
+        "networkRequestTime": 1.1639999896287918,
+        "networkEndTime": 575.1120000034571,
+        "finished": true,
+        "priority": "VeryHigh"
+       },
+       {
+        "statusCode": 200,
+        "entity": "wikipedia.org",
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/html",
+        "protocol": "h2",
+        "networkRequestTime": 576.9539999961853,
+        "sessionTargetType": "page",
+        "networkEndTime": 1557.6740000098944,
+        "resourceType": "Document",
+        "transferSize": 61870,
+        "rendererStartTime": 575.1120000034571,
+        "resourceSize": 301974,
+        "cache": "none",
+        "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+        "priority": "VeryHigh",
+        "finished": true
+       },
+       {
+        "mimeType": "text/css",
+        "rendererStartTime": 1576.9829999953508,
+        "protocol": "h2",
+        "resourceType": "Stylesheet",
+        "transferSize": 25010,
+        "sessionTargetType": "page",
+        "resourceSize": 205898,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "cache": "none",
+        "networkRequestTime": 1577.7749999910593,
+        "networkEndTime": 1847.8779999911785,
+        "experimentalFromMainFrame": true,
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "VeryHigh",
+        "statusCode": 200
+       },
+       {
+        "resourceSize": 68009,
+        "entity": "wikipedia.org",
+        "experimentalFromMainFrame": true,
+        "priority": "Low",
+        "finished": true,
+        "rendererStartTime": 1577.3350000083447,
+        "mimeType": "text/javascript",
+        "networkEndTime": 1869.3589999973774,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "networkRequestTime": 1577.8629999905825,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "statusCode": 200,
+        "cache": "none",
+        "resourceType": "Script",
+        "transferSize": 22434
+       },
+       {
+        "networkEndTime": 1958.7960000038147,
+        "statusCode": 200,
+        "transferSize": 2667,
+        "resourceType": "Stylesheet",
+        "mimeType": "text/css",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "protocol": "h2",
+        "rendererStartTime": 1577.444000005722,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "priority": "VeryHigh",
+        "finished": true,
+        "resourceSize": 7905,
+        "networkRequestTime": 1577.9719999879599,
+        "experimentalFromMainFrame": true,
+        "entity": "wikipedia.org"
+       },
+       {
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "resourceType": "Stylesheet",
+        "transferSize": 1577,
+        "cache": "none",
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "VeryHigh",
+        "statusCode": 200,
+        "networkEndTime": 1770.612000003457,
+        "mimeType": "text/css",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "resourceSize": 1238,
+        "networkRequestTime": 1578.0439999997616,
+        "rendererStartTime": 1577.5349999964237
+       },
+       {
+        "cache": "none",
+        "rendererStartTime": 1577.6339999884367,
+        "priority": "High",
+        "finished": true,
+        "sessionTargetType": "page",
+        "entity": "wikipedia.org",
+        "transferSize": 3511,
+        "resourceType": "Image",
+        "statusCode": 200,
+        "url": "https://ru.wikipedia.org/static/images/mobile/copyright/wikipedia-wordmark-ru.svg",
+        "protocol": "h2",
+        "resourceSize": 6786,
+        "networkRequestTime": 1582.5520000010729,
+        "networkEndTime": 1965.1109999865294,
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/svg+xml"
+       },
+       {
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "resourceSize": 19510,
+        "protocol": "h2",
+        "mimeType": "text/javascript",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "Low",
+        "networkRequestTime": 1882.2609999924898,
+        "rendererStartTime": 1881.7010000050068,
+        "statusCode": 200,
+        "resourceType": "Script",
+        "transferSize": 8746,
+        "sessionTargetType": "page",
+        "networkEndTime": 2674.5960000008345
+       },
+       {
+        "resourceSize": 28718,
+        "mimeType": "text/javascript",
+        "entity": "wikipedia.org",
+        "protocol": "h2",
+        "rendererStartTime": 1882.0810000002384,
+        "sessionTargetType": "page",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "cache": "none",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2507.271999999881,
+        "transferSize": 9880,
+        "resourceType": "Script",
+        "networkRequestTime": 1882.54699999094,
+        "finished": true,
+        "priority": "Low"
+       },
+       {
+        "entity": "wikipedia.org",
+        "networkEndTime": 2681.9860000014305,
+        "finished": true,
+        "priority": "Low",
+        "networkRequestTime": 1883.1879999935627,
+        "resourceSize": 1540416,
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 1882.7060000002384,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "cache": "none",
+        "statusCode": 200,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "resourceType": "Script",
+        "transferSize": 377110,
+        "mimeType": "text/javascript"
+       },
+       {
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "finished": true,
+        "priority": "High",
+        "sessionTargetType": "page",
+        "resourceType": "Image",
+        "transferSize": 1297,
+        "networkEndTime": 2155.9989999979734,
+        "entity": "wikipedia.org",
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 1963.574999988079,
+        "statusCode": 200,
+        "rendererStartTime": 1963.1489999890327,
+        "protocol": "h2",
+        "cache": "none",
+        "resourceSize": 223,
+        "mimeType": "image/svg+xml"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "High",
+        "resourceType": "Image",
+        "transferSize": 1349,
+        "statusCode": 200,
+        "networkRequestTime": 1963.9149999916553,
+        "sessionTargetType": "page",
+        "resourceSize": 303,
+        "mimeType": "image/svg+xml",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "rendererStartTime": 1963.4769999831915,
+        "networkEndTime": 2456.516999989748,
+        "protocol": "h2"
+       },
+       {
+        "resourceSize": 390,
+        "mimeType": "image/svg+xml",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2156.973999992013,
+        "protocol": "h2",
+        "entity": "wikipedia.org",
+        "networkRequestTime": 1964.030000001192,
+        "statusCode": 200,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "sessionTargetType": "page",
+        "resourceType": "Image",
+        "transferSize": 1345,
+        "priority": "High",
+        "finished": true,
+        "rendererStartTime": 1963.7000000029802
+       },
+       {
+        "resourceSize": 302,
+        "rendererStartTime": 1963.901000007987,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "networkEndTime": 2159.0419999957085,
+        "statusCode": 200,
+        "mimeType": "image/svg+xml",
+        "networkRequestTime": 1964.307999998331,
+        "priority": "High",
+        "finished": true,
+        "entity": "wikipedia.org",
+        "cache": "none",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "resourceType": "Image",
+        "transferSize": 1358,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "mimeType": "image/svg+xml",
+        "resourceSize": 259,
+        "rendererStartTime": 1964.094999998808,
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "networkRequestTime": 1964.4860000014305,
+        "transferSize": 1333,
+        "resourceType": "Image",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "finished": true,
+        "priority": "High",
+        "entity": "wikipedia.org",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2462.6519999951124,
+        "cache": "none"
+       },
+       {
+        "networkRequestTime": 1964.7189999967813,
+        "cache": "none",
+        "statusCode": 200,
+        "resourceType": "Image",
+        "transferSize": 1349,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "priority": "High",
+        "finished": true,
+        "sessionTargetType": "page",
+        "entity": "wikipedia.org",
+        "resourceSize": 295,
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 1964.3049999922514,
+        "mimeType": "image/svg+xml",
+        "protocol": "h2",
+        "networkEndTime": 2475.09699998796
+       },
+       {
+        "finished": true,
+        "priority": "High",
+        "resourceType": "Image",
+        "transferSize": 1451,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "networkEndTime": 2455.658999994397,
+        "sessionTargetType": "page",
+        "rendererStartTime": 1964.5119999945164,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "protocol": "h2",
+        "resourceSize": 628,
+        "cache": "none",
+        "mimeType": "image/svg+xml",
+        "entity": "wikipedia.org",
+        "networkRequestTime": 1964.8889999985695
+       },
+       {
+        "statusCode": 200,
+        "protocol": "h2",
+        "rendererStartTime": 1965.1950000077486,
+        "networkRequestTime": 1965.6279999911785,
+        "entity": "wikipedia.org",
+        "networkEndTime": 2160.9169999957085,
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "resourceType": "Image",
+        "transferSize": 1341,
+        "mimeType": "image/svg+xml",
+        "resourceSize": 299,
+        "finished": true,
+        "priority": "High",
+        "cache": "none",
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "mimeType": "image/svg+xml",
+        "cache": "none",
+        "statusCode": 200,
+        "rendererStartTime": 1965.512999996543,
+        "resourceSize": 331,
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 1965.9299999922514,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "transferSize": 1364,
+        "resourceType": "Image",
+        "priority": "High",
+        "finished": true,
+        "entity": "wikipedia.org",
+        "networkEndTime": 2475.469999998808,
+        "url": "https://ru.wikipedia.org/w/load.php"
+       },
+       {
+        "cache": "none",
+        "resourceType": "Image",
+        "transferSize": 54648,
+        "finished": true,
+        "priority": "High",
+        "rendererStartTime": 2018.637999996543,
+        "sessionTargetType": "page",
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/DinaRubina26_%28cropped%29.jpg/500px-DinaRubina26_%28cropped%29.jpg",
+        "networkEndTime": 3084.8289999961853,
+        "entity": "wikimedia.org",
+        "protocol": "h2",
+        "networkRequestTime": 2019.5639999955893,
+        "resourceSize": 52422,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "mimeType": "image/webp"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "networkRequestTime": 2019.7049999982119,
+        "resourceSize": 2157,
+        "mimeType": "image/jpeg",
+        "networkEndTime": 2637.5470000058413,
+        "statusCode": 200,
+        "priority": "Low",
+        "finished": true,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/GetOutFilm.jpg/120px-GetOutFilm.jpg",
+        "rendererStartTime": 2018.8149999976158,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "entity": "wikimedia.org",
+        "resourceType": "Image",
+        "transferSize": 4358
+       },
+       {
+        "networkRequestTime": 2019.8159999996424,
+        "priority": "Low",
+        "finished": true,
+        "resourceType": "Image",
+        "transferSize": 9128,
+        "statusCode": 200,
+        "protocol": "h2",
+        "resourceSize": 6861,
+        "sessionTargetType": "page",
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg/120px-Curling%2C_overall_view_of_the_Tim_Hortons_Brier_venue_-_Edmonton%2C_Canada.jpg",
+        "rendererStartTime": 2018.9559999853373,
+        "entity": "wikimedia.org",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "networkEndTime": 2624.064999997616,
+        "mimeType": "image/jpeg"
+       },
+       {
+        "transferSize": 384785,
+        "resourceType": "Image",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "entity": "wikimedia.org",
+        "finished": true,
+        "priority": "Low",
+        "rendererStartTime": 2019.0750000029802,
+        "mimeType": "image/webp",
+        "networkEndTime": 3470.5779999941587,
+        "cache": "none",
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg/1920px-002_Jabiru_feeding_its_babies_in_their_nest_in_Encontro_das_%C3%81guas_State_Park_Photo_by_Giles_Laurent.jpg",
+        "networkRequestTime": 2020.3530000001192,
+        "statusCode": 200,
+        "resourceSize": 382484,
+        "protocol": "h2"
+       },
+       {
+        "resourceType": "Image",
+        "transferSize": 26237,
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "priority": "Low",
+        "entity": "wikimedia.org",
+        "rendererStartTime": 2019.1879999935627,
+        "protocol": "h2",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "networkRequestTime": 2021.7899999916553,
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg/250px-R%C3%B3sa_Bj%C3%B6rk_Brynj%C3%B3lfsd%C3%B3ttir_2017.jpg",
+        "resourceSize": 23995,
+        "networkEndTime": 3067.4689999967813,
+        "cache": "none",
+        "mimeType": "image/jpeg"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "resourceType": "Image",
+        "transferSize": 0,
+        "priority": "Low",
+        "finished": true,
+        "cache": "memory",
+        "rendererStartTime": 2033.5209999978542,
+        "mimeType": "image/svg+xml",
+        "sessionTargetType": "page",
+        "networkEndTime": 2033.6199999898672,
+        "url": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0…",
+        "protocol": "data",
+        "statusCode": 200,
+        "networkRequestTime": 2033.5209999978542,
+        "resourceSize": 246
+       },
+       {
+        "rendererStartTime": 2034.7859999984503,
+        "mimeType": "image/svg+xml",
+        "resourceSize": 184,
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "networkRequestTime": 2034.7859999984503,
+        "protocol": "data",
+        "cache": "memory",
+        "url": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0…",
+        "resourceType": "Image",
+        "transferSize": 0,
+        "priority": "Low",
+        "finished": true,
+        "networkEndTime": 2034.8680000007153
+       },
+       {
+        "cache": "none",
+        "sessionTargetType": "page",
+        "networkRequestTime": 2036.3029999881983,
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "protocol": "h2",
+        "rendererStartTime": 2035.343000009656,
+        "mimeType": "image/svg+xml",
+        "resourceSize": 318,
+        "resourceType": "Image",
+        "transferSize": 1394,
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "Low",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2456.0219999849796,
+        "statusCode": 200
+       },
+       {
+        "url": "https://ru.wikipedia.org/wiki/Special:CentralAutoLogin/start",
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/html",
+        "protocol": "http/1.1",
+        "networkEndTime": 3024.4880000054836,
+        "resourceSize": 0,
+        "cache": "none",
+        "statusCode": 302,
+        "rendererStartTime": 2830.8959999978542,
+        "transferSize": 1194,
+        "networkRequestTime": 2831.5639999955893,
+        "sessionTargetType": "page",
+        "entity": "wikipedia.org",
+        "finished": true,
+        "priority": "Low"
+       },
+       {
+        "networkRequestTime": 2865.6689999997616,
+        "cache": "none",
+        "resourceType": "Script",
+        "transferSize": 4169,
+        "mimeType": "text/javascript",
+        "networkEndTime": 3060.5629999935627,
+        "protocol": "h2",
+        "entity": "wikipedia.org",
+        "url": "https://ru.wikipedia.org/w/load.php",
+        "resourceSize": 13594,
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 2864.9019999951124,
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "priority": "Low",
+        "finished": true
+       },
+       {
+        "networkEndTime": 2908.063000008464,
+        "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20view…",
+        "cache": "memory",
+        "transferSize": 0,
+        "resourceType": "Image",
+        "protocol": "data",
+        "mimeType": "image/svg+xml",
+        "statusCode": 200,
+        "priority": "Low",
+        "finished": true,
+        "sessionTargetType": "page",
+        "networkRequestTime": 2907.877000004053,
+        "rendererStartTime": 2907.877000004053,
+        "resourceSize": 728,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A…",
+        "mimeType": "image/svg+xml",
+        "resourceSize": 557,
+        "protocol": "data",
+        "networkRequestTime": 2910.2079999893904,
+        "networkEndTime": 2910.3790000081062,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "resourceType": "Image",
+        "transferSize": 0,
+        "rendererStartTime": 2910.2079999893904,
+        "finished": true,
+        "priority": "Low",
+        "cache": "memory"
+       },
+       {
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "transferSize": 1651,
+        "resourceType": "Script",
+        "finished": true,
+        "priority": "Low",
+        "networkRequestTime": 3024.8459999859333,
+        "rendererStartTime": 3024.4880000054836,
+        "networkEndTime": 3601.9930000007153,
+        "entity": "wikimedia.org",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "url": "https://auth.wikimedia.org/metawiki/wiki/Special:CentralAutoLogin/checkLoggedIn",
+        "mimeType": "text/javascript",
+        "resourceSize": 254
+       }
+      ],
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "label": "Protocol",
+        "valueType": "text",
+        "key": "protocol"
+       },
+       {
+        "valueType": "ms",
+        "label": "Network Request Time",
+        "granularity": 1,
+        "key": "networkRequestTime"
+       },
+       {
+        "valueType": "ms",
+        "key": "networkEndTime",
+        "label": "Network End Time",
+        "granularity": 1
+       },
+       {
+        "key": "transferSize",
+        "displayUnit": "kb",
+        "label": "Transfer Size",
+        "valueType": "bytes",
+        "granularity": 1
+       },
+       {
+        "displayUnit": "kb",
+        "valueType": "bytes",
+        "label": "Resource Size",
+        "key": "resourceSize",
+        "granularity": 1
+       },
+       {
+        "valueType": "text",
+        "label": "Status Code",
+        "key": "statusCode"
+       },
+       {
+        "valueType": "text",
+        "label": "MIME Type",
+        "key": "mimeType"
+       },
+       {
+        "key": "resourceType",
+        "label": "Resource Type",
+        "valueType": "text"
+       }
+      ],
+      "debugData": {
+       "initiators": [
+        {
+         "type": "parser",
+         "columnNumber": 413,
+         "lineNumber": 9,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "lineNumber": 10,
+         "type": "parser",
+         "columnNumber": 107,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "type": "parser",
+         "lineNumber": 12,
+         "columnNumber": 134,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "type": "parser",
+         "lineNumber": 13,
+         "columnNumber": 107,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "lineNumber": 139,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+         "columnNumber": 40,
+         "type": "parser"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "columnNumber": 739,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+         "type": "parser",
+         "lineNumber": 520
+        },
+        {
+         "columnNumber": 739,
+         "lineNumber": 520,
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "columnNumber": 739,
+         "type": "parser",
+         "lineNumber": 520,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"
+        },
+        {
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+         "type": "parser",
+         "columnNumber": 739,
+         "lineNumber": 520
+        },
+        {
+         "lineNumber": 520,
+         "columnNumber": 739,
+         "url": "https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://ru.wikipedia.org/w/load.php"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        },
+        {
+         "url": "https://ru.wikipedia.org/w/load.php",
+         "type": "parser"
+        }
+       ],
+       "networkStartTimeTs": 108160003038,
+       "type": "debugdata"
+      },
+      "type": "table"
+     }
+    }
+   }
+  }
+ }
+}

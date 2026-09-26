@@ -5,11 +5,10 @@ import pytest
 
 from bot.site_check.lighthouse import AuditState, PageFacts, audit_state, file_name, parse_lighthouse, strip_params
 from bot.site_check.pagespeed import AUDIT_IDS
-from tests.builders import audit, lighthouse
+from tests.builders import RECORDED_FAILURES, audit, lighthouse
 
 FIXTURES = sorted((Path(__file__).parents[1] / "fixtures" / "pagespeed").glob("*.json"))
-FAILURE_FIXTURES = {"not_found", "cert", "no_domain"}
-PAGE_FIXTURES = [path for path in FIXTURES if path.stem not in FAILURE_FIXTURES]
+PAGE_FIXTURES = [path for path in FIXTURES if path.stem not in RECORDED_FAILURES]
 
 
 @pytest.mark.parametrize(("raw", "state"), [
