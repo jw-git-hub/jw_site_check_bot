@@ -11,6 +11,7 @@ from aiogram.methods.base import TelegramMethod
 from aiogram.types import Message
 
 NOT_MODIFIED = "message is not modified"
+EMPTY_KEYBOARD: dict[str, Any] = {"inline_keyboard": []}
 
 
 class SendRichDict(TelegramMethod[Message]):
@@ -82,9 +83,15 @@ def _raise_edit_problem(description: str) -> None:
 
 async def edit_or_send(messenger: Messenger, chat_id: int, message_id: int, rich_message: dict[str, Any],
                        reply_markup: dict[str, Any] | None = None) -> int:
-    """Правит сообщение, а если его нет — шлёт новое. Возвращает id сообщения, где теперь текст."""
+    """Правит сообщение, а если его нет — шлёт новое. Возвращает id сообщения, где теперь текст.
+
+    Telegram у editMessageText не убирает прежнюю клавиатуру сам, если reply_markup не передать (в отличие от
+    отправки нового сообщения, где кнопок просто не будет) — иначе, например, кнопки выбора языка остались бы
+    висеть под подтверждением. Клавиатура здесь поэтому всегда явная: своя есть — она, нет — пустая. Одно место
+    на все правки, а не по одной вставке `{"inline_keyboard": []}` в каждом вызывающем коде."""
+    keyboard = reply_markup if reply_markup is not None else EMPTY_KEYBOARD
     try:
-        await messenger.edit(chat_id, message_id, rich_message, reply_markup)
+        await messenger.edit(chat_id, message_id, rich_message, keyboard)
         return message_id
     except MessageGone:
-        return await messenger.send(chat_id, rich_message, reply_markup)
+        return await messenger.send(chat_id, rich_message, keyboard)

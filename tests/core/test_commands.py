@@ -4,6 +4,7 @@ from aiogram.methods import AnswerCallbackQuery
 
 from bot.brand import BRAND
 from bot.core.commands import on_about, on_lang, on_lang_chosen, on_order, on_start, setup_commands
+from bot.core.messenger import EMPTY_KEYBOARD
 from bot.core.users import Users
 from bot.locales import TEXTS
 from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, fake_bot, make_callback, make_message, rich_text
@@ -38,6 +39,9 @@ async def test_lang_choice_and_callback_switch_language(db):
     await on_lang_chosen(callback, users=users, messenger=messenger, texts=TEXTS)
     assert "Done: I'll write in English." in messenger.last()
     assert (await users.touch(500, "ru")).lang == "en"
+    # Правка /lang в подтверждение должна убрать кнопки «Русский»/«English», а не оставить их висеть под
+    # новым текстом (Telegram сам старую клавиатуру не убирает — задача 23a, правка 1).
+    assert messenger.edited[-1][3] == EMPTY_KEYBOARD
 
 
 async def test_lang_chosen_survives_a_stale_callback(db):

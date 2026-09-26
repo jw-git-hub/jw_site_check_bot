@@ -5,8 +5,8 @@ from aiogram.types import Chat, Message
 
 import pytest
 
-from bot.core.messenger import (AiogramMessenger, DeliveryFailed, EditRichDict, MessageGone, SendRichDict,
-                                edit_or_send)
+from bot.core.messenger import (EMPTY_KEYBOARD, AiogramMessenger, DeliveryFailed, EditRichDict, MessageGone,
+                                SendRichDict, edit_or_send)
 from tests.fakes import FAKE_NOW, FakeMessenger, fake_bot
 
 DIVIDER_ONLY = {"blocks": [{"type": "divider"}]}
@@ -52,6 +52,15 @@ async def test_edit_passes_reply_markup_alongside_rich_message():
 def test_rich_dict_is_serialized_as_json():
     bot = fake_bot()
     assert json.loads(bot.session.prepare_value(DIVIDER_ONLY, bot=bot, files={})) == DIVIDER_ONLY
+
+
+def test_empty_keyboard_is_not_dropped_as_falsy_by_aiogram():
+    """`{"inline_keyboard": []}` — валидная явная «без кнопок», а не «пусто»: prepare_value фильтрует по
+    `is not None`, а не по правдивости значения, так что пустой список внутри словаря не пропадает (задача 23a,
+    правка 1 — иначе editMessageText без reply_markup оставил бы прежнюю клавиатуру висеть под новым текстом)."""
+    bot = fake_bot()
+    prepared = bot.session.prepare_value(EMPTY_KEYBOARD, bot=bot, files={})
+    assert json.loads(prepared) == EMPTY_KEYBOARD
 
 
 async def test_edit_not_modified_is_quiet():
@@ -106,3 +115,22 @@ async def test_edit_or_send_sends_new_message_for_unknown_bad_request():
     new_id = await edit_or_send(AiogramMessenger(bot), 1, 5, DIVIDER_ONLY)
     assert new_id == 9
     assert [call.__api_method__ for call in bot.session.calls] == ["editMessageText", "sendRichMessage"]
+
+
+async def test_edit_or_send_clears_a_keyboard_left_from_before_when_none_is_given():
+    """Telegram у editMessageText не убирает прежнюю клавиатуру сам, если reply_markup не передан (в отличие от
+    отправки нового сообщения, где кнопок просто не будет) — иначе, например, после выбора языка кнопки
+    «Русский»/«English» остались бы висеть под подтверждением (задача 23a, правка 1). Клавиатура здесь поэтому
+    всегда явная — своя есть, нет — пустая; проверено в одном месте, а не по одному разу на каждой правке."""
+    messenger = FakeMessenger()
+    await edit_or_send(messenger, 1, 5, DIVIDER_ONLY)
+    assert messenger.edited == [(1, 5, DIVIDER_ONLY, EMPTY_KEYBOARD)]
+
+
+async def test_edit_or_send_fallback_send_also_gets_an_explicit_empty_keyboard():
+    """Правка не прошла (сообщение удалено) — новое сообщение уходит с той же явной пустой клавиатурой, а не
+    без reply_markup вовсе, чтобы поведение не расходилось между веткой правки и веткой отправки заново."""
+    messenger = FakeMessenger()
+    messenger.gone.add(5)
+    await edit_or_send(messenger, 1, 5, DIVIDER_ONLY)
+    assert messenger.sent == [(1, DIVIDER_ONLY, EMPTY_KEYBOARD)]

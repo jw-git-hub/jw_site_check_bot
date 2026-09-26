@@ -9,7 +9,7 @@ from aiogram.types import MessageEntity
 from sqlalchemy import text
 
 from bot.brand import BRAND
-from bot.core.messenger import DeliveryFailed
+from bot.core.messenger import EMPTY_KEYBOARD, DeliveryFailed
 from bot.core.users import Users
 from bot.locales import TEXTS
 from bot.site_check import handlers, replies
@@ -156,6 +156,9 @@ async def test_site_failure_is_explained_and_charged(world):
     await settle(world)
     assert "По этому адресу страницы нет" in world.messenger.last()
     assert await rows(world.db, "SELECT error_code, charged FROM checks") == [("not_found", 1)]
+    # Отказ без клавиатуры правит статус — тоже без reply_markup=None, иначе Telegram оставил бы висеть
+    # клавиатуру, будь она у прежнего сообщения (задача 23a, правка 1).
+    assert world.messenger.edited[-1][3] == EMPTY_KEYBOARD
 
 
 async def test_our_failure_is_not_charged_and_owner_is_notified(world):
