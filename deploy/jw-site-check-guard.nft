@@ -1,0 +1,22 @@
+#!/usr/sbin/nft -f
+# Изоляция сети контейнера сайт-чекера (ТЗ, С10): из его подсети — только в интернет.
+# Своя таблица: правила Docker и Tailscale не трогаются. Drop в nftables окончателен — его не отменят
+# ни accept в чужих таблицах, ни цепочка ts-forward Tailscale. Подсеть и мост — как в docker-compose.yml.
+# Первые две строки делают файл повторяемым: таблица создаётся, если её нет, удаляется и строится заново.
+table inet jw_site_check_guard
+delete table inet jw_site_check_guard
+
+table inet jw_site_check_guard {
+    set not_internet {
+        type ipv4_addr
+        flags interval
+        elements = { 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16,
+                     172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 240.0.0.0/4 }
+    }
+
+    chain prerouting {
+        type filter hook prerouting priority raw; policy accept;
+        ip saddr 172.30.99.0/24 ip daddr @not_internet counter drop
+        meta nfproto ipv6 iifname "br-sitecheck" counter drop
+    }
+}
