@@ -39,8 +39,8 @@ AUDIT_IDS = (
     "document-latency-insight", "third-parties-insight", "viewport-insight", "target-size", "meta-viewport",
     "is-on-https", "total-byte-weight", "resource-summary", "network-requests",
 )
-FIELDS = ("lighthouseResult(lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings,audits("
-          + ",".join(AUDIT_IDS) + "))")
+# audits — словарь: отдельные проверки Google выбрать не даёт (400), только audits целиком.
+FIELDS = "lighthouseResult(lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings,audits)"
 
 
 def read_env() -> dict[str, str]:

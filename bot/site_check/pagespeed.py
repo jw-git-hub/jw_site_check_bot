@@ -1,7 +1,8 @@
 """Клиент PageSpeed Insights API (ТЗ, 5.1).
 
 - Ключ — в заголовке X-goog-api-key, не в адресе: адрес попадает в тексты ошибок.
-- Только нужные поля (fields): без скриншотов ответ в разы меньше и бережёт память контейнера.
+- Только нужные поля (fields): без скриншота страницы и служебных разделов ответ меньше и бережёт память контейнера.
+  audits — словарь, отдельные проверки из него Google выбрать не даёт (400), поэтому audits целиком.
 - Ошибки Lighthouse PageSpeed отдаёт с HTTP 500 (бывает 400), а код и статус страницы есть только в тексте.
   Поэтому сначала разбираем текст при любом статусе, и лишь потом решаем по HTTP-статусу.
 """
@@ -24,7 +25,7 @@ AUDIT_IDS = (
     "is-on-https", "total-byte-weight", "resource-summary", "network-requests",
 )
 RESULT_FIELDS = "lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings"
-FIELDS = f"lighthouseResult({RESULT_FIELDS},audits({','.join(AUDIT_IDS)}))"
+FIELDS = f"lighthouseResult({RESULT_FIELDS},audits)"
 REQUEST_TIMEOUT_SECONDS = 90
 MIN_TIMEOUT_SECONDS = 1
 MAX_RESPONSE_BYTES = 10 * 1024 * 1024

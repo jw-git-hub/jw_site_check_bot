@@ -69,6 +69,11 @@ async def test_success_sends_key_in_header_and_asks_only_needed_fields(run_clien
     assert request.query.getall("category") == ["performance", "accessibility", "best-practices"]
 
 
+def test_fields_ask_audits_whole():
+    # audits — словарь: Google отвечает 400 на выбор проверок по имени, принимает только audits целиком.
+    assert FIELDS.endswith(",audits)")
+
+
 async def test_lighthouse_error_in_500_is_site_failure_without_retry(run_client):
     fake = FakePageSpeed((500, lighthouse_error("ERRORED_DOCUMENT_REQUEST", 403)))
     with pytest.raises(LighthouseFailure) as failure:

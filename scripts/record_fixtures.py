@@ -4,7 +4,9 @@
   python3 scripts/record_fixtures.py <папка вне рабочей копии> <имя>=<адрес> [<имя>=<адрес> …]
 
 Из всех адресов вырезает параметры и фрагменты — там бывают чужие ключи и подписанные ссылки.
-Всё, похожее на секрет, заменяет на ***; скриншоты удаляет. На Мак файлы переносятся через scp.
+Всё, похожее на секрет, заменяет на ***; скриншоты удаляет. Из audits оставляет только проверки бота:
+остальные Google всё равно присылает (fields их не отсекает), а в тестах они не нужны.
+На Мак файлы переносятся через scp.
 """
 import importlib.util
 import json
@@ -15,7 +17,7 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 SCRIPTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS))
-from try_api import pagespeed, read_env  # noqa: E402 — путь к соседнему скрипту задан строкой выше
+from try_api import AUDIT_IDS, pagespeed, read_env  # noqa: E402 — путь к соседнему скрипту задан строкой выше
 
 PATTERNS_FILE = SCRIPTS.parent / "bot" / "core" / "secret_patterns.py"
 DROPPED_KEYS = {"screenshot", "final-screenshot", "screenshot-thumbnails", "fullPageScreenshot", "data"}
@@ -50,11 +52,18 @@ def sanitize(value):
     return clean_text(value) if isinstance(value, str) else value
 
 
+def keep_needed_audits(payload: dict) -> dict:
+    audits = (payload.get("lighthouseResult") or {}).get("audits")
+    if isinstance(audits, dict):
+        payload["lighthouseResult"]["audits"] = {name: audits[name] for name in AUDIT_IDS if name in audits}
+    return payload
+
+
 def record(out_dir: Path, name: str, url: str, key: str) -> None:
     status, size, payload = pagespeed(url, key, with_fields=True)
     target = out_dir / f"{name}.json"
-    target.write_text(json.dumps({"http_status": status, "response": sanitize(payload)}, ensure_ascii=False, indent=1),
-                      encoding="utf-8")
+    recorded = {"http_status": status, "response": sanitize(keep_needed_audits(payload))}
+    target.write_text(json.dumps(recorded, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{name}: HTTP {status}, {size} байт → {target}")
 
 
