@@ -10,6 +10,9 @@ NETWORK="jw_site_check_bot_site_check"
 BRIDGE_INTERFACE="br-sitecheck"
 TIMEOUT_SECONDS=3
 PROBE_CLOSED_EXIT_CODE=42
+NEIGHBOUR_CONTAINER_NAME="jw-site-check-neighbour-probe"
+NEIGHBOUR_IMAGE="jw_site_check_bot:latest"  # уже собран локально (docker-compose.yml): скрипт его не собирает и не тянет
+NEIGHBOUR_PORT=80
 # Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker exec, трасса Python)
 # не должна выдаваться за «закрыто»: голый except это делал бы.
 PROBE='import socket, sys
@@ -87,6 +90,30 @@ find_neighbour_container_ip() {
   return 1
 }
 
+# На сервере пока может не оказаться ни одного стороннего контейнера — тогда проверить группу «сосед»
+# нечем. Поднимаем временный сами: из уже собранного образа бота, без сети (--pull never — никаких
+# скачиваний), в сети Docker по умолчанию (не в нашей site_check), с командой-заглушкой вместо самого
+# бота. Убирается при любом выходе скрипта через trap, а не --rm: тот сработал бы только после docker stop.
+start_temporary_neighbour() {
+  docker run -d --pull never --network bridge --name "$NEIGHBOUR_CONTAINER_NAME" \
+    "$NEIGHBOUR_IMAGE" sleep infinity >/dev/null
+  trap 'docker rm -f "$NEIGHBOUR_CONTAINER_NAME" >/dev/null 2>&1 || true' EXIT
+  docker inspect "$NEIGHBOUR_CONTAINER_NAME" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' \
+    | grep -v '^$' | head -n1
+}
+
+# Временный сосед ничего не слушает (команда — заглушка): reachable_from_host здесь ничего не докажет,
+# «отказано» с хоста будет что при работающей изоляции, что без неё. Поэтому проверяем только то, что
+# наш контейнер до него не достаёт, без обычной для expect_closed сверки с хостом.
+expect_temporary_neighbour_closed() {
+  local ip="$1"
+  case "$(probe "$ip" "$NEIGHBOUR_PORT")" in
+    closed) group_confirmed[neighbour]=$((group_confirmed[neighbour] + 1)); echo "закрыто: соседний контейнер (временный)" ;;
+    open) failures=$((failures + 1)); echo "ОШИБКА: из контейнера доступен соседний контейнер ($ip:$NEIGHBOUR_PORT)" ;;
+    error) failures=$((failures + 1)); echo "ОШИБКА: проверка «соседний контейнер» не выполнена (сбой зонда)" ;;
+  esac
+}
+
 report_verdict() {
   local group unmet=()
   for group in "${!group_label[@]}"; do
@@ -113,9 +140,16 @@ require_address "$server_ip" "адрес сервера в домашней се
 require_address "$gateway_ip" "шлюз Docker для сервера" && expect_closed "$gateway_ip" 22 "сервер через шлюз Docker" server
 require_address "$tailscale_ip" "адрес сервера в Tailscale" && expect_closed "$tailscale_ip" 22 "сервер в Tailscale" tailscale
 if [ -n "$neighbour_ip" ]; then
-  expect_closed "$neighbour_ip" 80 "соседний контейнер" neighbour
+  expect_closed "$neighbour_ip" "$NEIGHBOUR_PORT" "соседний контейнер" neighbour
 else
-  echo "пропуск: соседний контейнер — на сервере нет запущенных контейнеров вне нашей сети, проверить нечем"
+  echo "на сервере нет запущенных контейнеров вне нашей сети — поднимаю временный для проверки"
+  temporary_neighbour_ip="$(start_temporary_neighbour || true)"
+  if [ -n "$temporary_neighbour_ip" ]; then
+    expect_temporary_neighbour_closed "$temporary_neighbour_ip"
+  else
+    failures=$((failures + 1))
+    echo "ОШИБКА: не удалось поднять временный контейнер для проверки соседа"
+  fi
 fi
 expect_closed 100.100.100.100 53 "DNS Tailscale" tailscale
 expect_closed 2001:4860:4860::8888 443 "интернет по IPv6"

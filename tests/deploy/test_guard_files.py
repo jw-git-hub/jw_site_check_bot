@@ -97,6 +97,18 @@ def test_check_isolation_checks_a_neighbour_container():
     assert "нет запущенных контейнеров" in script  # честный отказ, если проверить нечем
 
 
+def test_check_isolation_starts_a_temporary_neighbour_when_none_exists():
+    """Поправка 3 к задаче 22: на сервере пока работает только наш контейнер — проверять группу
+    «соседний контейнер» нечем, а вердикт задачи 23 требует «в порядке» без пропусков."""
+    script = read("check_isolation.sh")
+    assert re.search(r"^NEIGHBOUR_CONTAINER_NAME=\S+", script, re.MULTILINE)
+    assert re.search(r'docker run .*--name "\$NEIGHBOUR_CONTAINER_NAME"', script)
+    assert "--network bridge" in script  # сеть Docker по умолчанию, не наша
+    assert "--pull never" in script  # уже собранный локальный образ, без скачивания
+    assert re.search(r'sleep\b', script)  # команда-заглушка вместо самого бота
+    assert re.search(r'trap .*docker rm -f "\$NEIGHBOUR_CONTAINER_NAME".*\bEXIT\b', script)
+
+
 def test_check_isolation_verdict_requires_every_group_confirmed_and_no_failures():
     script = read("check_isolation.sh")
     assert "group_confirmed" in script
