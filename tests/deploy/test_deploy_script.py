@@ -173,13 +173,12 @@ def test_health_wait_is_sixty_seconds_per_c17():
     assert "HEALTH_WAIT_SECONDS=60" in script
 
 
-def test_unreachable_host_hints_at_tailscale(project):
-    """Имя сервера в Tailscale может не находиться, если Tailscale на Маке выключен."""
+def test_unreachable_host_says_there_is_no_connection(project):
+    """Выкладка ходит только по домашней сети: код ssh 255 — нет связи с сервером, про Tailscale ни слова."""
     result = deploy_with_ssh_exit_code(project, 255)
     assert result.returncode == 1
-    assert "Tailscale" in result.stderr
-    # Имя — в Tailscale, оно резолвится только когда он включён, в том числе и дома.
-    assert "если вы не дома" not in result.stderr
+    assert "нет связи с сервером" in result.stderr
+    assert "Tailscale" not in result.stderr
 
 
 def test_remote_check_failure_keeps_specific_message_when_not_a_connection_error(project):
@@ -187,7 +186,7 @@ def test_remote_check_failure_keeps_specific_message_when_not_a_connection_error
     result = deploy_with_ssh_exit_code(project, 1)
     assert result.returncode == 1
     assert "нет .env на сервере" in result.stderr
-    assert "Tailscale" not in result.stderr
+    assert "нет связи с сервером" not in result.stderr
 
 
 def test_health_wait_uses_a_real_deadline_not_loop_count(project):
@@ -207,9 +206,9 @@ def test_deploy_has_a_single_helper_for_remote_failures():
     assert "check_remote" not in script  # старое имя поглощено общим помощником
 
 
-def test_connection_lost_mid_deploy_still_hints_at_tailscale(project):
+def test_connection_lost_mid_deploy_says_there_is_no_connection(project):
     """Обрыв связи не только на первой проверке, но и на любом позднем шаге (например, сборке) должен
-    показывать ту же подсказку про Tailscale, а не голый вывод docker/git."""
+    давать то же сообщение о связи, а не голый вывод docker/git."""
     ssh_script = """#!/usr/bin/env bash
 command="${@: -1}"
 case "$command" in
@@ -220,7 +219,7 @@ esac
 """
     result = deploy_with_ssh_script(project, ssh_script, FAKE_REMOTE_HEAD=git(project, "rev-parse", "HEAD"))
     assert result.returncode == 1
-    assert "Tailscale" in result.stderr
+    assert "нет связи с сервером" in result.stderr
 
 
 def test_failure_after_server_touched_suggests_rollback_to_previous_sha(project):
