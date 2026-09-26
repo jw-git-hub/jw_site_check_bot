@@ -132,6 +132,17 @@ async def test_mark_running_status_is_covered_by_interrupt(repo):
     assert (await repo.recent_for_domain("site.org"))[0].status == INTERRUPTED
 
 
+async def test_remember_charge_forgets_entries_older_than_the_window(repo):
+    """Поправка 8: remember_charge пишется при каждой списанной проверке, в том числе при исправной базе, когда
+    _memory_counts (со своей обрезкой) не вызывается ни разу — без своей обрезки deque рос бы всю жизнь процесса."""
+    clock = FakeClock()
+    limits = Limits(repo, clock, user_daily=1000, global_daily=1000, admin_id=ADMIN_ID)
+    limits.remember_charge(USER)
+    clock.advance(timedelta(hours=25).total_seconds())
+    limits.remember_charge(USER)
+    assert len(limits._memory) == 1  # поправка 8: старая запись выброшена, а не накопилась рядом с новой
+
+
 async def test_create_rejects_check_for_unknown_user(repo):
     """Поправки 2 и 3: пользователь должен быть в базе до записи проверки (Users.touch — обязанность вызывающего,
     ChecksRepo.create его не создаёт сам), а внешние ключи (PRAGMA foreign_keys=ON) действительно применяются на

@@ -1,4 +1,6 @@
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandObject
+from aiogram.methods import AnswerCallbackQuery
 
 from bot.brand import BRAND
 from bot.core.commands import on_about, on_lang, on_lang_chosen, on_order, on_start, setup_commands
@@ -35,6 +37,15 @@ async def test_lang_choice_and_callback_switch_language(db):
     await on_lang_chosen(callback, users=users, messenger=messenger, texts=TEXTS, brand=BRAND)
     assert "Done: I'll write in English." in messenger.last()
     assert (await users.touch(500, "ru")).lang == "en"
+
+
+async def test_lang_chosen_survives_a_stale_callback(db):
+    """Поправка 5 к задаче 17: устаревшее нажатие («query is too old») не должно ронять выбор языка."""
+    messenger, users = FakeMessenger(), Users(db, FakeClock())
+    stale_answer = TelegramBadRequest(method=AnswerCallbackQuery(callback_query_id="1"), message="query is too old")
+    callback = make_callback("lang:en", user_id=500).as_(fake_bot({"answerCallbackQuery": stale_answer}))
+    await on_lang_chosen(callback, users=users, messenger=messenger, texts=TEXTS, brand=BRAND)
+    assert "Done: I'll write in English." in messenger.last()
 
 
 async def test_about_has_buttons_and_footer(db):

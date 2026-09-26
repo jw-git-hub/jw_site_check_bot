@@ -2,9 +2,11 @@
 
 Имя, описания, аватар и обложку бота код не трогает — только меню команд (setMyCommands).
 """
+import contextlib
 from dataclasses import dataclass
 
 from aiogram import Bot, F, Router
+from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import BotCommand, BotCommandScopeChat, CallbackQuery, Message
 
@@ -76,7 +78,9 @@ async def on_lang(message: Message, users: Users, messenger: Messenger, texts: T
 async def on_lang_chosen(callback: CallbackQuery, users: Users, messenger: Messenger, texts: Texts,
                          brand: Brand) -> None:
     lang = callback.data.removeprefix(LANG_CALLBACK_PREFIX)
-    await callback.answer()
+    # Поправка 5 к задаче 17: устаревшее нажатие не должно ронять обработчик выбора языка.
+    with contextlib.suppress(TelegramAPIError):
+        await callback.answer()
     if lang not in LANGUAGES:
         return
     await best_effort(users.set_lang(callback.from_user.id, lang), "выбор языка", None)
