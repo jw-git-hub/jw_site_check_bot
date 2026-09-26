@@ -7,6 +7,7 @@
 - Поправка 3 к задаче 19: необработанные исключения в потоках, в финализаторах (__del__) и предупреждения
   (warnings) — туда же, с той же маской, а не мимо неё в сырой stderr.
 """
+import contextlib
 import logging
 import sys
 import threading
@@ -66,8 +67,12 @@ class _StdlibToLoguru(logging.Handler):
     def handleError(self, record: logging.LogRecord) -> None:
         """Раунд 1 обзора задачи 19 (Сек7): logging.Handler.handleError по умолчанию печатает record.msg и
         record.args в сыром stderr, в обход маски — а там бывает секрет (аргумент испорченной записи).
-        Вместо него — тот же журнал с маской: только имя логгера и трейсбек, без исходного сообщения."""
-        logger.opt(exception=True).error("запись журнала {} не оформилась", record.name)
+        Вместо него — тот же журнал с маской: только имя логгера и трейсбек, без исходного сообщения.
+
+        Раунд 2 (правило контролёра): вторичный сбой самого журнала (сток loguru тоже упал) — не повод
+        ронять программу, ровно как и первичный сбой форматирования записи, который сюда привёл."""
+        with contextlib.suppress(Exception):  # noqa: BLE001 — вторичный сбой самого журнала не должен ронять программу
+            logger.opt(exception=True).error("запись журнала {} не оформилась", record.name)
 
 
 def _log_uncaught(exc_type, exc_value, exc_traceback) -> None:
