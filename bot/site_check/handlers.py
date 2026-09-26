@@ -36,6 +36,7 @@ SERVICE_NOTICES = {"quota": "notify_pagespeed_quota", "key": "notify_pagespeed_k
 OTHER_SERVICE_NOTICE = "notify_pagespeed_other"
 AUDITS_JOIN = ", "
 RETRY_DELAY_SECONDS = 2  # поправка 4 к задаче 17: 1–3 с — доставка итога повторяется один раз
+DELIVERY_ATTEMPTS = 2  # первая попытка плюс одна повторная
 
 router = Router(name="site_check")
 
@@ -127,18 +128,20 @@ class Intake:
         await best_effort(self._repo.create(new), "отказ", None)
 
     async def _enqueue(self, chat_id: int, user: User, target: Target) -> None:
-        # Поправка 9: не дошли до успешного submit по любой причине — место освобождается, ошибка идёт дальше.
+        # Раунд ревью 1, находка 1 (поправка 9): ровно одно освобождение места на любом пути — не встала
+        # работа в очередь по любой причине (включая переполнение) — release здесь и только здесь.
         self._queue.reserve(user.user_id, target.display)
+        submitted = False
         try:
-            await self._start(chat_id, user, target)
+            submitted = await self._start(chat_id, user, target)
         except DeliveryFailed as error:
             logger.warning("статус проверки не доставлен: {}", error)
-            self._queue.release(user.user_id)
-        except Exception:
-            self._queue.release(user.user_id)
-            raise
+        finally:
+            if not submitted:
+                self._queue.release(user.user_id)
 
-    async def _start(self, chat_id: int, user: User, target: Target) -> None:
+    async def _start(self, chat_id: int, user: User, target: Target) -> bool:
+        """True — работа встала в очередь; место освободит воркер сам, когда проверка закончится."""
         ahead = self._queue.ahead_now()
         message_id = await self._messenger.send(chat_id, self._status(user, target, ahead))
         new = NewCheck(user.user_id, user.last_source, target, QUEUED, None, chat_id, message_id)
@@ -149,6 +152,8 @@ class Intake:
             self._queue.submit(job)
         except asyncio.QueueFull:
             await self._queue_overflow(job)
+            return False
+        return True
 
     def _status(self, user: User, target: Target, ahead: int) -> dict:
         if ahead == 0:
@@ -156,11 +161,15 @@ class Intake:
         return replies.queued(self._texts, user.lang, self._brand, ahead, self._queue.estimate_minutes(ahead))
 
     async def _queue_overflow(self, job: CheckJob) -> None:
-        self._queue.release(job.user_id)
-        message = replies.failure(self._texts, job.lang, self._brand, QUEUE_FULL)
-        await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
+        """Очередь заполнилась между reserve и submit: запись закрывается первой, доставка отказа — best
+        effort (раунд ревью 1, находка 1) — release места делает единственный вызывающий, `_enqueue`."""
         if job.check_id:
             await best_effort(self._repo.finish_failed(job.check_id, QUEUE_FULL, charged=False), "очередь полна", None)
+        message = replies.failure(self._texts, job.lang, self._brand, QUEUE_FULL)
+        try:
+            await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
+        except DeliveryFailed as error:
+            logger.warning("отказ «очередь полна» не доставлен: {}", error)
 
 
 class CheckRunner:
@@ -201,18 +210,17 @@ class CheckRunner:
             logger.warning("сообщение проверки {} не доставлено: {}", job.check_id, error)
 
     async def _deliver(self, job: CheckJob, message: dict) -> None:
-        """Итог (отчёт или отказ) — со второй попытки после короткой паузы (поправка 4)."""
-        try:
-            job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
-        except DeliveryFailed:
-            await self._retry_deliver(job, message)
-
-    async def _retry_deliver(self, job: CheckJob, message: dict) -> None:
-        await asyncio.sleep(RETRY_DELAY_SECONDS)
-        try:
-            job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
-        except DeliveryFailed as error:
-            logger.warning("итог проверки {} не доставлен: {}", job.check_id, error)
+        """Итог (отчёт или отказ) — до двух попыток с паузой между ними; не прошли обе — один раз в журнал
+        (поправка 4; раунд ревью 1, находка 4: одна функция вместо пары почти одинаковых)."""
+        for attempt in range(1, DELIVERY_ATTEMPTS + 1):
+            try:
+                job.message_id = await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
+                return
+            except DeliveryFailed as error:
+                if attempt == DELIVERY_ATTEMPTS:
+                    logger.warning("итог проверки {} не доставлен: {}", job.check_id, error)
+                else:
+                    await asyncio.sleep(RETRY_DELAY_SECONDS)
 
     def _safe_message(self, build: Callable[[], dict]) -> dict | None:
         """Сборка сообщения — тоже под защитой: неожиданное сочетание находок не должно ронять воркер
@@ -228,7 +236,8 @@ class CheckRunner:
                                 result.security, job.is_admin, self._clock.now())
         message = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
         if message is None:
-            await self._finish_failed(job, CheckFailed(MEASURE_FAILED, reached_measurement=True))
+            # Раунд ревью 1, находка 3 (ТЗ Л9): сбой сборки отчёта — наша сторона, а не сайта, замер не в счёт.
+            await self._finish_failed(job, CheckFailed(MEASURE_FAILED, reached_measurement=False))
             return
         await self._deliver(job, message)
         self._limits.remember_charge(job.user_id)

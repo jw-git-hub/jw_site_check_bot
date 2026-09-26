@@ -201,7 +201,10 @@ async def test_service_down_before_measurement_only_logs_no_owner_notice(world):
 
 
 async def test_broken_report_builder_does_not_leave_checking_forever(world, monkeypatch):
-    """Поправка 3: сборка отчёта упала — человек получает measure_failed, а не «Проверяю…» навсегда."""
+    """Поправка 3: сборка отчёта упала — человек получает measure_failed, а не «Проверяю…» навсегда.
+
+    Раунд ревью 1, находка 3 (ТЗ Л9): сбой на нашей стороне (отчёт не собрался, хотя замер прошёл) не
+    списывается — как и другие «наши» сбои (service_down)."""
     def boom(*args, **kwargs):
         raise RuntimeError("отчёт не собрался")
 
@@ -209,7 +212,7 @@ async def test_broken_report_builder_does_not_leave_checking_forever(world, monk
     await world.intake.handle_text(link("example.com"))
     await settle(world)
     assert "Не получилось измерить" in world.messenger.last()
-    assert await rows(world.db, "SELECT status, error_code, charged FROM checks") == [("failed", "measure_failed", 1)]
+    assert await rows(world.db, "SELECT status, error_code, charged FROM checks") == [("failed", "measure_failed", 0)]
 
 
 async def test_final_message_delivery_recovers_after_one_retry(db, settings):
@@ -269,6 +272,48 @@ async def test_reservation_is_released_when_building_status_fails(world, monkeyp
     assert world.queue.busy_display(USER) is None
 
 
+async def test_queue_overflow_with_delivery_failure_releases_reservation_once(world, monkeypatch):
+    """Раунд ревью 1, находка 1: переполнение очереди — release только один. В брифе `_queue_overflow`
+    освобождала место сама, а `edit_or_send` мог бросить DeliveryFailed до `finish_failed` — запись оставалась
+    «queued», исключение уходило в `_enqueue`, и там срабатывал второй release. Между двумя release есть await:
+    если за это время тот же человек забронировал бы место заново, второй release стёр бы уже чужую, свежую
+    бронь (ТЗ Л2 — две проверки разом). Теперь release — один раз, в `_enqueue`, после того как `_start`
+    вернёт, встала ли работа в очередь.
+
+    Переполнение задаём напрямую (подменяем `submit`/`is_full` очереди), а не гоняясь за настоящей ёмкостью:
+    `_refusal` сама отказывает раньше `_enqueue`, если очередь уже полна — нужен именно случай, когда полна
+    она стала между этой проверкой и вызовом `submit`."""
+    overflow_user = 3
+
+    async def failing_edit(chat_id, message_id, rich_message):
+        raise DeliveryFailed("правка недоступна")
+
+    def submit_finds_it_full(job):
+        raise asyncio.QueueFull()
+
+    monkeypatch.setattr(world.messenger, "edit", failing_edit)
+    monkeypatch.setattr(world.queue, "is_full", lambda: False)
+    monkeypatch.setattr(world.queue, "submit", submit_finds_it_full)
+    release_calls: list[int] = []
+    original_release = world.queue.release
+
+    def spy_release(user_id: int) -> None:
+        release_calls.append(user_id)
+        original_release(user_id)
+
+    monkeypatch.setattr(world.queue, "release", spy_release)
+
+    await world.intake.handle_text(link("example.net", user_id=overflow_user))
+
+    assert release_calls.count(overflow_user) == 1
+    assert world.queue.busy_display(overflow_user) is None
+    assert await rows(world.db, f"SELECT status, error_code, charged FROM checks WHERE user_id = {overflow_user}") \
+        == [("failed", "queue_full", 0)]
+
+    world.queue.reserve(overflow_user, "новая бронь")  # свежая бронь не пострадала от лишнего release
+    assert world.queue.busy_display(overflow_user) == "новая бронь"
+
+
 # Поправка 6: список кодов исходов — из констант самих модулей, не переписан строками заново.
 _CLASSIFY_CODES = set(ERROR_CODES.values()) - {CERT_BLOCKS}
 _PAGE_STATUS_CODES = {classify(LighthouseFailure(ERRORED_DOCUMENT, status))
@@ -283,6 +328,9 @@ PRODUCIBLE_FAILURE_CODES = sorted(_CLASSIFY_CODES | _PAGE_STATUS_CODES | _PROBE_
 @pytest.mark.parametrize("lang", ["ru", "en"])
 @pytest.mark.parametrize("code", PRODUCIBLE_FAILURE_CODES)
 def test_every_producible_failure_code_has_a_reply(code, lang):
+    # Раунд ревью 1, находка 2: без этой строки тест не мог упасть — failure() тихо подменяет неизвестный код
+    # на measure_failed, и "{" not in text была бы верна для любого кода, даже для не заведённого текста.
+    assert code in replies.FAILURE_CODES
     message_text = rich_text(replies.failure(TEXTS, lang, BRAND, code, status=FIRST_SERVER_ERROR, site="example.com"))
     assert "{" not in message_text
 

@@ -99,12 +99,16 @@ class Pipeline:
             return ProbeResult(target.url, None)
 
     def _parse(self, result: dict) -> PageFacts:
-        """Поправка 9: неожиданная форма ответа не роняет проверку — узкий набор исключений, в журнал и отказ."""
+        """Поправка 9: неожиданная форма ответа не роняет проверку — узкий набор исключений, в журнал и отказ.
+
+        Раунд ревью 1, находка 5 (ТЗ Л9): нечитаемый ответ Google — наша сторона, не сайта, поэтому
+        reached_measurement=False — попытка не списывается (в отличие от пустого замера в
+        _require_measurement, где сайт действительно ничего не показал)."""
         try:
             return parse_lighthouse(result)
         except PARSE_ERRORS as error:
             logger.warning("разбор ответа PageSpeed не удался: {}", type(error).__name__)
-            raise CheckFailed(MEASURE_FAILED, reached_measurement=True) from None
+            raise CheckFailed(MEASURE_FAILED, reached_measurement=False) from None
 
     def _require_measurement(self, page: PageFacts) -> None:
         """Поправка 8: ни LCP, ни мобильной версии, ни веса страницы — измерить нечего, отчёта не будет."""

@@ -322,10 +322,12 @@ async def test_empty_measurement_gives_no_report():
 # --- Поправка 9: разбор ответа не роняет проверку ---
 
 async def test_broken_pagespeed_response_does_not_crash_the_check():
+    """Раунд ревью 1, находка 5 (ТЗ Л9): нечитаемый ответ Google — наша сторона, а не сайта, замер не в счёт
+    (в отличие от пустого замера — там сайт правда ничего не показал, и он остаётся списанным)."""
     pagespeed = FakePageSpeed(result=None)  # подложенный битый ответ: parse_lighthouse получит не словарь
     with pytest.raises(CheckFailed) as failed:
         await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), pagespeed, FakeClock()).run(target())
-    assert (failed.value.code, failed.value.reached_measurement) == (MEASURE_FAILED, True)
+    assert (failed.value.code, failed.value.reached_measurement) == (MEASURE_FAILED, False)
 
 
 # --- Поправка 10: дата «сегодня» — по UTC, без сдвига на локальные сутки ---
