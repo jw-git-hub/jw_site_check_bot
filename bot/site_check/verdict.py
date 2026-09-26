@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
-from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
+from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome, to_ascii_host
 
 MAX_TROUBLES = 2
 MAX_FIXES = 3
@@ -282,12 +282,17 @@ def _no_https_blocks_transport(facts: TlsFacts, page: PageFacts | None) -> bool:
     если с этого хоста нет своей переадресации на https в другом месте. Голый домен у регистратора, который сам
     переводит на защищённую версию на другом хосте, — «стоит поправить», а не «плохо» (задача 13a, решение
     владельца 26.09.2026).
+
+    Хост итогового адреса переводится в ASCII (IDNA) той же функцией, что и в pipeline.py: `facts.host` уже в
+    ASCII, а `final_url` от Lighthouse может прийти юникодом — иначе один и тот же хост выглядел бы «разным»
+    (задача 14, поправка 11). Хост не перевёлся — считаем его неизвестным и не другим: остаётся «плохо».
     """
     if facts.outcome is not TlsOutcome.NO_HTTPS:
         return False
     if page is None or not page.final_url.startswith(HTTPS_PREFIX):
         return True
-    return urlsplit(page.final_url).hostname == facts.host
+    final_host = to_ascii_host(urlsplit(page.final_url).hostname or "")
+    return final_host is None or final_host == facts.host
 
 
 def _unique(findings: list[FindingItem]) -> list[FindingItem]:

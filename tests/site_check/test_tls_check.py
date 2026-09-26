@@ -1,10 +1,12 @@
 import asyncio
+import ssl
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from bot.site_check import tls_check
 from bot.site_check.tls_check import (RedirectState, TlsFacts, TlsOutcome, check_http_redirect, check_tls,
-                                      root_request)
+                                      close_quietly, root_request, to_ascii_host)
 from tests.certs import Issued, client_context_trusting, issue, issue_with_malformed_san, server_context
 
 HOST = "site.test"
@@ -143,3 +145,55 @@ async def test_huge_headers_are_not_read_to_the_end():
 
 def test_request_asks_only_for_root():
     assert root_request(HOST).startswith(b"GET / HTTP/1.1\r\nHost: site.test\r\n")
+
+
+# --- Задача 14, поправка 6: срок второго соединения не съедает известный исход первой проверки ---
+
+async def test_unverified_second_connection_has_its_own_short_timeout(monkeypatch):
+    """Первая проверка уже дала исход (сертификат не проходит проверку) — зависшее второе соединение (за датой
+    сертификата) не должно тратить весь оставшийся бюджет «до замера»: свой короткий срок обрывает его раньше."""
+    monkeypatch.setattr(tls_check, "UNVERIFIED_CERT_TIMEOUT_SECONDS", 0.02)
+
+    async def hanging_open_stream(host, port, context):
+        if context is not None and context.verify_mode == ssl.CERT_NONE:
+            await asyncio.sleep(0.2)
+            raise AssertionError("второе соединение не должно было дождаться ответа")
+        error = ssl.SSLCertVerificationError()
+        error.verify_code = 10  # EXPIRED
+        raise error
+
+    facts = await check_tls(hanging_open_stream, HOST)
+    assert (facts.outcome, facts.cert) == (TlsOutcome.EXPIRED, None)
+
+
+class _RecordingTransport:
+    def __init__(self):
+        self.aborted = False
+
+    def abort(self):
+        self.aborted = True
+
+
+class _RecordingWriter:
+    def __init__(self):
+        self.transport = _RecordingTransport()
+
+
+async def test_close_quietly_does_not_wait_for_a_clean_shutdown():
+    """close_quietly не должен ждать wait_closed(): каждое ожидание съедает срок «до замера» (поправка 6)."""
+    writer = _RecordingWriter()
+    await close_quietly(writer)
+    assert writer.transport.aborted
+
+
+# --- Задача 14, поправки 7 и 11: перевод хоста итогового адреса в ASCII (нужен в pipeline.py и verdict.py) ---
+
+@pytest.mark.parametrize(("host", "ascii_host"), [
+    ("site.test", "site.test"), ("пример.рф", "xn--e1afmkfd.xn--p1ai"), ("XN--E1AFMKFD.test", "xn--e1afmkfd.test"),
+])
+def test_to_ascii_host_normalises_unicode_and_case(host, ascii_host):
+    assert to_ascii_host(host) == ascii_host
+
+
+def test_to_ascii_host_returns_none_for_a_host_idna_refuses():
+    assert to_ascii_host("-a.test") is None

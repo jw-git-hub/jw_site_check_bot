@@ -4,7 +4,6 @@
 Исход проверки сертификата — по коду OpenSSL (verify_code).
 """
 import asyncio
-import contextlib
 import re
 import ssl
 from collections.abc import Callable
@@ -14,12 +13,15 @@ from enum import StrEnum
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
+import idna
 
 from bot.site_check.net_guard import StreamOpener
 
 HTTPS_PORT = 443
 HTTP_PORT = 80
-CLOSE_TIMEOUT_SECONDS = 2
+# Второе (непроверенное) соединение за датой сертификата — свой короткий срок: первое уже потратило часть
+# бюджета «до замера», зависшее второе не должно съедать его целиком (задача 14, поправка 6).
+UNVERIFIED_CERT_TIMEOUT_SECONDS = 3
 HEADER_END = b"\r\n\r\n"
 REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 SUCCESS_STATUSES = range(200, 300)
@@ -102,9 +104,14 @@ async def check_tls(open_stream: StreamOpener, host: str,
 
 
 async def read_cert_unverified(open_stream: StreamOpener, host: str) -> CertInfo | None:
-    """Сертификат без проверки — только прочитать даты и имена, когда проверка не прошла."""
+    """Сертификат без проверки — только прочитать даты и имена, когда проверка не прошла.
+
+    Короткий срок (UNVERIFIED_CERT_TIMEOUT_SECONDS) — не даёт зависшему соединению съесть весь бюджет
+    «до замера»: известный исход первой проверки (EXPIRED, SELF_SIGNED…) не должен из-за этого потеряться.
+    """
     try:
-        _reader, writer = await open_stream(host, HTTPS_PORT, unverified_context())
+        opening = open_stream(host, HTTPS_PORT, unverified_context())
+        _reader, writer = await asyncio.wait_for(opening, UNVERIFIED_CERT_TIMEOUT_SECONDS)
     except (OSError, TimeoutError):
         return None
     try:
@@ -199,6 +206,19 @@ def _header(lines: list[str], name: str) -> str:
 
 
 async def close_quietly(writer: asyncio.StreamWriter) -> None:
-    writer.close()
-    with contextlib.suppress(OSError, TimeoutError, ssl.SSLError):
-        await asyncio.wait_for(writer.wait_closed(), CLOSE_TIMEOUT_SECONDS)
+    """Закрывает без ожидания подтверждения: `wait_closed()` может держать несколько секунд, а это время
+    входит в бюджет «до замера» — ждать его незачем, нужный ответ уже прочитан (задача 14, поправка 6)."""
+    transport = writer.transport
+    if transport is None:
+        writer.close()
+    else:
+        transport.abort()
+
+
+def to_ascii_host(host: str) -> str | None:
+    """Юникодный хост (например, из finalDisplayedUrl PageSpeed) → ASCII (IDNA), как уже делает разбор ввода
+    (url_input.py). Не перевёлся — None: проверки после замера для такого хоста не идут (поправки 7 и 11)."""
+    try:
+        return idna.encode(host, uts46=True).decode("ascii").rstrip(".")
+    except idna.IDNAError:
+        return None

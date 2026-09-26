@@ -144,6 +144,17 @@ def test_https_after_redirect_still_checks_final_page_transport():
     assert Finding.NO_REDIRECT in findings
 
 
+def test_no_https_transport_check_normalises_unicode_final_host():
+    """Задача 14, поправка 11: Lighthouse может прислать финальный хост юникодом (finalDisplayedUrl), а
+    TlsFacts.host — уже в ASCII. Без перевода в ASCII сравнение решило бы, что хосты разные, и ошибочно смягчило
+    бы находку до «стоит поправить», хотя переадресации на другой хост на самом деле нет."""
+    facts = TlsFacts("xn--e1afmkfd.xn--p1ai", TlsOutcome.NO_HTTPS)
+    result_page = page(final_url="https://пример.рф/")
+    block = judge(result_page, SecurityFacts((facts,), (RedirectState.NO_REDIRECT,), ()), TODAY).blocks[Block.SECURITY]
+    assert [item.finding for item in block.findings] == [Finding.NO_HTTPS]
+    assert block.grade is Grade.BAD
+
+
 def test_mixed_content_and_incomplete_chain_are_worth_fixing():
     facts = security(outcome=TlsOutcome.INCOMPLETE_CHAIN, insecure=("http://cdn.test/a.jpg",))
     block = judge(page(), facts, TODAY).blocks[Block.SECURITY]
