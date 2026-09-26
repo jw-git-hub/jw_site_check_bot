@@ -2,8 +2,9 @@ from datetime import date
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from bot.core.db import DatabaseTooNew, backup_daily, create_engine, current_version, migrate
+from bot.core.db import DatabaseTooNew, backup, backup_daily, create_engine, current_version, migrate
 from bot.core.stats import best_effort
 from bot.schema import MIGRATIONS
 
@@ -62,6 +63,27 @@ async def test_daily_copies_keep_last_seven(engine, tmp_path):
         await backup_daily(engine, tmp_path / "backups", date(2026, 9, day))
     kept = sorted(path.name for path in (tmp_path / "backups").glob("bot-*.db"))
     assert kept == [f"bot-2026-09-0{day}.db" for day in range(3, 10)]
+
+
+async def test_failed_backup_keeps_previous_copy(engine, tmp_path, monkeypatch):
+    """Поправка 4 к задаче 19: копия пишется во временный файл, старую нельзя потерять при сбое посередине."""
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    target = backups / "keep.db"
+    await backup(engine, target)
+    kept_bytes = target.read_bytes()
+    original_execute = AsyncConnection.execute
+
+    async def failing_execute(self, statement, *args, **kwargs):
+        if "VACUUM INTO" in str(statement):
+            raise RuntimeError("сбой посередине копии")
+        return await original_execute(self, statement, *args, **kwargs)
+
+    monkeypatch.setattr(AsyncConnection, "execute", failing_execute)
+    with pytest.raises(RuntimeError):
+        await backup(engine, target)
+    assert target.read_bytes() == kept_bytes
+    assert list(backups.glob("*.tmp")) == []
 
 
 async def test_best_effort_returns_fallback_instead_of_error():

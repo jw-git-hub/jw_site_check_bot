@@ -4,9 +4,12 @@
 - Шаблоны секретов работают с первой строки журнала, значения — сразу после загрузки настроек.
 - diagnose=False: в трейсбеке нет значений переменных, а в них бывают секреты.
 - Журналы стандартной библиотеки (aiogram, aiohttp, asyncio) идут через тот же путь.
+- Поправка 3 к задаче 19: необработанные исключения в потоках, в финализаторах (__del__) и предупреждения
+  (warnings) — туда же, с той же маской, а не мимо неё в сырой stderr.
 """
 import logging
 import sys
+import threading
 from collections.abc import Iterable
 
 from loguru import logger
@@ -54,12 +57,26 @@ def _write_masked(message: str) -> None:
 
 class _StdlibToLoguru(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
-        level = record.levelname if record.levelname in LOGURU_LEVELS else record.levelno
-        logger.opt(exception=record.exc_info).log(level, "{}: {}", record.name, record.getMessage())
+        try:
+            level = record.levelname if record.levelname in LOGURU_LEVELS else record.levelno
+            logger.opt(exception=record.exc_info).log(level, "{}: {}", record.name, record.getMessage())
+        except Exception:  # noqa: BLE001 — плохое форматирование записи не должно ронять программу
+            self.handleError(record)
 
 
 def _log_uncaught(exc_type, exc_value, exc_traceback) -> None:
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("необработанное исключение")
+
+
+def _log_uncaught_in_thread(args: threading.ExceptHookArgs) -> None:
+    thread_name = args.thread.name if args.thread else "?"
+    logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).critical(
+        "необработанное исключение в потоке {}", thread_name)
+
+
+def _log_unraisable(args) -> None:
+    logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).critical(
+        "необработанное исключение в финализаторе: {}", args.err_msg or "")
 
 
 def setup_logging(level: str = "INFO") -> None:
@@ -69,3 +86,6 @@ def setup_logging(level: str = "INFO") -> None:
     for name in QUIET_LOGGERS:
         logging.getLogger(name).setLevel(logging.WARNING)
     sys.excepthook = _log_uncaught
+    threading.excepthook = _log_uncaught_in_thread
+    sys.unraisablehook = _log_unraisable
+    logging.captureWarnings(True)

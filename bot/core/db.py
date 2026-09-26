@@ -3,7 +3,10 @@
 - WAL, busy_timeout и внешние ключи — на каждом соединении, как в загрузчике.
 - Схема по версиям (PRAGMA user_version). Миграции только добавляющие, каждая — одной транзакцией.
 - База новее, чем знает код, — отказ запуска. Перед миграцией — копия VACUUM INTO.
+- Поправка 4 к задаче 19: копия сначала пишется во временный файл рядом, старую подменяет только готовая —
+  сбой посередине VACUUM INTO не должен оставить ни старой копии, ни новой.
 """
+import os
 from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
@@ -16,6 +19,7 @@ BACKUP_DIR_NAME = "backups"
 DAILY_BACKUP_PREFIX = "bot-"
 DAILY_BACKUPS_KEPT = 7
 BUSY_TIMEOUT_MS = 10_000
+TEMP_BACKUP_SUFFIX = ".tmp"
 PRAGMAS = ("journal_mode=WAL", "synchronous=NORMAL", "foreign_keys=ON", f"busy_timeout={BUSY_TIMEOUT_MS}")
 
 Migration = Sequence[str]
@@ -75,10 +79,12 @@ async def _run_all(connection: AsyncConnection, statements: Migration, number: i
 
 async def backup(engine: AsyncEngine, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.unlink(missing_ok=True)
+    temp = target.with_name(target.name + TEMP_BACKUP_SUFFIX)
+    temp.unlink(missing_ok=True)
     async with engine.connect() as connection:
         autocommit = await connection.execution_options(isolation_level="AUTOCOMMIT")
-        await autocommit.execute(text("VACUUM INTO :path"), {"path": str(target)})
+        await autocommit.execute(text("VACUUM INTO :path"), {"path": str(temp)})
+    os.replace(temp, target)  # старую копию подменяет только готовая — не голое место после сбоя
 
 
 def daily_backup_path(backup_dir: Path, day: date) -> Path:
