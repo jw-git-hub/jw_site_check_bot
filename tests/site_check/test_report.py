@@ -213,6 +213,25 @@ def test_wrong_host_and_incomplete_chain_state_both_consequences():
     assert "Also, the server sends the certificate incompletely" in text_en
 
 
+def test_no_https_with_secure_redirect_elsewhere_report():
+    """Голый домен без https, переадресация на защищённую версию на другом хосте — «стоит поправить», не «плохо»
+    (задача 13a); дата сертификата берётся у итогового хоста."""
+    facts = two_host_security(TlsOutcome.NO_HTTPS, TlsOutcome.OK, first_cert=False)
+    result_page = page(final_url="https://www.site.test/")
+    text_ru = rich_text(report("ru", result_page, facts))
+    assert "Защита — стоит поправить" in text_ru
+    assert "сертификат действует до 8 декабря 2026" in text_ru
+    assert "ссылка с https на присланный адрес не откроется — браузер покажет ошибку" in text_ru
+    assert "> Подключить сертификат и на этот адрес — тогда сайт откроется по любой ссылке." in text_ru
+    assert "работает без защиты" not in text_ru
+    text_en = rich_text(report("en", result_page, facts))
+    assert "Security — worth fixing" in text_en
+    assert "certificate is valid until 8 December 2026" in text_en
+    assert "a https link to this exact address won't open — the browser shows an error" in text_en
+    assert "> Add a certificate for this address too — then any link to the site will open." in text_en
+    assert "works without a secure connection" not in text_en
+
+
 def test_post_numbers_shows_redirect_chain_when_addresses_differ():
     """requested_url и итоговый final_url отличаются — показываем цепочку переадресаций (ТЗ, 7.5)."""
     facts = replace(page(), requested_url="http://site.test/", final_url="https://site.test/")

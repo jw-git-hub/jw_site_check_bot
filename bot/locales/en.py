@@ -62,6 +62,7 @@ TEXTS = {
     "trouble_cert_invalid": "the browser warns visitors of danger",
     "trouble_cert_untrusted": "the browser warns visitors of danger",
     "trouble_cert_expiring": "the certificate expires soon",
+    "trouble_https_after_redirect": "https links don't work on every address of the site",
     "trouble_no_redirect": "without https the site opens unprotected",
     "trouble_mixed_content": "some files load without protection",
     "trouble_incomplete_chain": "the certificate isn't fully set up",
@@ -105,6 +106,7 @@ TEXTS = {
                                  "will look unsafe.",
     "tail_cert_expiring": "the certificate ends in {days} — if it doesn't renew itself, the browser will start "
                           "showing a warning",
+    "tail_https_after_redirect": "a https link to this exact address won't open — the browser shows an error",
     "tail_no_redirect": "links without https open the site unprotected in some browsers, marked \"Not secure\"",
     "tail_mixed_content": "some files load without protection — the browser may hide them or drop the lock next to "
                           "the address",
@@ -124,6 +126,7 @@ TEXTS = {
     "fix_enable_https": "Turn on https — the browser stops showing \"Not secure\".",
     "fix_replace_cert": "Replace the certificate — right now the browser scares visitors with a warning.",
     "fix_check_renewal": "Check the certificate's auto-renewal before {date}.",
+    "fix_https_after_redirect": "Add a certificate for this address too — then any link to the site will open.",
     "fix_enable_redirect": "Turn on the redirect to https — so the site opens secure from any link.",
     "fix_secure_files": "Move all the page's files to https.",
     "fix_full_chain": "Install the full certificate chain on the server.",

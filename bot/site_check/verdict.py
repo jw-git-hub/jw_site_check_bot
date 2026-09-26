@@ -3,10 +3,11 @@ import re
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
+from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
-from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
+from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
 
 MAX_TROUBLES = 2
 MAX_FIXES = 3
@@ -52,6 +53,7 @@ class Finding(StrEnum):
     CERT_INVALID = "cert_invalid"
     CERT_UNTRUSTED = "cert_untrusted"
     CERT_EXPIRING = "cert_expiring"
+    HTTPS_AFTER_REDIRECT = "https_after_redirect"
     NO_REDIRECT = "no_redirect"
     MIXED_CONTENT = "mixed_content"
     INCOMPLETE_CHAIN = "incomplete_chain"
@@ -79,6 +81,7 @@ class FixKey(StrEnum):
     ENABLE_HTTPS = "fix_enable_https"
     REPLACE_CERT = "fix_replace_cert"
     CHECK_RENEWAL = "fix_check_renewal"
+    HTTPS_AFTER_REDIRECT = "fix_https_after_redirect"
     ENABLE_REDIRECT = "fix_enable_redirect"
     SECURE_FILES = "fix_secure_files"
     FULL_CHAIN = "fix_full_chain"
@@ -138,6 +141,7 @@ TLS_UNKNOWN = frozenset({TlsOutcome.HANDSHAKE_FAILED, TlsOutcome.CONNECT_FAILED}
 FIX_KEYS = {
     Finding.NO_HTTPS: FixKey.ENABLE_HTTPS, Finding.CERT_INVALID: FixKey.REPLACE_CERT,
     Finding.CERT_UNTRUSTED: FixKey.REPLACE_CERT, Finding.CERT_EXPIRING: FixKey.CHECK_RENEWAL,
+    Finding.HTTPS_AFTER_REDIRECT: FixKey.HTTPS_AFTER_REDIRECT,
     Finding.NO_REDIRECT: FixKey.ENABLE_REDIRECT, Finding.MIXED_CONTENT: FixKey.SECURE_FILES,
     Finding.INCOMPLETE_CHAIN: FixKey.FULL_CHAIN, Finding.NO_MOBILE: FixKey.MAKE_MOBILE,
     Finding.FIXED_WIDTH: FixKey.FIT_WIDTH, Finding.TAP_TARGETS: FixKey.SPACE_BUTTONS,
@@ -151,7 +155,7 @@ def judge(page: PageFacts | None, security: SecurityFacts, today: date) -> Verdi
     blocks = {
         Block.SPEED: _speed_block(page, security),
         Block.MOBILE: _mobile_block(page, security),
-        Block.SECURITY: _security_block(security, today),
+        Block.SECURITY: _security_block(page, security, today),
         Block.IMAGES: _images_block(page, security),
     }
     return Verdict(blocks, _summary_kind(blocks, security), _troubles(blocks), _fixes(blocks))
@@ -208,14 +212,14 @@ def _mobile_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdi
     return _graded(Block.MOBILE, findings)
 
 
-def _security_block(security: SecurityFacts, today: date) -> BlockVerdict:
+def _security_block(page: PageFacts | None, security: SecurityFacts, today: date) -> BlockVerdict:
     known = [facts for facts in security.tls if facts.outcome not in TLS_UNKNOWN]
     if security.cert_blocks:
         return _graded(Block.SECURITY, [_blocking_cert_finding(known)])
     if not known:
         return BlockVerdict(Block.SECURITY, Grade.UNKNOWN, unknown_reason=UnknownReason.OWN_CHECKS_FAILED)
-    findings = [item for facts in known for item in _tls_findings(facts, today)]
-    findings += _transport_findings(security, known)
+    findings = [item for facts in known for item in _tls_findings(facts, page, today)]
+    findings += _transport_findings(security, known, page)
     return _graded(Block.SECURITY, _unique(findings))
 
 
@@ -235,9 +239,11 @@ def _blocking_cert_finding(known: list[TlsFacts]) -> FindingItem:
     return FindingItem(Finding.CERT_UNTRUSTED, Grade.BAD)
 
 
-def _tls_findings(facts: TlsFacts, today: date) -> list[FindingItem]:
+def _tls_findings(facts: TlsFacts, page: PageFacts | None, today: date) -> list[FindingItem]:
     if facts.outcome is TlsOutcome.NO_HTTPS:
-        return [FindingItem(Finding.NO_HTTPS, Grade.BAD)]
+        if _no_https_blocks_transport(facts, page):
+            return [FindingItem(Finding.NO_HTTPS, Grade.BAD)]
+        return [FindingItem(Finding.HTTPS_AFTER_REDIRECT, Grade.FIX)]
     if facts.outcome in TLS_INVALID:
         return [_invalid_cert(facts)]
     if facts.outcome is TlsOutcome.OTHER:
@@ -260,8 +266,8 @@ def _expiry_findings(cert: CertInfo | None, today: date) -> list[FindingItem]:
     return [FindingItem(Finding.CERT_EXPIRING, Grade.FIX, until=cert.not_after.date(), days_left=days_left)]
 
 
-def _transport_findings(security: SecurityFacts, known: list[TlsFacts]) -> list[FindingItem]:
-    if any(facts.outcome is TlsOutcome.NO_HTTPS for facts in known):
+def _transport_findings(security: SecurityFacts, known: list[TlsFacts], page: PageFacts | None) -> list[FindingItem]:
+    if any(_no_https_blocks_transport(facts, page) for facts in known):
         return []
     findings = []
     if RedirectState.NO_REDIRECT in security.redirects:
@@ -269,6 +275,19 @@ def _transport_findings(security: SecurityFacts, known: list[TlsFacts]) -> list[
     if security.insecure_urls:
         findings.append(FindingItem(Finding.MIXED_CONTENT, Grade.FIX))
     return findings
+
+
+def _no_https_blocks_transport(facts: TlsFacts, page: PageFacts | None) -> bool:
+    """NO_HTTPS остаётся «плохо» и прячет находки транспорта («нет переадресации», «файлы без защиты»), только
+    если с этого хоста нет своей переадресации на https в другом месте. Голый домен у регистратора, который сам
+    переводит на защищённую версию на другом хосте, — «стоит поправить», а не «плохо» (задача 13a, решение
+    владельца 26.09.2026).
+    """
+    if facts.outcome is not TlsOutcome.NO_HTTPS:
+        return False
+    if page is None or not page.final_url.startswith(HTTPS_PREFIX):
+        return True
+    return urlsplit(page.final_url).hostname == facts.host
 
 
 def _unique(findings: list[FindingItem]) -> list[FindingItem]:

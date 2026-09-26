@@ -4,7 +4,7 @@ from bot.site_check.lighthouse import AuditState
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import (Block, Cause, Finding, FixKey, Grade, SecurityFacts, SummaryKind, UnknownReason,
                                     judge, main_cause)
-from tests.builders import MB, TODAY, images, mobile, page, security, speed
+from tests.builders import MB, TODAY, cert, images, mobile, page, security, speed
 
 FIXED_WIDTH_SNIPPET = '<meta name="viewport" content="width=1024">'
 
@@ -106,6 +106,42 @@ def test_expired_certificate_is_bad_with_date():
 def test_no_https_ignores_redirect_and_mixed_content():
     facts = security(outcome=TlsOutcome.NO_HTTPS, redirects=(RedirectState.NO_REDIRECT,), insecure=("http://x.test",))
     assert [item.finding for item in judge(page(), facts, TODAY).blocks[Block.SECURITY].findings] == [Finding.NO_HTTPS]
+
+
+def no_https_then_secure_host() -> SecurityFacts:
+    """Голый домен без https, переадресация на защищённую версию на другом хосте (задача 13a)."""
+    return SecurityFacts((TlsFacts("site.test", TlsOutcome.NO_HTTPS), TlsFacts("www.site.test", TlsOutcome.OK, cert())),
+                         (RedirectState.REDIRECTS,), ())
+
+
+def test_no_https_with_secure_redirect_elsewhere_is_worth_fixing():
+    verdict = judge(page(final_url="https://www.site.test/"), no_https_then_secure_host(), TODAY)
+    block = verdict.blocks[Block.SECURITY]
+    assert block.grade is Grade.FIX
+    assert [item.finding for item in block.findings] == [Finding.HTTPS_AFTER_REDIRECT]
+    assert Grade.BAD not in grades(verdict).values()
+    assert verdict.fixes[0].key is FixKey.HTTPS_AFTER_REDIRECT
+
+
+@pytest.mark.parametrize("result_page", [
+    page(final_url="https://site.test/"),      # итог на том же хосте
+    page(final_url="http://www.site.test/"),   # итог по http
+    None,                                       # нет замера
+])
+def test_no_https_stays_bad_without_a_secure_redirect_elsewhere(result_page):
+    facts = security(outcome=TlsOutcome.NO_HTTPS)
+    block = judge(result_page, facts, TODAY).blocks[Block.SECURITY]
+    assert [item.finding for item in block.findings] == [Finding.NO_HTTPS]
+    assert block.grade is Grade.BAD
+
+
+def test_https_after_redirect_still_checks_final_page_transport():
+    facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.NO_HTTPS), TlsFacts("www.site.test", TlsOutcome.OK, cert())),
+                          (RedirectState.NO_REDIRECT,), ("http://www.site.test/a.js",))
+    block = judge(page(final_url="https://www.site.test/"), facts, TODAY).blocks[Block.SECURITY]
+    findings = [item.finding for item in block.findings]
+    assert Finding.MIXED_CONTENT in findings
+    assert Finding.NO_REDIRECT in findings
 
 
 def test_mixed_content_and_incomplete_chain_are_worth_fixing():
