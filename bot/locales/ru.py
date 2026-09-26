@@ -207,4 +207,23 @@ TEXTS = {
     "notify_audits_missing": "В ответе PageSpeed (Lighthouse {version}) нет проверок: {audits}. Эти блоки отчёта "
                              "сейчас «не удалось проверить».",
     "notify_home_ip": "Не удалось узнать внешний адрес дома: защита от обхода через роутер работает без него.",
+    # команды владельца
+    "stats_title": "Учёт за {days}",
+    "stats_label": "Метка",
+    "stats_new": "Новых",
+    "stats_reported": "С отчётом",
+    "stats_checks": "Проверок",
+    "stats_refusals": "Отказов",
+    "stats_refusal_codes": "Отказы: {items}.",
+    "stats_empty": "Пока пусто.",
+    "stats_note": "Нажатия «Обсудить» бот не видит: считайте сообщения «Пришёл из проверки сайта» в личке. Откуда "
+                  "человек — /site домен.",
+    "site_usage": "Пришлите домен: /site example.com",
+    "site_title": "Проверки {domain}",
+    "site_empty": "Проверок этого домена нет.",
+    "site_when": "Когда (UTC+7)",
+    "site_source": "Метка",
+    "site_result": "Итог",
+    "site_grades": "Скорость · телефон · защита · картинки",
+    "site_numbers": "LCP · вес",
 }

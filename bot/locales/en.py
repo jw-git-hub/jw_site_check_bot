@@ -199,4 +199,22 @@ TEXTS = {
                              "now say \"couldn't check\".",
     "notify_home_ip": "Couldn't learn the home's external address: protection against loops through the router works "
                       "without it.",
+    "stats_title": "Stats for {days}",
+    "stats_label": "Label",
+    "stats_new": "New",
+    "stats_reported": "Got a report",
+    "stats_checks": "Checks",
+    "stats_refusals": "Refusals",
+    "stats_refusal_codes": "Refusals: {items}.",
+    "stats_empty": "Nothing yet.",
+    "stats_note": "The bot can't see taps on \"Talk to the developer\": count the \"From the site check\" messages in "
+                  "your DMs. Where a person came from — /site domain.",
+    "site_usage": "Send a domain: /site example.com",
+    "site_title": "Checks of {domain}",
+    "site_empty": "No checks of this domain.",
+    "site_when": "When (UTC+7)",
+    "site_source": "Label",
+    "site_result": "Result",
+    "site_grades": "Speed · phone · security · images",
+    "site_numbers": "LCP · weight",
 }
