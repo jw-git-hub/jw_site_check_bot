@@ -6,13 +6,14 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-NETWORK="jw_site_check_bot_site_check"
 BRIDGE_INTERFACE="br-sitecheck"
 TIMEOUT_SECONDS=3
 PROBE_CLOSED_EXIT_CODE=42
 NEIGHBOUR_CONTAINER_NAME="jw-site-check-neighbour-probe"
 NEIGHBOUR_IMAGE="jw_site_check_bot:latest"  # уже собран локально (docker-compose.yml): скрипт его не собирает и не тянет
-NEIGHBOUR_PORT=80
+NEIGHBOUR_PORT=8080  # высокий порт: контейнер не root (Dockerfile — USER 10001), 80 ему не поднять
+NEIGHBOUR_READY_ATTEMPTS=10  # короткое ограниченное ожидание, пока слушатель поднимется после run -d
+NEIGHBOUR_READY_INTERVAL_SECONDS=0.3
 # Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker exec, трасса Python)
 # не должна выдаваться за «закрыто»: голый except это делал бы.
 PROBE='import socket, sys
@@ -75,46 +76,40 @@ expect_open() {
   fi
 }
 
-# Сосед — любой другой запущенный контейнер вне нашей сети. Если такого нет (например, сразу после
-# установки Docker), проверить нечем — вердикт должен честно сказать, что группа не подтверждена.
-find_neighbour_container_ip() {
-  local candidate networks
-  for candidate in $(docker ps -q); do
-    networks="$(docker inspect "$candidate" --format '{{range $net, $cfg := .NetworkSettings.Networks}}{{$net}} {{end}}')"
-    case " $networks " in
-      *" $NETWORK "*) continue ;;
-    esac
-    docker inspect "$candidate" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' | grep -v '^$' | head -n1
-    return 0
+# Сосед — свой временный контейнер: настоящего стороннего контейнера на сервере обычно нет, а
+# случайно найденный через docker ps мог ничего не слушать на порту проверки — тогда «закрыто»
+# получалось бы что при рабочей изоляции (timeout), что без неё (refused), и группа подтверждалась
+# бы вне зависимости от сети. Поэтому проверка всегда поднимает контролируемого соседа сама: из уже
+# собранного образа бота, без скачивания (--pull never), в сети Docker по умолчанию (не в нашей
+# site_check), со своим слушателем на NEIGHBOUR_PORT вместо самого бота — с ним «открыто» станет
+# достижимым результатом, если изоляция вдруг не работает.
+
+# Слушателю нужно мгновение подняться после docker run -d — короткое ограниченное ожидание с тем же
+# приёмом положительного контроля, что и у остальных групп: порт должен ответить уже с хоста
+# (reachable_from_host), иначе «закрыто» из контейнера ничего не значит.
+wait_for_neighbour_ready() {
+  local ip="$1" attempt
+  for attempt in $(seq "$NEIGHBOUR_READY_ATTEMPTS"); do
+    reachable_from_host "$ip" "$NEIGHBOUR_PORT" && return 0
+    sleep "$NEIGHBOUR_READY_INTERVAL_SECONDS"
   done
   return 1
 }
 
-# На сервере пока может не оказаться ни одного стороннего контейнера — тогда проверить группу «сосед»
-# нечем. Поднимаем временный сами: из уже собранного образа бота, без сети (--pull never — никаких
-# скачиваний), в сети Docker по умолчанию (не в нашей site_check), с командой-заглушкой вместо самого
-# бота. Убирается при любом выходе скрипта через trap, а не --rm: тот сработал бы только после docker stop.
-# Функция — не через $(...): в подстановке команд trap достался бы только её собственной подоболочке
-# и снял бы контейнер сразу же, ещё до проверки. Поэтому результат — в глобальной переменной.
+# Обрывок от прошлого прерванного запуска убирается заранее — тем же именем, чтобы не мешал
+# следующему. Trap ставится ДО docker run: контейнер уберётся, даже если сам run не завершится
+# (например, скрипт прервали прямо во время него), а не через --rm — тот сработал бы только после
+# docker stop. Функция — не через $(...): в подстановке команд trap достался бы только её собственной
+# подоболочке и снял бы контейнер сразу же, ещё до проверки. Поэтому результат — в глобальной переменной.
 temporary_neighbour_ip=""
 start_temporary_neighbour() {
-  docker run -d --pull never --network bridge --name "$NEIGHBOUR_CONTAINER_NAME" \
-    "$NEIGHBOUR_IMAGE" sleep infinity >/dev/null || return 1
+  docker rm -f "$NEIGHBOUR_CONTAINER_NAME" >/dev/null 2>&1 || true
   trap 'docker rm -f "$NEIGHBOUR_CONTAINER_NAME" >/dev/null 2>&1 || true' EXIT
+  docker run -d --pull never --network bridge --name "$NEIGHBOUR_CONTAINER_NAME" \
+    "$NEIGHBOUR_IMAGE" python -m http.server "$NEIGHBOUR_PORT" >/dev/null || return 1
   temporary_neighbour_ip="$(docker inspect "$NEIGHBOUR_CONTAINER_NAME" \
     --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}' | grep -v '^$' | head -n1)"
-}
-
-# Временный сосед ничего не слушает (команда — заглушка): reachable_from_host здесь ничего не докажет,
-# «отказано» с хоста будет что при работающей изоляции, что без неё. Поэтому проверяем только то, что
-# наш контейнер до него не достаёт, без обычной для expect_closed сверки с хостом.
-expect_temporary_neighbour_closed() {
-  local ip="$1"
-  case "$(probe "$ip" "$NEIGHBOUR_PORT")" in
-    closed) group_confirmed[neighbour]=$((group_confirmed[neighbour] + 1)); echo "закрыто: соседний контейнер (временный)" ;;
-    open) failures=$((failures + 1)); echo "ОШИБКА: из контейнера доступен соседний контейнер ($ip:$NEIGHBOUR_PORT)" ;;
-    error) failures=$((failures + 1)); echo "ОШИБКА: проверка «соседний контейнер» не выполнена (сбой зонда)" ;;
-  esac
+  wait_for_neighbour_ready "$temporary_neighbour_ip" || temporary_neighbour_ip=""
 }
 
 report_verdict() {
@@ -136,23 +131,18 @@ router_ip="$(ip -4 route show default | awk '{print $3; exit}')" || true
 server_ip="$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i < NF; i++) if ($i == "src") print $(i + 1)}')" || true
 gateway_ip="$(ip -4 -o addr show dev "$BRIDGE_INTERFACE" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1)" || true
 tailscale_ip="$(tailscale ip -4 2>/dev/null | head -n 1 || true)"
-neighbour_ip="$(find_neighbour_container_ip || true)"
 
 require_address "$router_ip" "адрес роутера" && expect_closed "$router_ip" 80 "роутер" router
 require_address "$server_ip" "адрес сервера в домашней сети" && expect_closed "$server_ip" 22 "сервер по адресу в домашней сети" server
 require_address "$gateway_ip" "шлюз Docker для сервера" && expect_closed "$gateway_ip" 22 "сервер через шлюз Docker" server
 require_address "$tailscale_ip" "адрес сервера в Tailscale" && expect_closed "$tailscale_ip" 22 "сервер в Tailscale" tailscale
-if [ -n "$neighbour_ip" ]; then
-  expect_closed "$neighbour_ip" "$NEIGHBOUR_PORT" "соседний контейнер" neighbour
+
+start_temporary_neighbour || true
+if [ -n "$temporary_neighbour_ip" ]; then
+  expect_closed "$temporary_neighbour_ip" "$NEIGHBOUR_PORT" "соседний контейнер" neighbour
 else
-  echo "на сервере нет запущенных контейнеров вне нашей сети — поднимаю временный для проверки"
-  start_temporary_neighbour || true
-  if [ -n "$temporary_neighbour_ip" ]; then
-    expect_temporary_neighbour_closed "$temporary_neighbour_ip"
-  else
-    failures=$((failures + 1))
-    echo "ОШИБКА: не удалось поднять временный контейнер для проверки соседа"
-  fi
+  failures=$((failures + 1))
+  echo "ОШИБКА: не удалось поднять временный контейнер для проверки соседа"
 fi
 expect_closed 100.100.100.100 53 "DNS Tailscale" tailscale
 expect_closed 2001:4860:4860::8888 443 "интернет по IPv6"

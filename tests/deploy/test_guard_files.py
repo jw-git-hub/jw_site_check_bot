@@ -90,23 +90,58 @@ def test_check_isolation_treats_an_undetermined_address_as_a_failure_not_a_skip(
     assert 'require_address "$gateway_ip"' in script
 
 
-def test_check_isolation_checks_a_neighbour_container():
+def test_check_isolation_always_uses_a_controlled_temporary_neighbour():
+    """Обзор задачи 22, раунд 1: настоящий сосед из `docker ps` мог ничего не слушать на :80 — тогда
+    «закрыто» получалось что при рабочей изоляции (timeout), что без неё (refused), и группа
+    подтверждалась независимо от сети. Скрипт больше не ищет случайный контейнер — всегда поднимает
+    свой, заведомо слушающий порт, и проверяет его обычным expect_closed (не отдельным дублем case)."""
     script = read("check_isolation.sh")
-    assert "find_neighbour_container_ip" in script
-    assert "соседний контейнер" in script
-    assert "нет запущенных контейнеров" in script  # честный отказ, если проверить нечем
-
-
-def test_check_isolation_starts_a_temporary_neighbour_when_none_exists():
-    """Поправка 3 к задаче 22: на сервере пока работает только наш контейнер — проверять группу
-    «соседний контейнер» нечем, а вердикт задачи 23 требует «в порядке» без пропусков."""
-    script = read("check_isolation.sh")
+    assert "find_neighbour_container_ip" not in script
+    assert "docker ps -q" not in script
     assert re.search(r"^NEIGHBOUR_CONTAINER_NAME=\S+", script, re.MULTILINE)
     assert re.search(r'docker run .*--name "\$NEIGHBOUR_CONTAINER_NAME"', script)
     assert "--network bridge" in script  # сеть Docker по умолчанию, не наша
     assert "--pull never" in script  # уже собранный локальный образ, без скачивания
-    assert re.search(r'sleep\b', script)  # команда-заглушка вместо самого бота
-    assert re.search(r'trap .*docker rm -f "\$NEIGHBOUR_CONTAINER_NAME".*\bEXIT\b', script)
+    assert re.search(r'expect_closed "\$temporary_neighbour_ip" "\$NEIGHBOUR_PORT" "соседний контейнер" neighbour',
+                      script)
+    # Раньше был отдельный case-блок для временного соседа — дубль expect_closed. Его быть не должно.
+    assert "expect_temporary_neighbour_closed" not in script
+
+
+def test_check_isolation_temporary_neighbour_actually_listens():
+    """С одной sleep-заглушкой «открыто» никогда не наступает: и без изоляции (refused), и с ней
+    (timeout) зонд видит OSError → «закрыто». Нужен настоящий слушатель, чтобы «открыто» было
+    достижимо, если изоляция вдруг не работает."""
+    script = read("check_isolation.sh")
+    assert "sleep infinity" not in script
+    assert re.search(r"http\.server|socketserver|create_server", script)
+    assert not re.search(r"^NEIGHBOUR_PORT=80\b", script, re.MULTILINE)  # не root — 80 не поднять
+
+
+def test_check_isolation_waits_for_the_temporary_neighbour_to_listen():
+    """Слушателю нужно мгновение подняться после docker run -d — короткое ограниченное ожидание,
+    тот же приём положительного контроля (reachable_from_host), что и у остальных групп."""
+    script = read("check_isolation.sh")
+    assert "wait_for_neighbour_ready() {" in script
+    body_start = script.index("wait_for_neighbour_ready() {")
+    body_end = script.index("\n}", body_start)
+    assert "reachable_from_host" in script[body_start:body_end]
+
+
+def test_check_isolation_neighbour_cleans_up_stale_and_traps_before_starting():
+    """Устойчивость: обрывок от прошлого убитого запуска не должен мешать следующему, а trap должен
+    стоять ДО docker run — тогда контейнер уберётся, даже если сам run не завершится штатно."""
+    script = read("check_isolation.sh")
+    stale_cleanup_index = script.index('docker rm -f "$NEIGHBOUR_CONTAINER_NAME" >/dev/null 2>&1 || true')
+    trap_index = script.index('trap \'docker rm -f "$NEIGHBOUR_CONTAINER_NAME"')
+    run_index = script.index('docker run -d --pull never --network bridge')
+    assert stale_cleanup_index < trap_index < run_index
+
+
+def test_check_isolation_no_stale_wording_about_network_instead_of_download():
+    """«без сети» рядом с --pull never сбивает с толку: сеть (bridge) как раз есть, скачивания — нет."""
+    script = read("check_isolation.sh")
+    assert "без сети" not in script
 
 
 def test_check_isolation_verdict_requires_every_group_confirmed_and_no_failures():
