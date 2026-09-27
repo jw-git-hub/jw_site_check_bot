@@ -3,8 +3,11 @@ from urllib.parse import unquote
 from bot.core import rich
 
 
-def test_header_is_monospace_console_line():
-    assert rich.header("site-check") == {"type": "paragraph", "text": [{"type": "code", "text": ">jw ~/site-check_"}]}
+def test_header_is_a_banner_photo_block_labelled_by_language():
+    """Шапка — блок-картинка полосы (задача 23b): файл и file_id подставляет мессенджер, здесь только метка
+    языка — rich.py ничего не знает про файлы (ТЗ, 7.1)."""
+    assert rich.header("ru") == {"type": "photo", "photo": {"type": "photo", "media": "banner:ru"}}
+    assert rich.header("en") == {"type": "photo", "photo": {"type": "photo", "media": "banner:en"}}
 
 
 def test_footer_links_site_and_username_in_monospace():

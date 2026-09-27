@@ -44,6 +44,5 @@ def failure(texts: Texts, lang: Lang, code: str, **params: object) -> dict:
 def social(texts: Texts, lang: Lang, brand: Brand, platform: str) -> tuple[dict, dict]:
     link = rich.dm_link(brand.dm_username, texts.get(lang, "order_prefill"))
     button = rich.button_url(texts.get(lang, "discuss_button"), link, rich.STYLE_PRIMARY)
-    message = rich.message([rich.header(texts.get(lang, "header_section")),
-                            rich.paragraph(texts.get(lang, "social", platform=platform))])
+    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "social", platform=platform))])
     return message, rich.keyboard(button)

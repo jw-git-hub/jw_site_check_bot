@@ -16,7 +16,7 @@ MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
 EXAMPLE_HEAVIEST = (("slider-1.jpg", 3_355_443), ("about.png", 2_202_010), ("team.jpg", 1_887_437))
 
 # Утверждённый владельцем вид (задача 23a, живая приёмка): заголовки блоков + короткие строки «>».
-JW_DEV_PRO_RU = """>jw ~/проверка-сайта_
+JW_DEV_PRO_RU = """[полоса ~/проверка-сайта]
 jw-dev.pro
 Сайт в порядке: открывается быстро, на телефоне удобен, защита работает.
 Скорость — хорошо
@@ -35,7 +35,7 @@ jw-dev.pro
 ────
 jw-dev.pro · @jw_dev_pro"""
 
-EXAMPLE_RU = """>jw ~/проверка-сайта_
+EXAMPLE_RU = """[полоса ~/проверка-сайта]
 example.com
 Есть что чинить: с телефона открывается медленно, и страница слишком тяжёлая.
 Скорость — плохо
@@ -58,7 +58,7 @@ example.com
 ────
 jw-dev.pro · @jw_dev_pro"""
 
-EXAMPLE_EN = """>jw ~/site-check_
+EXAMPLE_EN = """[banner ~/site-check]
 example.com
 Needs fixing: it loads slowly on phones, and the page is too heavy.
 Speed — poor
@@ -83,7 +83,7 @@ jw-dev.pro · @jw_dev_pro"""
 
 # Отчёт при сертификате, который блокирует браузер (задача 23a): блоки без данных из-за той же причины
 # собираются под один заголовок, идущий после оценённых блоков.
-EXPIRED_BADSSL_RU = """>jw ~/проверка-сайта_
+EXPIRED_BADSSL_RU = """[полоса ~/проверка-сайта]
 expired.badssl.com
 Браузер не пускает на сайт: сертификат истёк.
 Защита — плохо
@@ -145,15 +145,15 @@ def test_discuss_button_opens_dm_with_domain_and_another_is_callback():
     assert unquote(discuss["url"].split("=", 1)[1]) == "Пришёл из проверки сайта: пример.рф"
     assert discuss["style"] == "primary"
     assert buttons[1][0]["callback_data"] == "again"
-    assert buttons[2][0]["text"] == "Канал"
+    assert buttons[2][0]["text"] == "📣 Канал"
 
 
 def test_owner_gets_numbers_for_post_and_others_do_not():
     owner = rich_text(report("ru", page(), security(), is_admin=True))
-    assert "Цифры для поста" in owner
+    assert "Подробные замеры — видите только вы" in owner
     assert "Главное на экране (LCP) | 1,4 секунды" in owner
     assert "Замер (UTC+7) | 25.09.2026 12:30" in owner
-    assert "Цифры для поста" not in rich_text(report("ru", page(), security()))
+    assert "Подробные замеры — видите только вы" not in rich_text(report("ru", page(), security()))
 
 
 def test_unknown_security_is_named_in_summary():

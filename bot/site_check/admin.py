@@ -50,7 +50,7 @@ async def on_site(message: Message, command: CommandObject, repo: ChecksRepo, me
 
 
 def stats_message(texts: Texts, windows: list[tuple[int, list[LabelStats], list[tuple[str, int]]]]) -> dict:
-    blocks = [rich.header(texts.get(OWNER_LANG, "header_section"))]
+    blocks = [rich.header(OWNER_LANG)]
     for days, rows, refusals in windows:
         blocks += _stats_section(texts, days, rows, refusals)
     blocks.append(rich.paragraph(texts.get(OWNER_LANG, "stats_note")))
@@ -74,7 +74,7 @@ def _stats_section(texts: Texts, days: int, rows: list[LabelStats], refusals: li
 
 
 def site_message(texts: Texts, domain: str, checks: list[DomainCheck]) -> dict:
-    blocks = [rich.header(texts.get(OWNER_LANG, "header_section")),
+    blocks = [rich.header(OWNER_LANG),
              rich.heading(texts.get(OWNER_LANG, "site_title", domain=domain), SECTION_SIZE)]
     if not checks:
         return rich.message([*blocks, rich.paragraph(texts.get(OWNER_LANG, "site_empty"))])

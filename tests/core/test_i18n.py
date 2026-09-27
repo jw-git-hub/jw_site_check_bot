@@ -6,6 +6,9 @@ from bot.core.i18n import detect_lang, plural_ru
 from bot.locales import TEXTS, en, ru
 
 EMOJI_START = 0x1F000
+# У каждой кнопки — эмодзи-иконка в начале текста; в остальных текстах эмодзи по-прежнему нет (решение
+# владельца, задача 23b).
+BUTTON_KEYS = {"discuss_button", "another_button", "channel_button", "about_site_button", "order_button"}
 
 
 @pytest.mark.parametrize(("code", "lang"), [
@@ -61,9 +64,18 @@ def test_locales_have_same_keys():
     assert ru.WORDS.keys() == en.WORDS.keys()
 
 
-def test_texts_have_no_emoji():
-    all_texts = [*ru.TEXTS.values(), *en.TEXTS.values()]
-    assert not [text for text in all_texts if any(ord(char) >= EMOJI_START for char in text)]
+def test_message_texts_have_no_emoji():
+    for module in (ru, en):
+        for key, text in module.TEXTS.items():
+            if key in BUTTON_KEYS:
+                continue
+            assert not any(ord(char) >= EMOJI_START for char in text), key
+
+
+def test_every_button_text_starts_with_an_emoji_icon():
+    for module in (ru, en):
+        for key in BUTTON_KEYS:
+            assert ord(module.TEXTS[key][0]) >= EMOJI_START, key
 
 
 def test_notify_home_ip_says_the_protection_is_off_while_the_address_is_unknown():

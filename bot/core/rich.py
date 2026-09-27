@@ -1,8 +1,11 @@
 """Сборка rich-сообщений Telegram (Bot API 10.3) — словарями, как в боте канала (ТЗ, 7.1).
 
-Формат экосистемы: первая строка — моноширинная «>jw ~/раздел_»; в конце — разделитель и моноширинный подвал
-«jw-dev.pro · @jw_dev_pro», сайт и юзернейм — ссылками. Кнопки — inline-клавиатура под сообщением, одна в строке
-(решение владельца после живой приёмки, задача 23a).
+Формат экосистемы: первый блок — картинка полосы шапки на языке сообщения, как в канале (задача 23b, решение
+владельца после живой приёмки задачи 23a); в конце — разделитель и моноширинный подвал «jw-dev.pro · @jw_dev_pro»,
+сайт и юзернейм — ссылками. Кнопки — inline-клавиатура под сообщением, одна в строке (задача 23a).
+
+Файл полосы и запомненный `file_id` подставляет мессенджер (`bot/core/banner.py`) — здесь только метка языка
+в поле `media`, никаких файлов и id.
 """
 from typing import Any
 from urllib.parse import quote
@@ -10,8 +13,7 @@ from urllib.parse import quote
 Block = dict[str, Any]
 Inline = str | dict[str, Any]
 
-HEADER_PREFIX = ">jw ~/"
-HEADER_SUFFIX = "_"
+BANNER_MEDIA_PREFIX = "banner:"
 SITE_TEXT = "jw-dev.pro"
 SITE_URL = "https://jw-dev.pro"
 USERNAME_TEXT = "@jw_dev_pro"
@@ -43,8 +45,9 @@ def divider() -> Block:
     return {"type": "divider"}
 
 
-def header(section: str) -> Block:
-    return paragraph(code(HEADER_PREFIX + section + HEADER_SUFFIX))
+def header(lang: str) -> Block:
+    """Первый блок сообщения — полоса-картинка на языке сообщения (задача 23b, ТЗ 7.1)."""
+    return {"type": "photo", "photo": {"type": "photo", "media": BANNER_MEDIA_PREFIX + lang}}
 
 
 def footer() -> Block:

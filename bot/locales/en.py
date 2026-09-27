@@ -12,7 +12,6 @@ WORDS = {
     "check": ("check", "checks"),
 }
 TEXTS = {
-    "header_section": "site-check",
     "welcome": "Send me a link to a website — I'll check how fast it opens on a phone, whether it has a mobile "
                "version, whether the connection is secure and how heavy the images are. You'll get a plain-words "
                "report, usually in under a minute.",
@@ -21,10 +20,10 @@ TEXTS = {
     "lang_done": "Done: I'll write in English.",
     "about": "I'm jw, and I made this bot. I build websites, Telegram bots and automation for what you still do "
              "by hand.",
-    "about_site_button": "Website jw-dev.pro",
-    "channel_button": "Channel",
+    "about_site_button": "🌐 Website jw-dev.pro",
+    "channel_button": "📣 Channel",
     "order": "Message me directly with what you need — I'll reply myself.",
-    "order_button": "Message @jw_dev_pro",
+    "order_button": "💬 Message @jw_dev_pro",
     "order_prefill": "From @jw_site_check_bot",
     "throttled": "Too fast — wait a couple of seconds.",
     "command_start": "Start",
@@ -135,10 +134,10 @@ TEXTS = {
     "fix_server": "Look into the server or hosting — it thinks for {seconds} before sending the page.",
     "fix_server_plain": "Look into the server or hosting — it takes too long before sending the page.",
     "fix_find_slowdown": "Find out what slows the page down on phones.",
-    "discuss_button": "Talk to the developer",
-    "another_button": "Check another site",
+    "discuss_button": "💬 Talk to the developer",
+    "another_button": "🔍 Check another site",
     "discuss_prefill": "From the site check: {domain}",
-    "post_numbers_title": "Numbers for a post",
+    "post_numbers_title": "Detailed measurements — only you see this",
     "post_what": "What",
     "post_value": "Value",
     "post_lcp": "Main content (LCP)",

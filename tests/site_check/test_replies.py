@@ -3,11 +3,11 @@ import pytest
 from bot.brand import BRAND
 from bot.locales import TEXTS
 from bot.site_check import replies
-from tests.fakes import rich_text
+from tests.fakes import BANNER_LINES, rich_text
 
 
 def test_checking_and_queued():
-    assert rich_text(replies.checking(TEXTS, "ru", "пример.рф")) == ">jw ~/проверка-сайта_\nПроверяю пример.рф…"
+    assert rich_text(replies.checking(TEXTS, "ru", "пример.рф")) == BANNER_LINES["ru"] + "\nПроверяю пример.рф…"
     assert "Передо мной ещё 2 сайта — ждать примерно 1 мин." in rich_text(replies.queued(TEXTS, "ru", 2, 1))
     assert "There are 5 sites ahead of yours — about 3 min." in rich_text(replies.queued(TEXTS, "en", 5, 3))
 
@@ -21,7 +21,7 @@ def test_queued_with_one_site_ahead_uses_singular_verb():
 @pytest.mark.parametrize("code", replies.FAILURE_CODES)
 def test_every_failure_has_text_in_both_languages(lang, code):
     text = rich_text(replies.failure(TEXTS, lang, code, status=500, site="example.com"))
-    assert text.startswith(">jw ~/" + TEXTS.get(lang, "header_section") + "_\n")
+    assert text.startswith(BANNER_LINES[lang] + "\n")
     assert "{" not in text
 
 
@@ -39,7 +39,7 @@ def test_social_page_offers_to_talk_about_own_site():
     message, keyboard = replies.social(TEXTS, "ru", BRAND, "Instagram")
     assert "Это страница на Instagram" in rich_text(message)
     button = keyboard["inline_keyboard"][0][0]
-    assert button["text"] == "Обсудить с разработчиком"
+    assert button["text"] == "💬 Обсудить с разработчиком"
     assert button["url"].startswith("https://t.me/jw_dev_pro?text=")
 
 

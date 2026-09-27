@@ -39,7 +39,7 @@ class ReportRequest:
 
 
 def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest) -> tuple[dict, dict]:
-    blocks = [rich.header(texts.get(lang, "header_section")), rich.heading(request.display, TITLE_SIZE),
+    blocks = [rich.header(lang), rich.heading(request.display, TITLE_SIZE),
               rich.paragraph(summary_text(texts, lang, request.verdict))]
     blocks += _graded_sections(texts, lang, request)
     blocks += _unknown_sections(texts, lang, request.verdict)

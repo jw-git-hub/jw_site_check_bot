@@ -2,6 +2,9 @@
 
 Свои методы, где rich_message — словарь: типизированные классы aiogram разбирали бы блоки через объединение
 моделей pydantic. Остальной код говорит с Telegram через протокол Messenger, в тестах — подделка.
+
+Полоса-картинка шапки (задача 23b): `AiogramMessenger` — единственное место, где метка `rich.header(lang)`
+превращается в файл или в запомненный file_id, кэшем `bot.core.banner.BannerCache`.
 """
 from typing import Any, Protocol
 
@@ -9,6 +12,8 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.methods.base import TelegramMethod
 from aiogram.types import Message
+
+from bot.core.banner import BannerCache
 
 NOT_MODIFIED = "message is not modified"
 EMPTY_KEYBOARD: dict[str, Any] = {"inline_keyboard": []}
@@ -50,27 +55,33 @@ class Messenger(Protocol):
 
 
 class AiogramMessenger:
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot, banner: BannerCache | None = None):
         self._bot = bot
+        self._banner = banner or BannerCache()
 
     async def send(self, chat_id: int, rich_message: dict[str, Any],
                    reply_markup: dict[str, Any] | None = None) -> int:
+        resolved = self._banner.resolve(rich_message)
         try:
-            sent = await self._bot(SendRichDict(chat_id=chat_id, rich_message=rich_message,
+            sent = await self._bot(SendRichDict(chat_id=chat_id, rich_message=resolved,
                                                 reply_markup=reply_markup))
         except TelegramAPIError as error:
             raise DeliveryFailed(str(error)) from None
+        self._banner.remember(rich_message, sent)
         return sent.message_id
 
     async def edit(self, chat_id: int, message_id: int, rich_message: dict[str, Any],
                    reply_markup: dict[str, Any] | None = None) -> None:
+        resolved = self._banner.resolve(rich_message)
         try:
-            await self._bot(EditRichDict(chat_id=chat_id, message_id=message_id, rich_message=rich_message,
-                                         reply_markup=reply_markup))
+            edited = await self._bot(EditRichDict(chat_id=chat_id, message_id=message_id, rich_message=resolved,
+                                                  reply_markup=reply_markup))
         except TelegramBadRequest as error:
             _raise_edit_problem(str(error).lower())
+            return
         except TelegramAPIError as error:
             raise DeliveryFailed(str(error)) from None
+        self._banner.remember(rich_message, edited)
 
 
 def _raise_edit_problem(description: str) -> None:

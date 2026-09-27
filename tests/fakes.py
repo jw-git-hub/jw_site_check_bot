@@ -8,6 +8,7 @@ from aiogram.types import CallbackQuery, Chat, Message
 from aiogram.types import User as TelegramUser
 
 from bot.core.messenger import DeliveryFailed, MessageGone
+from bot.core.rich import BANNER_MEDIA_PREFIX
 
 TELEGRAM_TOKEN_TAIL = "Ab1_-" * 7  # 35 знаков после двоеточия
 GOOGLE_KEY_TAIL = "x1Y2z3" * 5 + "abcde"  # 35 знаков после префикса
@@ -16,6 +17,8 @@ FAKE_NOW = datetime(2026, 9, 25, 12, 0, tzinfo=UTC)
 ADMIN_ID = 1
 DIVIDER_TEXT = "────"
 BLOCKED_TEXT = "Forbidden: bot was blocked by the user"
+# Строка полосы для сравнения с примерами ТЗ (7.3) — сама полоса картинкой, метку показываем текстом (задача 23b).
+BANNER_LINES = {"ru": "[полоса ~/проверка-сайта]", "en": "[banner ~/site-check]"}
 
 
 def fake_telegram_token() -> str:
@@ -102,6 +105,8 @@ def _block_lines(blocks: list[dict[str, Any]]) -> list[str]:
         kind = block["type"]
         if kind == "divider":
             lines.append(DIVIDER_TEXT)
+        elif kind == "photo":
+            lines.append(_banner_line(block))
         elif kind == "details":
             lines += [block["summary"], *_block_lines(block["blocks"])]
         elif kind == "table":
@@ -109,6 +114,14 @@ def _block_lines(blocks: list[dict[str, Any]]) -> list[str]:
         else:
             lines.append(_inline(block["text"]))
     return lines
+
+
+def _banner_line(block: dict[str, Any]) -> str:
+    """Строка полосы для тестов (задача 23b): метка `banner:<lang>` — как ставит `rich.header`, до подстановки
+    файла или file_id мессенджером (тесты собирают сообщения напрямую, а не через AiogramMessenger)."""
+    media = block["photo"]["media"]
+    lang = media.removeprefix(BANNER_MEDIA_PREFIX)
+    return BANNER_LINES.get(lang, media)
 
 
 class RecordingSession(BaseSession):

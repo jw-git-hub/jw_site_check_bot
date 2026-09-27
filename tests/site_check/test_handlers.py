@@ -101,7 +101,7 @@ async def test_link_gets_status_then_report_in_the_same_message(world):
     assert (chat_id, message_id) == (USER, FIRST_MESSAGE_ID)
     assert "Сайт в порядке" in world.messenger.last()
     # Правка «Проверяю…» в отчёт ставит клавиатуру отчёта (задача 23a).
-    assert keyboard["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
+    assert keyboard["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
     assert await rows(world.db, "SELECT status, charged FROM checks") == [("done", 1)]
 
 
@@ -135,7 +135,7 @@ async def test_report_is_sent_anew_when_status_message_is_gone(world):
     chat_id, message, keyboard = world.messenger.sent[-1]
     assert "Сайт в порядке" in rich_text(message)
     # Отчёт, ушедший новым сообщением (правка не прошла), — тоже с клавиатурой (задача 23a).
-    assert keyboard["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
+    assert keyboard["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
 
 
 async def test_blocked_user_does_not_break_worker(world):
@@ -247,7 +247,7 @@ async def test_final_message_delivery_recovers_after_one_retry(db, settings):
     finally:
         await world.queue.stop()
     assert "Сайт в порядке" in rich_text(inner.edited[-1][2])
-    assert inner.edited[-1][3]["inline_keyboard"][0][0]["text"] == "Обсудить с разработчиком"
+    assert inner.edited[-1][3]["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
 
 
 async def test_new_user_not_text_refusal_is_recorded(world):

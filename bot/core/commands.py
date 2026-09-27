@@ -19,7 +19,7 @@ from bot.core.stats import best_effort
 from bot.core.users import Users, parse_label
 
 LANG_CALLBACK_PREFIX = "lang:"
-LANGUAGES: dict[str, str] = {"ru": "Русский", "en": "English"}
+LANGUAGES: dict[str, str] = {"ru": "🇷🇺 Русский", "en": "🇬🇧 English"}
 PUBLIC_COMMANDS = ("start", "lang", "about", "order")
 DEFAULT_MENU_LANG: Lang = "en"
 RUSSIAN_MENU_LANG: Lang = "ru"
@@ -36,18 +36,17 @@ router = Router(name="core_commands")
 
 
 def simple_message(texts: Texts, lang: Lang, text: str) -> dict:
-    return rich.message([rich.header(texts.get(lang, "header_section")), rich.paragraph(text)])
+    return rich.message([rich.header(lang), rich.paragraph(text)])
 
 
 def lang_choice(texts: Texts, lang: Lang) -> tuple[dict, dict]:
     buttons = [rich.button_callback(name, LANG_CALLBACK_PREFIX + code) for code, name in LANGUAGES.items()]
-    message = rich.message([rich.header(texts.get(lang, "header_section")),
-                            rich.paragraph(texts.get(lang, "lang_choose"))])
+    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "lang_choose"))])
     return message, rich.keyboard(*buttons)
 
 
 def about_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
-    message = rich.message([rich.header(texts.get(lang, "header_section")), rich.paragraph(texts.get(lang, "about")),
+    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "about")),
                             rich.divider(), rich.footer()])
     keyboard = rich.keyboard(rich.button_url(texts.get(lang, "about_site_button"), brand.site_url),
                              rich.button_url(texts.get(lang, "channel_button"), brand.channel_url))
@@ -56,7 +55,7 @@ def about_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
 
 def order_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
     link = rich.dm_link(brand.dm_username, texts.get(lang, "order_prefill"))
-    message = rich.message([rich.header(texts.get(lang, "header_section")), rich.paragraph(texts.get(lang, "order")),
+    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "order")),
                             rich.divider(), rich.footer()])
     keyboard = rich.keyboard(rich.button_url(texts.get(lang, "order_button"), link, rich.STYLE_PRIMARY))
     return message, keyboard

@@ -1,19 +1,28 @@
 import json
 
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
-from aiogram.types import Chat, Message
+from aiogram.types import Chat, FSInputFile, Message, PhotoSize, RichBlockPhoto, RichMessage
 
 import pytest
 
+from bot.core.banner import BANNER_FILES
 from bot.core.messenger import (EMPTY_KEYBOARD, AiogramMessenger, DeliveryFailed, EditRichDict, MessageGone,
                                 SendRichDict, edit_or_send)
 from tests.fakes import FAKE_NOW, FakeMessenger, fake_bot
 
 DIVIDER_ONLY = {"blocks": [{"type": "divider"}]}
+BANNER_MESSAGE = {"blocks": [{"type": "photo", "photo": {"type": "photo", "media": "banner:ru"}},
+                             {"type": "paragraph", "text": ["привет"]}]}
 
 
 def sent_message(message_id: int) -> Message:
     return Message(message_id=message_id, date=FAKE_NOW, chat=Chat(id=1, type="private"))
+
+
+def sent_message_with_banner(message_id: int, file_id: str) -> Message:
+    rich_message = RichMessage(blocks=[RichBlockPhoto(photo=[PhotoSize(file_id=file_id, file_unique_id=file_id,
+                                                                       width=1600, height=400)])])
+    return Message(message_id=message_id, date=FAKE_NOW, chat=Chat(id=1, type="private"), rich_message=rich_message)
 
 
 def edit_error(text: str) -> TelegramBadRequest:
@@ -134,3 +143,48 @@ async def test_edit_or_send_fallback_send_also_gets_an_explicit_empty_keyboard()
     messenger.gone.add(5)
     await edit_or_send(messenger, 1, 5, DIVIDER_ONLY)
     assert messenger.sent == [(1, DIVIDER_ONLY, EMPTY_KEYBOARD)]
+
+
+async def test_message_without_a_banner_block_is_sent_untouched():
+    bot = fake_bot({"sendRichMessage": sent_message(7)})
+    await AiogramMessenger(bot).send(1, DIVIDER_ONLY)
+    assert bot.session.calls[0].rich_message == DIVIDER_ONLY
+
+
+async def test_send_without_a_cached_file_id_uploads_the_banner_file():
+    """Метка полосы без запомненного file_id — на её место встаёт файл для загрузки (задача 23b): само тело
+    запроса подделка сессии не строит (`RecordingSession` в обход `build_form_data`, byte-for-byte разбор — в
+    `probe_inputfile`, проверено вручную по пакету aiogram), но в вызов метода должен попасть настоящий
+    `InputFile`, а не строка-метка."""
+    bot = fake_bot({"sendRichMessage": sent_message(7)})
+    await AiogramMessenger(bot).send(1, BANNER_MESSAGE)
+    media = bot.session.calls[0].rich_message["blocks"][0]["photo"]["media"]
+    assert isinstance(media, FSInputFile)
+    assert BANNER_FILES["ru"].samefile(media.path)
+
+
+async def test_send_does_not_mutate_the_callers_rich_message():
+    bot = fake_bot({"sendRichMessage": sent_message(7)})
+    original = {"blocks": [dict(BANNER_MESSAGE["blocks"][0]), dict(BANNER_MESSAGE["blocks"][1])]}
+    await AiogramMessenger(bot).send(1, original)
+    assert original["blocks"][0]["photo"]["media"] == "banner:ru"
+
+
+async def test_send_remembers_file_id_and_reuses_it_on_the_next_send():
+    bot = fake_bot({"sendRichMessage": sent_message_with_banner(7, "file123")})
+    messenger = AiogramMessenger(bot)
+    await messenger.send(1, BANNER_MESSAGE)
+    await messenger.send(1, BANNER_MESSAGE)
+    media = bot.session.calls[1].rich_message["blocks"][0]["photo"]["media"]
+    assert media == "file123"
+
+
+async def test_edit_substitutes_the_banner_and_remembers_its_file_id_too():
+    bot = fake_bot({"editMessageText": sent_message_with_banner(7, "file456")})
+    messenger = AiogramMessenger(bot)
+    await messenger.edit(1, 5, BANNER_MESSAGE)
+    first_media = bot.session.calls[0].rich_message["blocks"][0]["photo"]["media"]
+    assert isinstance(first_media, FSInputFile)
+    await messenger.edit(1, 5, BANNER_MESSAGE)
+    second_media = bot.session.calls[1].rich_message["blocks"][0]["photo"]["media"]
+    assert second_media == "file456"
