@@ -13,10 +13,11 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from bot.core.clock import Clock, from_iso, to_iso
+from bot.site_check.findings import Block
 from bot.site_check.lighthouse import strip_params
 from bot.site_check.pipeline import CheckResult
 from bot.site_check.url_input import Target
-from bot.site_check.verdict import Block, SummaryKind
+from bot.site_check.verdict import SummaryKind
 
 QUEUED = "queued"
 RUNNING = "running"

@@ -10,12 +10,13 @@ from datetime import date, datetime
 from bot.core import rich
 from bot.core.commands import Brand
 from bot.core.i18n import Lang, Texts
+from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
+                                     UnknownReason)
 from bot.site_check.lighthouse import ImageFacts, PageFacts
 from bot.site_check.post_numbers import post_numbers
 from bot.site_check.thresholds import COMPRESS_MIN_RATIO, SERVER_ALLOWANCE_MS
 from bot.site_check.tls_check import RedirectState, TlsOutcome
-from bot.site_check.verdict import (REPORT_ORDER, Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, Grade,
-                                    FixKey, SecurityFacts, SummaryKind, UnknownReason, Verdict)
+from bot.site_check.verdict import REPORT_ORDER, SecurityFacts, SummaryKind, Verdict
 
 TITLE_SIZE = 1
 SECTION_SIZE = 2

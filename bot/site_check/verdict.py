@@ -6,6 +6,8 @@ from enum import StrEnum
 from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
+from bot.site_check.findings import (GRADE_WEIGHT, Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey,
+                                     Grade, UnknownReason, graded)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
 from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import to_ascii_host
@@ -14,60 +16,8 @@ MAX_TROUBLES = 2
 MAX_FIXES = 3
 FIXED_WIDTH = re.compile(r"width\s*=\s*\d", re.IGNORECASE)
 
-
-class Grade(StrEnum):
-    GOOD = "good"
-    FIX = "fix"
-    BAD = "bad"
-    UNKNOWN = "unknown"
-
-
-GRADE_WEIGHT = {Grade.GOOD: 0, Grade.FIX: 1, Grade.BAD: 2}
-
-
-class Block(StrEnum):
-    SPEED = "speed"
-    MOBILE = "mobile"
-    SECURITY = "security"
-    IMAGES = "images"
-
-
 REPORT_ORDER = (Block.SPEED, Block.MOBILE, Block.SECURITY, Block.IMAGES)
 PRIORITY_ORDER = (Block.SECURITY, Block.MOBILE, Block.SPEED, Block.IMAGES)  # ТЗ, 6.3
-
-
-class Cause(StrEnum):
-    IMAGES = "images"
-    SCRIPTS = "scripts"
-    SERVER = "server"
-    UNKNOWN = "unknown"
-
-
-class Finding(StrEnum):
-    """Порядок внутри блока — как в таблицах ТЗ, раздел 5: главная находка блока — первая."""
-    SLOW = "slow"
-    NO_MOBILE = "no_mobile"
-    FIXED_WIDTH = "fixed_width"
-    TAP_TARGETS = "tap_targets"
-    NO_ZOOM = "no_zoom"
-    NO_HTTPS = "no_https"
-    CERT_INVALID = "cert_invalid"
-    CERT_UNTRUSTED = "cert_untrusted"
-    CERT_EXPIRING = "cert_expiring"
-    HTTPS_AFTER_REDIRECT = "https_after_redirect"
-    NO_REDIRECT = "no_redirect"
-    MIXED_CONTENT = "mixed_content"
-    INCOMPLETE_CHAIN = "incomplete_chain"
-    HEAVY_PAGE = "heavy_page"
-
-
-FINDING_ORDER = tuple(Finding)
-
-
-class UnknownReason(StrEnum):
-    CERT_BLOCKS = "cert_blocks"
-    NO_DATA = "no_data"
-    OWN_CHECKS_FAILED = "own_checks_failed"
 
 
 class SummaryKind(StrEnum):
@@ -76,49 +26,6 @@ class SummaryKind(StrEnum):
     HAS_BAD = "has_bad"
     ONLY_FIX = "only_fix"
     CERT_BLOCKS = "cert_blocks"
-
-
-class FixKey(StrEnum):
-    ENABLE_HTTPS = "fix_enable_https"
-    REPLACE_CERT = "fix_replace_cert"
-    CHECK_RENEWAL = "fix_check_renewal"
-    HTTPS_AFTER_REDIRECT = "fix_https_after_redirect"
-    ENABLE_REDIRECT = "fix_enable_redirect"
-    SECURE_FILES = "fix_secure_files"
-    FULL_CHAIN = "fix_full_chain"
-    MAKE_MOBILE = "fix_make_mobile"
-    FIT_WIDTH = "fix_fit_width"
-    SPACE_BUTTONS = "fix_space_buttons"
-    ALLOW_ZOOM = "fix_allow_zoom"
-    COMPRESS_IMAGES = "fix_compress_images"
-    TRIM_SCRIPTS = "fix_trim_scripts"
-    FIX_SERVER = "fix_server"
-    FIND_SLOWDOWN = "fix_find_slowdown"
-
-
-@dataclass(frozen=True)
-class FindingItem:
-    finding: Finding
-    grade: Grade
-    cause: Cause = Cause.UNKNOWN
-    cert_problem: TlsOutcome | None = None
-    until: date | None = None
-    days_left: int | None = None
-    server_ms: float | None = None
-
-
-@dataclass(frozen=True)
-class BlockVerdict:
-    block: Block
-    grade: Grade
-    findings: tuple[FindingItem, ...] = ()
-    unknown_reason: UnknownReason | None = None
-
-
-@dataclass(frozen=True)
-class FixItem:
-    key: FixKey
-    source: FindingItem
 
 
 @dataclass(frozen=True)
@@ -167,12 +74,6 @@ def _unknown(block: Block, security: SecurityFacts) -> BlockVerdict:
     return BlockVerdict(block, Grade.UNKNOWN, unknown_reason=reason)
 
 
-def _graded(block: Block, findings: list[FindingItem]) -> BlockVerdict:
-    ordered = tuple(sorted(findings, key=lambda item: FINDING_ORDER.index(item.finding)))
-    grade = max((item.grade for item in ordered), key=GRADE_WEIGHT.__getitem__, default=Grade.GOOD)
-    return BlockVerdict(block, grade, ordered)
-
-
 def _speed_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdict:
     if page is None or page.speed.lcp_ms is None:
         return _unknown(Block.SPEED, security)
@@ -181,7 +82,7 @@ def _speed_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdic
         return BlockVerdict(Block.SPEED, Grade.GOOD)
     grade = Grade.FIX if lcp <= thresholds.LCP_FIX_MS else Grade.BAD
     item = FindingItem(Finding.SLOW, grade, cause=main_cause(page.speed), server_ms=page.speed.server_ms)
-    return _graded(Block.SPEED, [item])
+    return graded(Block.SPEED, [item])
 
 
 def main_cause(speed: SpeedFacts) -> Cause:
@@ -210,18 +111,18 @@ def _mobile_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdi
         findings.append(FindingItem(Finding.TAP_TARGETS, Grade.FIX))
     if mobile.meta_viewport is AuditState.FAILED:
         findings.append(FindingItem(Finding.NO_ZOOM, Grade.FIX))
-    return _graded(Block.MOBILE, findings)
+    return graded(Block.MOBILE, findings)
 
 
 def _security_block(page: PageFacts | None, security: SecurityFacts, today: date) -> BlockVerdict:
     known = [facts for facts in security.tls if facts.outcome not in TLS_UNKNOWN]
     if security.cert_blocks:
-        return _graded(Block.SECURITY, [_blocking_cert_finding(known)])
+        return graded(Block.SECURITY, [_blocking_cert_finding(known)])
     if not known:
         return BlockVerdict(Block.SECURITY, Grade.UNKNOWN, unknown_reason=UnknownReason.OWN_CHECKS_FAILED)
     findings = [item for facts in known for item in _tls_findings(facts, page, today)]
     findings += _transport_findings(security, known, page)
-    return _graded(Block.SECURITY, _unique(findings))
+    return graded(Block.SECURITY, _unique(findings))
 
 
 def _cert_until(cert: CertInfo | None) -> date | None:
@@ -312,7 +213,7 @@ def _images_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdi
     if size <= thresholds.PAGE_GOOD_BYTES:
         return BlockVerdict(Block.IMAGES, Grade.GOOD)
     grade = Grade.FIX if size <= thresholds.PAGE_FIX_BYTES else Grade.BAD
-    return _graded(Block.IMAGES, [FindingItem(Finding.HEAVY_PAGE, grade)])
+    return graded(Block.IMAGES, [FindingItem(Finding.HEAVY_PAGE, grade)])
 
 
 def _summary_kind(blocks: dict[Block, BlockVerdict], security: SecurityFacts) -> SummaryKind:
