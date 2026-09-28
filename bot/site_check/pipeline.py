@@ -1,6 +1,6 @@
 """Одна проверка (ТЗ, Л4): до замера → PageSpeed → после замера → вердикт. Шаги идут по очереди, не параллельно."""
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from typing import Protocol
 from urllib.parse import urlsplit
@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 from loguru import logger
 
 from bot.core.clock import Clock
+from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.lighthouse import AuditState, PageFacts, parse_lighthouse
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
@@ -22,6 +23,7 @@ CHECK_DEADLINE_SECONDS = 120  # ТЗ, Л4: одна проверка целик�
 PROBE_TIMEOUT_SECONDS = 10    # ТЗ, Л4: до замера
 AFTER_TIMEOUT_SECONDS = 15    # ТЗ, Л4: после замера
 PREVIEW_BUDGET_SECONDS = 12   # ТЗ, Л4, С5: своя загрузка страницы — 12 секунд внутри 15 после замера
+DOMAIN_BUDGET_SECONDS = 8     # ТЗ, Л4, С15: реестры — не дольше 8 секунд внутри 15 после замера
 CERT_BLOCKS = "cert_blocks"
 UNREACHABLE = "unreachable"
 # Разбор ответа Lighthouse — узкий набор исключений на неожиданную структуру, не Exception целиком.
@@ -33,6 +35,10 @@ UNTRUSTED_TLS_OUTCOMES = TLS_INVALID | frozenset({TlsOutcome.OTHER})
 
 class PreviewSource(Protocol):
     async def load(self, url: str) -> PagePreview: ...
+
+
+class DomainSource(Protocol):
+    async def paid_until(self, host: str) -> DomainPaid | None: ...
 
 
 @dataclass(frozen=True)
@@ -61,11 +67,12 @@ class CheckFailed(Exception):
 
 class Pipeline:
     def __init__(self, probes: SiteProbes, pagespeed: PageSpeedClient, clock: Clock,
-                previews: PreviewSource | None = None):
+                previews: PreviewSource | None = None, domains: DomainSource | None = None):
         self._probes = probes
         self._pagespeed = pagespeed
         self._clock = clock
         self._previews = previews
+        self._domains = domains
 
     async def run(self, target: Target) -> CheckResult:
         deadline = self._clock.monotonic() + CHECK_DEADLINE_SECONDS
@@ -80,10 +87,25 @@ class Pipeline:
             raise CheckFailed(SERVICE_DOWN, reached_measurement=True, reason=error.reason) from None
         page = self._parse(result)
         self._require_measurement(page)
-        # После замера защита и своя загрузка страницы идут параллельно, у каждой свой срок (ТЗ, Л4).
-        security, preview = await asyncio.gather(self._after(target, before, page), self._preview(page))
+        # После замера защита, своя загрузка страницы и срок домена идут параллельно, у каждой свой срок (ТЗ, Л4).
+        security, preview, domain = await asyncio.gather(self._after(target, before, page), self._preview(page),
+                                                         self._domain(page))
+        security = replace(security, domain=domain)
         verdict = judge(page, security, self._today(), preview)
         return CheckResult(page.final_url or before.url, page, security, verdict, preview)
+
+    async def _domain(self, page: PageFacts) -> DomainPaid | None:
+        """Срок оплаты домена итогового хоста (ТЗ, 5.4). Не дождались или упало — строки о домене просто нет."""
+        host = to_ascii_host(urlsplit(page.final_url).hostname or "")
+        if self._domains is None or not host:
+            return None
+        try:
+            return await asyncio.wait_for(self._domains.paid_until(host), DOMAIN_BUDGET_SECONDS)
+        except TimeoutError:
+            return None
+        except Exception:  # noqa: BLE001 — сбой реестра не должен отнимать отчёт
+            logger.exception("срок домена не узнан")
+            return None
 
     async def _preview(self, page: PageFacts) -> PagePreview | None:
         """Своя загрузка (ТЗ, 5.6–5.7). Не дождались или упала — новые блоки просто не показаны (ТЗ, 6.1)."""

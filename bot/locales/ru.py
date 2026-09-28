@@ -96,6 +96,7 @@ TEXTS = {
     "trouble_call_without_code": "кнопка звонка набирает номер без кода города",
     "trouble_no_privacy_policy": "у формы заявки нет политики персональных данных",
     "trouble_no_analytics": "нет счётчика посещений",
+    "trouble_domain_expiring": "скоро кончается оплата домена",
     "cert_reason_expired": "сертификат истёк",
     "cert_reason_not_yet_valid": "сертификат ещё не действует",
     "cert_reason_wrong_host": "сертификат выдан на другой адрес",
@@ -120,6 +121,7 @@ TEXTS = {
     "security_ok": "сертификат действует до {date}",
     "security_ok_no_date": "соединение защищено",
     "security_redirect_ok": "адрес без https переводит на защищённый",
+    "security_domain_paid": "домен оплачен до {date}",
     "security_no_https": "сайт работает без защиты",
     "security_no_https_effect": "браузер пишет «Не защищено», заявки из форм уходят открытым текстом",
     "security_cert_expired": "сертификат истёк {date}",
@@ -140,6 +142,7 @@ TEXTS = {
                           "у адреса",
     "tail_incomplete_chain": "сервер отдаёт сертификат не полностью, и в части браузеров и приложений сайт "
                              "покажется небезопасным",
+    "tail_domain_expiring": "домен оплачен до {date} — если не продлить, сайт и почта перестанут открываться",
     # отчёт: картинки
     "images_weight": "страница весит {size}",
     "images_weight_split": "страница весит {size}, из них {images} — картинки",
@@ -192,6 +195,7 @@ TEXTS = {
     "fix_full_call_number": "Указать в кнопке звонка номер с кодом города — тогда с мобильного дозвонятся.",
     "fix_add_policy_link": "Добавить рядом с формой ссылку на политику обработки персональных данных.",
     "fix_add_counter": "Поставить счётчик посещений — станет видно, сколько людей заходит и откуда.",
+    "fix_renew_domain": "Продлить домен до {date} или включить автопродление.",
     # отчёт: поиск в Google
     "search_open": "страница открыта для поисковиков",
     "search_title_quote": "заголовок для поиска: «{title}»",
@@ -283,6 +287,9 @@ TEXTS = {
     "post_third_party": "Сторонний: {name}",
     "post_cert": "Сертификат",
     "post_cert_value": "{issuer}, {start} — {end}; {names}",
+    "post_domain": "Домен",
+    "post_domain_value": "{domain}: оплачен до {date} ({source})",
+    "post_domain_none": "конструктор, сам суффикс или реестр не ответил",
     "post_final_url": "Итоговый адрес",
     "post_redirect": "Переадресация",
     "post_lighthouse": "Lighthouse",

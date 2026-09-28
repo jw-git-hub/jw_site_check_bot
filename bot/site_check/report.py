@@ -224,8 +224,8 @@ def _fix_grade_findings(findings: tuple[FindingItem, ...] | list[FindingItem]) -
 
 
 def _tail_facts(texts: Texts, lang: Lang, items: list[FindingItem]) -> list[str]:
-    return [texts.get(lang, f"tail_{item.finding}", days=texts.count(lang, max(item.days_left or 0, 0), "day"))
-            for item in items]
+    return [texts.get(lang, f"tail_{item.finding}", days=texts.count(lang, max(item.days_left or 0, 0), "day"),
+                      date=texts.date(lang, item.until) if item.until else "") for item in items]
 
 
 def _security_facts(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> list[str]:
@@ -276,6 +276,9 @@ def _security_opening_facts(texts: Texts, lang: Lang, request: ReportRequest, ve
              else texts.get(lang, "security_ok_no_date")]
     if verdict.grade is Grade.GOOD and RedirectState.REDIRECTS in request.security.redirects:
         facts.append(texts.get(lang, "security_redirect_ok"))
+    domain = request.security.domain
+    if domain and all(item.finding is not Finding.DOMAIN_EXPIRING for item in verdict.findings):
+        facts.append(texts.get(lang, "security_domain_paid", date=texts.date(lang, domain.until)))
     return facts
 
 

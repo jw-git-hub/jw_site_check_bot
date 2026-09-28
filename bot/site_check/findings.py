@@ -72,6 +72,7 @@ class Finding(StrEnum):
     CALL_WITHOUT_CODE = "call_without_code"
     NO_PRIVACY_POLICY = "no_privacy_policy"
     NO_ANALYTICS = "no_analytics"
+    DOMAIN_EXPIRING = "domain_expiring"
 
 
 FINDING_ORDER = tuple(Finding)
@@ -120,6 +121,7 @@ class FixKey(StrEnum):
     FULL_CALL_NUMBER = "fix_full_call_number"
     ADD_POLICY_LINK = "fix_add_policy_link"
     ADD_COUNTER = "fix_add_counter"
+    RENEW_DOMAIN = "fix_renew_domain"
 
 
 @dataclass(frozen=True)

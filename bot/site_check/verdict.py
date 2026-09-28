@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
 from bot.site_check.contacts_block import judge_contacts
+from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
                                      UnknownReason, graded)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
@@ -46,6 +47,7 @@ class SecurityFacts:
     redirects: tuple[RedirectState, ...]
     insecure_urls: tuple[str, ...]
     cert_blocks: bool = False
+    domain: DomainPaid | None = None  # срок оплаты домена (ТЗ, 5.4, версия 1.2)
 
 
 @dataclass(frozen=True)
@@ -77,7 +79,7 @@ FIX_KEYS = {
     Finding.NO_ALT: FixKey.ADD_ALT, Finding.NO_LANG: FixKey.SET_LANG,
     Finding.NO_CONTACTS: FixKey.ADD_CONTACTS, Finding.PHONE_NOT_LINK: FixKey.LINK_PHONE,
     Finding.CALL_WITHOUT_CODE: FixKey.FULL_CALL_NUMBER, Finding.NO_PRIVACY_POLICY: FixKey.ADD_POLICY_LINK,
-    Finding.NO_ANALYTICS: FixKey.ADD_COUNTER,
+    Finding.NO_ANALYTICS: FixKey.ADD_COUNTER, Finding.DOMAIN_EXPIRING: FixKey.RENEW_DOMAIN,
 }
 SLOW_FIX_KEYS = {Cause.IMAGES: FixKey.COMPRESS_IMAGES, Cause.SCRIPTS: FixKey.TRIM_SCRIPTS,
                  Cause.SERVER: FixKey.FIX_SERVER, Cause.UNKNOWN: FixKey.FIND_SLOWDOWN}
@@ -151,6 +153,7 @@ def _security_block(page: PageFacts | None, security: SecurityFacts, today: date
         return BlockVerdict(Block.SECURITY, Grade.UNKNOWN, unknown_reason=UnknownReason.OWN_CHECKS_FAILED)
     findings = [item for facts in known for item in _tls_findings(facts, page, today)]
     findings += _transport_findings(security, known, page)
+    findings += _domain_findings(security.domain, today)
     return graded(Block.SECURITY, _unique(findings))
 
 
@@ -195,6 +198,16 @@ def _expiry_findings(cert: CertInfo | None, today: date) -> list[FindingItem]:
     if days_left >= warn_days:
         return []
     return [FindingItem(Finding.CERT_EXPIRING, Grade.FIX, until=cert.not_after.date(), days_left=days_left)]
+
+
+def _domain_findings(domain: DomainPaid | None, today: date) -> list[FindingItem]:
+    """Меньше DOMAIN_WARN_DAYS до конца оплаты — «стоит поправить» (ТЗ, 5.4). «Плохо» не бывает."""
+    if domain is None:
+        return []
+    days_left = (domain.until - today).days
+    if days_left >= thresholds.DOMAIN_WARN_DAYS:
+        return []
+    return [FindingItem(Finding.DOMAIN_EXPIRING, Grade.FIX, until=domain.until, days_left=days_left)]
 
 
 def _transport_findings(security: SecurityFacts, known: list[TlsFacts], page: PageFacts | None) -> list[FindingItem]:

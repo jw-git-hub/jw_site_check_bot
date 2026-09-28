@@ -1,10 +1,11 @@
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 
 from bot.site_check import pipeline as pipeline_module
 from bot.site_check import probe as probe_module
+from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.net_guard import AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pagespeed import MEASURE_FAILED, LighthouseFailure, PageSpeedUnavailable
@@ -604,3 +605,31 @@ async def test_certificate_blocking_does_not_load_the_page():
     previews = FakePreviews(preview())
     result = await Pipeline(FakeProbes(tls={"site.test": expired}), pagespeed, FakeClock(), previews).run(target())
     assert (previews.urls, result.preview) == ([], None)
+
+
+# --- Срок оплаты домена — параллельно с защитой и своей загрузкой, у своего срока (ТЗ, 5.4) ---
+
+class FakeDomains:
+    def __init__(self, found=None, delay: float = 0.0):
+        self.found, self.delay, self.hosts = found, delay, []
+
+    async def paid_until(self, host: str):
+        self.hosts.append(host)
+        await asyncio.sleep(self.delay)
+        return self.found
+
+
+async def test_domain_is_looked_up_for_the_final_host():
+    paid = DomainPaid("site.test", date(2027, 6, 16), "whois")
+    domains = FakeDomains(paid)
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://www.site.test/", **PAGE_AUDITS))
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), pagespeed, FakeClock(), None, domains).run(target())
+    assert (domains.hosts, result.security.domain) == (["www.site.test"], paid)
+
+
+async def test_hanging_registry_does_not_hold_the_report(monkeypatch):
+    monkeypatch.setattr(pipeline_module, "DOMAIN_BUDGET_SECONDS", 0.01)
+    domains = FakeDomains(delay=5)
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), FakePageSpeed(PAGE), FakeClock(), None,
+                            domains).run(target())
+    assert result.security.domain is None and result.security.tls == (OK_TLS,)

@@ -149,3 +149,4 @@ def test_site_fetches_go_through_their_own_guarded_session():
     assert "sites = guarded_session(guard)" in source
     assert "PreviewLoader(AiohttpSender(sites))" in source
     assert "await parts.sites.close()" in source
+    assert "RegistryClient(http)" in source

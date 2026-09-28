@@ -29,6 +29,7 @@ from bot.schema import MIGRATIONS
 from bot.settings import Settings
 from bot.site_check import admin, handlers, replies
 from bot.site_check.checks import INTERRUPTED, ChecksRepo
+from bot.site_check.domain_expiry import RegistryClient
 from bot.site_check.handlers import CheckRunner, Intake
 from bot.site_check.limits import Limits
 from bot.site_check.net_guard import AddressGuard, fetch_home_ip, system_resolver
@@ -85,7 +86,8 @@ def _checking(settings: Settings, clock: Clock, users: Users, repo: ChecksRepo, 
               sites: aiohttp.ClientSession) -> tuple[CheckQueue, Intake]:
     limits = Limits(repo, clock, settings.user_daily_limit, settings.global_daily_limit, settings.admin_id)
     pagespeed = PageSpeedClient(http, settings.pagespeed_api_key.get_secret_value(), clock)
-    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock, PreviewLoader(AiohttpSender(sites)))
+    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock, PreviewLoader(AiohttpSender(sites)),
+                        RegistryClient(http))
     runner = CheckRunner(pipeline, repo, limits, messenger, TEXTS, BRAND, notifier, clock)
     queue = CheckQueue(settings.check_workers, settings.queue_max, runner.run, clock)
     return queue, Intake(users, repo, limits, queue, messenger, TEXTS, BRAND, settings, notifier)

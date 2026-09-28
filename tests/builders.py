@@ -113,5 +113,6 @@ def cert(days_left=74, lifetime=90) -> CertInfo:
 
 
 def security(outcome=TlsOutcome.OK, days_left=74, lifetime=90, redirects=(RedirectState.REDIRECTS,), insecure=(),
-             cert_blocks=False) -> SecurityFacts:
-    return SecurityFacts((TlsFacts("site.test", outcome, cert(days_left, lifetime)),), redirects, insecure, cert_blocks)
+             cert_blocks=False, domain=None) -> SecurityFacts:
+    return SecurityFacts((TlsFacts("site.test", outcome, cert(days_left, lifetime)),), redirects, insecure,
+                         cert_blocks, domain)

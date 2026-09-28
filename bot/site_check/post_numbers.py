@@ -190,6 +190,10 @@ def _meta_rows(texts: Texts, lang: Lang, page: PageFacts, security: SecurityFact
         value = texts.get(lang, "post_cert_value", issuer=cert.issuer, start=texts.date(lang, cert.not_before.date()),
                           end=texts.date(lang, cert.not_after.date()), names=NAMES_SEPARATOR.join(cert.names))
         rows.append([texts.get(lang, "post_cert"), value])
+    domain = security.domain
+    rows.append([texts.get(lang, "post_domain"),
+                 texts.get(lang, "post_domain_value", domain=domain.domain, date=texts.date(lang, domain.until),
+                           source=domain.source) if domain else texts.get(lang, "post_domain_none")])
     final_url = strip_params(page.final_url)
     rows.append([texts.get(lang, "post_final_url"), final_url])
     rows += _redirect_row(texts, lang, page.requested_url, final_url)

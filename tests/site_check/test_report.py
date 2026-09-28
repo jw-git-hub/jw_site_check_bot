@@ -1,11 +1,12 @@
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from urllib.parse import unquote
 
 import pytest
 
 from bot.brand import BRAND
 from bot.locales import TEXTS
+from bot.site_check.domain_expiry import RDAP, DomainPaid
 from bot.site_check.findings import Block, BlockVerdict, Finding, FindingItem, FixItem, FixKey, Grade
 from bot.site_check.lighthouse import AuditState
 from bot.site_check.page_fetch import FetchFailure, ImageState
@@ -258,6 +259,20 @@ def test_expiring_certificate_sentence_and_fix():
             "> сертификат закончится через 6 дней — если он не продлится сам, браузер начнёт показывать "
             "предупреждение") in text
     assert "> Проверить автопродление сертификата до 1 октября 2026." in text
+
+
+def test_security_names_the_paid_domain_date():
+    facts = security(domain=DomainPaid("jw-dev.pro", date(2027, 8, 25), RDAP))
+    assert ("Защита — хорошо\n> сертификат действует до 8 декабря 2026\n> адрес без https переводит на защищённый\n"
+            "> домен оплачен до 25 августа 2027") in rich_text(report("ru", page(), facts))
+
+
+def test_domain_ending_soon_is_worth_fixing_with_its_date():
+    facts = security(domain=DomainPaid("site.ru", date(2026, 10, 14), "whois"))
+    text = rich_text(report("ru", page(), facts))
+    assert "В целом в порядке, но скоро кончается оплата домена." in text
+    assert "> домен оплачен до 14 октября 2026 — если не продлить, сайт и почта перестанут открываться" in text
+    assert "> Продлить домен до 14 октября 2026 или включить автопродление." in text
 
 
 def test_missing_server_response_time_uses_plain_texts():

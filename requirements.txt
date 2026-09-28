@@ -9,3 +9,4 @@ loguru==0.7.3
 cryptography==50.0.1
 idna==3.20
 phonenumberslite==9.0.40
+publicsuffixlist==1.0.2.20260925
