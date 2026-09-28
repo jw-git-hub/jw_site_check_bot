@@ -38,9 +38,16 @@ AUDIT_IDS = (
     "render-blocking-insight", "unused-javascript", "legacy-javascript-insight", "duplicated-javascript-insight",
     "document-latency-insight", "third-parties-insight", "viewport-insight", "target-size", "meta-viewport",
     "is-on-https", "total-byte-weight", "resource-summary", "network-requests",
+    # версия 1.1: поиск (5.6) и удобство чтения (5.8)
+    "is-crawlable", "robots-txt", "document-title", "meta-description", "color-contrast", "image-alt",
+    "html-has-lang", "html-lang-valid", "link-name", "button-name", "label",
+    # версия 1.2: снимок первого экрана (5.9), растянутые и нечёткие картинки (5.5)
+    "final-screenshot", "image-aspect-ratio", "image-size-responsive",
 )
+CATEGORIES = ("performance", "accessibility", "best-practices", "seo")
 # audits — словарь: отдельные проверки Google выбрать не даёт (400), только audits целиком.
-FIELDS = "lighthouseResult(lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings,audits)"
+FIELDS = ("lighthouseResult(lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings,"
+          "categories(seo/score,accessibility/score),audits)")
 
 
 def read_env() -> dict[str, str]:
@@ -126,8 +133,7 @@ def try_telegram(env: dict[str, str]) -> None:
 
 
 def pagespeed(url: str, key: str, with_fields: bool) -> tuple[int, int, dict]:
-    params = [("url", url), ("strategy", "mobile"), ("category", "performance"), ("category", "accessibility"),
-              ("category", "best-practices"), ("locale", "en")]
+    params = [("url", url), ("strategy", "mobile"), *[("category", name) for name in CATEGORIES], ("locale", "en")]
     if with_fields:
         params.append(("fields", FIELDS))
     request = urllib.request.Request(PAGESPEED_URL + "?" + urllib.parse.urlencode(params), headers={KEY_HEADER: key})
@@ -144,6 +150,7 @@ def describe(payload: dict) -> None:
     audits = result.get("audits", {})
     print("  Lighthouse:", result.get("lighthouseVersion"), "| итоговый адрес:", result.get("finalDisplayedUrl"))
     print("  нет в ответе:", [name for name in AUDIT_IDS if name not in audits] or "всё на месте")
+    print("  оценки категорий:", result.get("categories"))
     items = audits.get("viewport-insight", {}).get("details", {}).get("items") or [{}]
     print("  текст метатега viewport:", (items[0].get("node") or {}).get("snippet"))
     for name in ("viewport-insight", "target-size", "meta-viewport", "image-delivery-insight"):

@@ -16,16 +16,22 @@ from bot.core.clock import Clock
 
 ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 KEY_HEADER = "X-goog-api-key"
-CATEGORIES = ("performance", "accessibility", "best-practices")
+CATEGORIES = ("performance", "accessibility", "best-practices", "seo")  # seo — версия 1.1 (ТЗ, 5.1)
 AUDIT_IDS = (
     "largest-contentful-paint", "first-contentful-paint", "total-blocking-time", "cumulative-layout-shift",
     "speed-index", "server-response-time", "image-delivery-insight", "lcp-discovery-insight",
     "render-blocking-insight", "unused-javascript", "legacy-javascript-insight", "duplicated-javascript-insight",
     "document-latency-insight", "third-parties-insight", "viewport-insight", "target-size", "meta-viewport",
     "is-on-https", "total-byte-weight", "resource-summary", "network-requests",
+    # версия 1.1: поиск (5.6) и удобство чтения (5.8)
+    "is-crawlable", "robots-txt", "document-title", "meta-description", "color-contrast", "image-alt",
+    "html-has-lang", "html-lang-valid", "link-name", "button-name", "label",
+    # версия 1.2: снимок первого экрана (5.9), растянутые и нечёткие картинки (5.5)
+    "final-screenshot", "image-aspect-ratio", "image-size-responsive",
 )
 RESULT_FIELDS = "lighthouseVersion,requestedUrl,finalDisplayedUrl,runtimeError,runWarnings"
-FIELDS = f"lighthouseResult({RESULT_FIELDS},audits)"
+CATEGORY_FIELDS = "categories(seo/score,accessibility/score)"  # оценки категорий — для «Подробных замеров» (7.5)
+FIELDS = f"lighthouseResult({RESULT_FIELDS},{CATEGORY_FIELDS},audits)"
 REQUEST_TIMEOUT_SECONDS = 90
 MIN_TIMEOUT_SECONDS = 1
 MAX_RESPONSE_BYTES = 10 * 1024 * 1024

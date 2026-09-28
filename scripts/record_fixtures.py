@@ -4,8 +4,10 @@
   python3 scripts/record_fixtures.py <папка вне рабочей копии> <имя>=<адрес> [<имя>=<адрес> …]
 
 Из всех адресов вырезает параметры и фрагменты — там бывают чужие ключи и подписанные ссылки.
-Всё, похожее на секрет, заменяет на ***; скриншоты удаляет. Из audits оставляет только проверки бота:
-остальные Google всё равно присылает (fields их не отсекает), а в тестах они не нужны.
+Всё, похожее на секрет, заменяет на ***; миниатюры и полную страницу удаляет, а у снимка первого экрана
+(final-screenshot, ТЗ 5.9) оставляет всё, кроме самой картинки — вместо неё короткая заглушка: base64 может
+зацепить сторож секретов и раздувает записи. Из audits оставляет только проверки бота: остальные Google всё
+равно присылает (fields их не отсекает), а в тестах они не нужны.
 На Мак файлы переносятся через scp.
 """
 import importlib.util
@@ -20,9 +22,11 @@ sys.path.insert(0, str(SCRIPTS))
 from try_api import AUDIT_IDS, pagespeed, read_env  # noqa: E402 — путь к соседнему скрипту задан строкой выше
 
 PATTERNS_FILE = SCRIPTS.parent / "bot" / "core" / "secret_patterns.py"
-DROPPED_KEYS = {"screenshot", "final-screenshot", "screenshot-thumbnails", "fullPageScreenshot", "data"}
+DROPPED_KEYS = {"screenshot", "screenshot-thumbnails", "fullPageScreenshot"}  # final-screenshot — хранится (ТЗ, 5.9)
 URL_PREFIXES = ("http://", "https://")
 MASK = "***"
+SCREENSHOT_AUDIT_ID = "final-screenshot"
+SCREENSHOT_PLACEHOLDER = "***снимок не хранится в записи (ТЗ, 5.9) — вместо base64 заглушка***"
 
 
 def load_patterns() -> list:
@@ -59,10 +63,20 @@ def keep_needed_audits(payload: dict) -> dict:
     return payload
 
 
+def mask_screenshot_data(payload: dict) -> dict:
+    """Снимок первого экрана (ТЗ, 5.9) остаётся в записи, но без своей base64-картинки — короткая заглушка."""
+    audits = (payload.get("lighthouseResult") or {}).get("audits") or {}
+    details = audits.get(SCREENSHOT_AUDIT_ID, {}).get("details", {})
+    if "data" in details:
+        details["data"] = SCREENSHOT_PLACEHOLDER
+    return payload
+
+
 def record(out_dir: Path, name: str, url: str, key: str) -> None:
     status, size, payload = pagespeed(url, key, with_fields=True)
     target = out_dir / f"{name}.json"
-    recorded = {"http_status": status, "response": sanitize(keep_needed_audits(payload))}
+    prepared = mask_screenshot_data(keep_needed_audits(payload))
+    recorded = {"http_status": status, "response": sanitize(prepared)}
     target.write_text(json.dumps(recorded, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{name}: HTTP {status}, {size} байт → {target}")
 

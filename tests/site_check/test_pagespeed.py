@@ -66,7 +66,7 @@ async def test_success_sends_key_in_header_and_asks_only_needed_fields(run_clien
     assert "key" not in request.query
     assert request.query["fields"] == FIELDS
     assert request.query["strategy"] == "mobile"
-    assert request.query.getall("category") == ["performance", "accessibility", "best-practices"]
+    assert request.query.getall("category") == ["performance", "accessibility", "best-practices", "seo"]
 
 
 def test_fields_ask_audits_whole():
@@ -227,3 +227,14 @@ def test_recorded_answers_are_understood(path):
     with pytest.raises(LighthouseFailure) as failure:
         interpret(recorded["http_status"], body)
     assert classify(failure.value) == expected
+
+
+PAGE_FIXTURES = [path for path in FIXTURES if path.stem not in RECORDED_FAILURES]
+
+
+@pytest.mark.skipif(not PAGE_FIXTURES, reason="нет записанных ответов PageSpeed (см. scripts/record_fixtures.py)")
+@pytest.mark.parametrize("path", PAGE_FIXTURES, ids=lambda path: path.stem)
+def test_recorded_answers_carry_category_scores(path):
+    # Оценки категорий SEO и доступности — владельцу в «Подробных замерах» (ТЗ, 7.5): поле пришло от Google.
+    categories = json.loads(path.read_text(encoding="utf-8"))["response"]["lighthouseResult"]["categories"]
+    assert all(isinstance(categories[name]["score"], int | float) for name in ("seo", "accessibility"))
