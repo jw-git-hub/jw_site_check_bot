@@ -10,7 +10,7 @@ from bot.site_check.post_numbers import post_numbers
 from bot.site_check.report import ReportRequest, build_report, fix_text, summary_text
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts, SummaryKind, Verdict, judge
-from tests.builders import MB, TODAY, cert, images, mobile, page, security, speed
+from tests.builders import MB, TODAY, cert, images, mobile, page, readability, security, speed
 from tests.fakes import rich_text
 
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
@@ -320,3 +320,33 @@ def test_new_troubles_and_fixes_have_their_words():
     assert summary_text(TEXTS, "ru", verdict) == "Есть что чинить: страница закрыта от поисковиков."
     assert fix_text(TEXTS, "ru", verdict.fixes[0]) == ("Снять запрет noindex — иначе страницу не найти в Google "
                                                        "и Яндексе.")
+
+
+def test_readability_lines_name_the_pale_text_and_the_pictures():
+    facts = page(readability_facts=readability(contrast=AuditState.FAILED, examples=("НАШИ ЦЕНЫ",),
+                                               alt=AuditState.FAILED, alt_names=("20let.png", "diplom-tm-2025-m.jpg"),
+                                               alt_count=9, lang=AuditState.FAILED))
+    text = rich_text(report("ru", facts, security()))
+    assert ("Удобство чтения — стоит поправить\n"
+            "> местами текст плохо виден на фоне — например, «НАШИ ЦЕНЫ»\n"
+            "> на солнце и людям со слабым зрением его трудно прочитать\n"
+            "> у 9 картинок нет подписи — например, 20let.png, diplom-tm-2025-m.jpg\n"
+            "> Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там\n"
+            "> в коде не указан язык страницы — программа чтения вслух может читать текст с чужим произношением"
+            ) in text
+    assert "В целом в порядке, но местами текст плохо виден." in text
+
+
+def test_readability_good_lines_and_silence_without_facts():
+    good = rich_text(report("ru", page(readability_facts=readability()), security()))
+    assert "Удобство чтения — хорошо\n> текст хорошо виден на фоне\n> у картинок есть подписи" in good
+    no_images = rich_text(report("ru", page(readability_facts=readability(alt=AuditState.NOT_APPLICABLE)), security()))
+    assert "Удобство чтения — хорошо\n> текст хорошо виден на фоне\nЧто поправить" in no_images
+    silent = readability(contrast=AuditState.UNKNOWN, alt=AuditState.NOT_APPLICABLE)
+    assert "Удобство чтения" not in rich_text(report("ru", page(readability_facts=silent), security()))
+
+
+def test_readability_lines_in_english():
+    facts = page(readability_facts=readability(alt=AuditState.FAILED, alt_names=("team.jpg",)))
+    text = rich_text(report("en", facts, security()))
+    assert "Readability — worth fixing\n> no alt text on 1 image — for example, team.jpg" in text

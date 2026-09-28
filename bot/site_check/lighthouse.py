@@ -17,6 +17,7 @@ from typing import Any
 from bot.site_check.audits import (AuditState, as_number, audit_entry, audit_items, audit_state, file_name,
                                    is_number, numeric_value, strip_params)
 from bot.site_check.pagespeed import AUDIT_IDS
+from bot.site_check.readability_block import ReadabilityFacts, parse_readability
 
 IMAGE_REQUEST_TYPE = "Image"
 IMAGE_SUMMARY_TYPE = "image"
@@ -89,6 +90,7 @@ class PageFacts:
     missing_audits: tuple[str, ...]
     # Что просили измерить (requestedUrl, без параметров) — пара с final_url покажет «запрошено → итог» (ТЗ, 7.5).
     requested_url: str = ""
+    readability: ReadabilityFacts | None = None
 
 
 @dataclass(frozen=True)
@@ -127,6 +129,7 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
         post=_post(audits, savings),
         missing_audits=tuple(name for name in AUDIT_IDS if name not in audits),
         requested_url=strip_params(str(result.get("requestedUrl") or "")),
+        readability=parse_readability(audits),
     )
 
 

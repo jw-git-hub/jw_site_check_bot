@@ -10,6 +10,7 @@ WORDS = {
     "day": ("day", "days"),
     "times": ("time", "times"),
     "check": ("check", "checks"),
+    "picture": ("image", "images"),
 }
 TEXTS = {
     "welcome": "Send me a link to a website — I'll check how fast it opens on a phone, whether it has a mobile "
@@ -172,6 +173,18 @@ TEXTS = {
     "fix_raise_contrast": "Make the pale text darker or its background more contrasting — it'll be easy to read.",
     "fix_add_alt": "Add alt text to the images — Google and screen readers will understand them.",
     "fix_set_lang": "Set the page's language in the code (the lang attribute).",
+    "readability_good_contrast": "the text stands out well against the background",
+    "readability_good_alt": "the images have alt text",
+    "readability_low_contrast": "in places the text is hard to see against the background — for example, "
+                                "\"{example}\"",
+    "readability_low_contrast_plain": "in places the text is hard to see against the background",
+    "readability_low_contrast_effect": "in sunlight and for people with poor eyesight it's hard to read",
+    "readability_no_alt": "no alt text on {count} — for example, {names}",
+    "readability_no_alt_plain": "no alt text on {count}",
+    "readability_no_alt_effect": "Google understands them worse, and a screen reader can't tell blind visitors "
+                                 "what's there",
+    "readability_no_lang": "the page's language isn't set in the code — text-to-speech may read it with the wrong "
+                           "pronunciation",
     "discuss_button": "💬 Talk to the developer",
     "another_button": "🔍 Check another site",
     "discuss_prefill": "From the site check: {domain}",

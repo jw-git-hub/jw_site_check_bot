@@ -1,8 +1,11 @@
 """Сборщики входных данных для тестов: ответ Lighthouse, замеры, факты защиты."""
+import json
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 
 from bot.site_check.lighthouse import AuditState, FileWeight, ImageFacts, MobileFacts, PageFacts, PostNumbers, SpeedFacts
 from bot.site_check.pagespeed import AUDIT_IDS
+from bot.site_check.readability_block import ReadabilityFacts
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts
 
@@ -10,10 +13,23 @@ TODAY = date(2026, 9, 25)
 MB = 1024 * 1024
 VIEWPORT_OK = '<meta name="viewport" content="width=device-width,initial-scale=1">'
 JW_DEV_PRO_HEAVIEST = (("00-oblozhka.webp", 112_654),)
+FIXTURES_DIR = Path(__file__).parent / "fixtures" / "pagespeed"
 # Записанные ответы PageSpeed (tests/fixtures/pagespeed), где страницу не измерить, и ожидаемый исход.
 # Просроченный сертификат и несуществующий домен PageSpeed называет одинаково — FAILED_DOCUMENT_REQUEST:
 # различают их свои проверки бота до замера.
 RECORDED_FAILURES = {"not_found": "not_found", "blocked": "blocked", "cert": "unreachable", "no_domain": "unreachable"}
+
+
+def recorded_lighthouse(name: str) -> dict:
+    """Записанный ответ PageSpeed (задача 25) — lighthouseResult."""
+    recorded = json.loads((FIXTURES_DIR / f"{name}.json").read_text(encoding="utf-8"))
+    return recorded["response"]["lighthouseResult"]
+
+
+def readability(contrast=AuditState.PASSED, examples=(), alt=AuditState.PASSED, alt_names=(), alt_count=None,
+                lang=AuditState.PASSED) -> ReadabilityFacts:
+    count = len(alt_names) if alt_count is None else alt_count
+    return ReadabilityFacts(contrast, tuple(examples), len(examples), alt, tuple(alt_names), count, 0, lang, 0, 0)
 
 
 def audit(score=1, mode="numeric", value=None, lcp_savings=None, items=None) -> dict:
@@ -49,10 +65,11 @@ def images(page_bytes=265_789, image_bytes=176_996, heaviest=JW_DEV_PRO_HEAVIEST
     return ImageFacts(page_bytes, image_bytes, files, ratio)
 
 
-def page(speed_facts=None, mobile_facts=None, image_facts=None, final_url="https://site.test/") -> PageFacts:
+def page(speed_facts=None, mobile_facts=None, image_facts=None, final_url="https://site.test/",
+         readability_facts=None) -> PageFacts:
     post = PostNumbers(14, (("total", 265_789),), (), ())
     return PageFacts("13.5.0", final_url, speed_facts or speed(), mobile_facts or mobile(), image_facts or images(),
-                     (), post, ())
+                     (), post, (), readability=readability_facts)
 
 
 def cert(days_left=74, lifetime=90) -> CertInfo:

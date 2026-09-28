@@ -14,6 +14,7 @@ from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, Findin
                                      UnknownReason)
 from bot.site_check.lighthouse import ImageFacts, PageFacts
 from bot.site_check.post_numbers import post_numbers
+from bot.site_check.report_blocks import readability_lines
 from bot.site_check.thresholds import COMPRESS_MIN_RATIO, SERVER_ALLOWANCE_MS
 from bot.site_check.tls_check import RedirectState, TlsOutcome
 from bot.site_check.verdict import CORE_BLOCKS, REPORT_ORDER, SecurityFacts, SummaryKind, Verdict
@@ -111,9 +112,10 @@ def _graded_sections(texts: Texts, lang: Lang, request: ReportRequest) -> list[d
 
 
 def _graded_section(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> list[dict]:
-    title = _section_title(texts, lang, verdict)
     facts = block_facts(texts, lang, request, verdict)
-    return [rich.heading(title, SECTION_SIZE), _facts_paragraph(facts)]
+    if not facts:
+        return []  # новому блоку при «хорошо» нечего утверждать — заголовок без строк не печатаем
+    return [rich.heading(_section_title(texts, lang, verdict), SECTION_SIZE), _facts_paragraph(facts)]
 
 
 def _facts_paragraph(facts: list[str]) -> dict:
@@ -154,7 +156,7 @@ def _lowered(name: str) -> str:
 
 def block_facts(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> list[str]:
     writers = {Block.SPEED: _speed_facts, Block.MOBILE: _mobile_facts, Block.SECURITY: _security_facts,
-               Block.IMAGES: _images_facts}
+               Block.IMAGES: _images_facts, Block.READABILITY: readability_lines}
     return writers[verdict.block](texts, lang, request, verdict)
 
 
