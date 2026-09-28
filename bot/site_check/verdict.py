@@ -9,7 +9,9 @@ from bot.site_check import thresholds
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
                                      UnknownReason, graded, not_checked)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
+from bot.site_check.page_fetch import PagePreview
 from bot.site_check.readability_block import judge_readability
+from bot.site_check.search_block import judge_search
 from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import to_ascii_host
 
@@ -75,13 +77,14 @@ SLOW_FIX_KEYS = {Cause.IMAGES: FixKey.COMPRESS_IMAGES, Cause.SCRIPTS: FixKey.TRI
                  Cause.SERVER: FixKey.FIX_SERVER, Cause.UNKNOWN: FixKey.FIND_SLOWDOWN}
 
 
-def judge(page: PageFacts | None, security: SecurityFacts, today: date) -> Verdict:
+def judge(page: PageFacts | None, security: SecurityFacts, today: date,
+          preview: PagePreview | None = None) -> Verdict:
     blocks = {
         Block.SPEED: _speed_block(page, security),
         Block.MOBILE: _mobile_block(page, security),
         Block.SECURITY: _security_block(page, security, today),
         Block.IMAGES: _images_block(page, security),
-        Block.SEARCH: not_checked(Block.SEARCH),  # правила — задача 30
+        Block.SEARCH: judge_search(page.search if page else None, preview),
         Block.PREVIEW: not_checked(Block.PREVIEW),  # правила — задача 31
         Block.READABILITY: judge_readability(page.readability if page else None),
     }

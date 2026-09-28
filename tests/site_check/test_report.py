@@ -8,9 +8,10 @@ from bot.site_check.findings import Block, BlockVerdict, Finding, FindingItem, F
 from bot.site_check.lighthouse import AuditState
 from bot.site_check.post_numbers import post_numbers
 from bot.site_check.report import ReportRequest, build_report, fix_text, summary_text
+from bot.site_check.search_block import BlockSource
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts, SummaryKind, Verdict, judge
-from tests.builders import MB, TODAY, cert, images, mobile, page, readability, security, speed
+from tests.builders import MB, TODAY, cert, head, images, mobile, page, preview, readability, security, search, speed
 from tests.fakes import rich_text
 
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
@@ -107,15 +108,16 @@ def example_security():
     return security(days_left=170, redirects=(RedirectState.NO_REDIRECT,))
 
 
-def build(lang, request_page, request_security, display="example.com", is_admin=False) -> tuple[dict, dict]:
-    verdict = judge(request_page, request_security, TODAY)
+def build(lang, request_page, request_security, display="example.com", is_admin=False,
+          preview_facts=None) -> tuple[dict, dict]:
+    verdict = judge(request_page, request_security, TODAY, preview_facts)
     request = ReportRequest(display, display.split("/")[0], verdict, request_page, request_security, is_admin,
-                            MEASURED_AT)
+                            MEASURED_AT, preview_facts)
     return build_report(TEXTS, lang, BRAND, request)
 
 
-def report(lang, request_page, request_security, display="example.com", is_admin=False) -> dict:
-    return build(lang, request_page, request_security, display, is_admin)[0]
+def report(lang, request_page, request_security, display="example.com", is_admin=False, preview_facts=None) -> dict:
+    return build(lang, request_page, request_security, display, is_admin, preview_facts)[0]
 
 
 def test_jw_dev_pro_report_matches_spec():
@@ -350,3 +352,45 @@ def test_readability_lines_in_english():
     facts = page(readability_facts=readability(alt=AuditState.FAILED, alt_names=("team.jpg",)))
     text = rich_text(report("en", facts, security()))
     assert "Readability — worth fixing\n> no alt text on 1 image — for example, team.jpg" in text
+
+
+def test_closed_page_report_lines_and_fix():
+    facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META))
+    text = rich_text(report("ru", facts, security()))
+    assert "Есть что чинить: страница закрыта от поисковиков." in text
+    assert ("Поиск в Google — плохо\n> страница закрыта от поисковиков: в коде стоит запрет noindex\n"
+            "> Google и Яндекс не покажут её в поиске") in text
+    assert "> Снять запрет noindex — иначе страницу не найти в Google и Яндексе." in text
+
+
+def test_open_page_quotes_the_real_title_or_speaks_generally():
+    quoted = rich_text(report("ru", page(search_facts=search()), security(),
+                              preview_facts=preview(head(title="Кофейня Vitru | Нижний Тагил | Главная"))))
+    assert ("Поиск в Google — хорошо\n> страница открыта для поисковиков\n"
+            "> заголовок для поиска: «Кофейня Vitru | Нижний Тагил | Главная»") in quoted
+    general = rich_text(report("ru", page(search_facts=search()), security()))
+    assert "> заголовок и описание для поиска есть" in general
+    assert "защита работает, поисковикам открыт." in general
+
+
+def test_long_title_is_cut_with_an_ellipsis():
+    text = rich_text(report("ru", page(search_facts=search()), security(), preview_facts=preview(head(title="А" * 100))))
+    assert "> заголовок для поиска: «" + "А" * 69 + "…»" in text
+
+
+def test_worth_fixing_search_quotes_the_title_first():
+    facts = page(search_facts=search(description=AuditState.FAILED, robots=AuditState.FAILED, robots_status=503))
+    text = rich_text(report("ru", facts, security(), preview_facts=preview(head(title="Главная | Mysite",
+                                                                                canonical="https://other.example/"))))
+    assert ("Поиск в Google — стоит поправить\n> заголовок для поиска: «Главная | Mysite»\n"
+            "> файл robots.txt не открывается (ошибка 503) — Google в таком случае может перестать заходить на сайт\n"
+            "> описания для поиска нет — Google сам выберет кусок текста со страницы\n"
+            "> основным адресом в коде указан другой сайт — other.example\n"
+            "> Google может показывать в поиске его, а не эту страницу") in text
+
+
+def test_search_lines_in_english():
+    facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.ROBOTS_TXT))
+    text = rich_text(report("en", facts, security()))
+    assert ("Google search — poor\n> search engines are forbidden to read the page — the robots.txt file says so\n"
+            "> it's missing from search or shown without a description") in text

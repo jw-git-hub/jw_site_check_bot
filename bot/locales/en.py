@@ -173,6 +173,23 @@ TEXTS = {
     "fix_raise_contrast": "Make the pale text darker or its background more contrasting — it'll be easy to read.",
     "fix_add_alt": "Add alt text to the images — Google and screen readers will understand them.",
     "fix_set_lang": "Set the page's language in the code (the lang attribute).",
+    "search_open": "the page is open to search engines",
+    "search_title_quote": "title for search: \"{title}\"",
+    "search_title_and_description": "there are a title and a description for search",
+    "search_closed_meta": "the page is closed to search engines: the code has a noindex ban",
+    "search_closed_header": "the page is closed to search engines: the server sends a noindex ban",
+    "search_closed_effect": "Google and Yandex won't show it in search",
+    "search_closed_robots": "search engines are forbidden to read the page — the robots.txt file says so",
+    "search_closed_robots_effect": "it's missing from search or shown without a description",
+    "search_robots_unreachable": "the robots.txt file doesn't open (error {status}) — in that case Google may stop "
+                                 "visiting the site",
+    "search_robots_errors": "the robots.txt file has errors — a search engine may read it differently than intended",
+    "search_no_title": "the page has no title — Google will put something of its own in search results, and the "
+                       "browser tab will show the address",
+    "search_no_description": "there's no description for search — Google will pick a piece of text from the page "
+                             "itself",
+    "search_canonical_foreign": "the code names another site as the main address — {host}",
+    "search_canonical_foreign_effect": "Google may show that site in search instead of this page",
     "readability_good_contrast": "the text stands out well against the background",
     "readability_good_alt": "the images have alt text",
     "readability_low_contrast": "in places the text is hard to see against the background — for example, "

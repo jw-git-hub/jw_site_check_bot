@@ -3,15 +3,19 @@ import json
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+from bot.site_check.head_tags import HeadTags
 from bot.site_check.lighthouse import AuditState, FileWeight, ImageFacts, MobileFacts, PageFacts, PostNumbers, SpeedFacts
+from bot.site_check.page_fetch import ImageCheck, ImageState, PagePreview
 from bot.site_check.pagespeed import AUDIT_IDS
 from bot.site_check.readability_block import ReadabilityFacts
+from bot.site_check.search_block import BlockSource, SearchFacts
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts
 
 TODAY = date(2026, 9, 25)
 MB = 1024 * 1024
 VIEWPORT_OK = '<meta name="viewport" content="width=device-width,initial-scale=1">'
+NOINDEX_META = '<meta name="robots" content="noindex" />'
 JW_DEV_PRO_HEAVIEST = (("00-oblozhka.webp", 112_654),)
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "pagespeed"
 # Записанные ответы PageSpeed (tests/fixtures/pagespeed), где страницу не измерить, и ожидаемый исход.
@@ -30,6 +34,28 @@ def readability(contrast=AuditState.PASSED, examples=(), alt=AuditState.PASSED, 
                 lang=AuditState.PASSED) -> ReadabilityFacts:
     count = len(alt_names) if alt_count is None else alt_count
     return ReadabilityFacts(contrast, tuple(examples), len(examples), alt, tuple(alt_names), count, 0, lang, 0, 0)
+
+
+def search(crawlable=AuditState.PASSED, source=None, robots=AuditState.PASSED, robots_status=None, robots_errors=(),
+           title=AuditState.PASSED, description=AuditState.PASSED) -> SearchFacts:
+    snippet = NOINDEX_META if source is BlockSource.META else ""
+    return SearchFacts(crawlable, source, snippet, robots, robots_status, tuple(robots_errors), title, description)
+
+
+def head(title="Сайт", description="Описание сайта", og_title=None, og_image="https://site.test/og.jpg",
+         canonical=None, lang="ru", complete=True) -> HeadTags:
+    return HeadTags(title=title, description=description, og_title=og_title, og_image=og_image, canonical=canonical,
+                    lang=lang, complete=complete)
+
+
+def preview(page_head=None, image_state=ImageState.OK, image_status=200, failure=None, status=200,
+            url="https://site.test/") -> PagePreview:
+    """Своя загрузка страницы: по умолчанию удалась, head с заголовком, описанием и картинкой 70 КБ."""
+    if failure is not None:
+        return PagePreview(url, None, failure, status, 0, 0.0, None)
+    tags = page_head or head()
+    image = ImageCheck("og.jpg", image_state, image_status, "image/jpeg", 70_415) if tags.preview_image else None
+    return PagePreview(url, tags, None, status, 6_102, 400.0, image)
 
 
 def audit(score=1, mode="numeric", value=None, lcp_savings=None, items=None) -> dict:
@@ -66,10 +92,10 @@ def images(page_bytes=265_789, image_bytes=176_996, heaviest=JW_DEV_PRO_HEAVIEST
 
 
 def page(speed_facts=None, mobile_facts=None, image_facts=None, final_url="https://site.test/",
-         readability_facts=None) -> PageFacts:
+         readability_facts=None, search_facts=None) -> PageFacts:
     post = PostNumbers(14, (("total", 265_789),), (), ())
     return PageFacts("13.5.0", final_url, speed_facts or speed(), mobile_facts or mobile(), image_facts or images(),
-                     (), post, (), readability=readability_facts)
+                     (), post, (), search=search_facts, readability=readability_facts)
 
 
 def cert(days_left=74, lifetime=90) -> CertInfo:

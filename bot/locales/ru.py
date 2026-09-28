@@ -179,6 +179,23 @@ TEXTS = {
     "fix_raise_contrast": "Сделать бледный текст темнее или фон под ним контрастнее — его станет легко прочитать.",
     "fix_add_alt": "Подписать картинки (alt) — их поймут Google и программы чтения с экрана.",
     "fix_set_lang": "Указать язык страницы в коде (lang=\"ru\").",
+    # отчёт: поиск в Google
+    "search_open": "страница открыта для поисковиков",
+    "search_title_quote": "заголовок для поиска: «{title}»",
+    "search_title_and_description": "заголовок и описание для поиска есть",
+    "search_closed_meta": "страница закрыта от поисковиков: в коде стоит запрет noindex",
+    "search_closed_header": "страница закрыта от поисковиков: сервер отдаёт запрет noindex",
+    "search_closed_effect": "Google и Яндекс не покажут её в поиске",
+    "search_closed_robots": "поисковикам запрещено читать страницу — так написано в файле robots.txt",
+    "search_closed_robots_effect": "в поиске её нет или она без описания",
+    "search_robots_unreachable": "файл robots.txt не открывается (ошибка {status}) — Google в таком случае может "
+                                 "перестать заходить на сайт",
+    "search_robots_errors": "в файле robots.txt ошибки — поисковик может понять его не так, как задумано",
+    "search_no_title": "у страницы нет заголовка — Google подставит в выдачу что-то своё, а на вкладке браузера "
+                       "будет адрес",
+    "search_no_description": "описания для поиска нет — Google сам выберет кусок текста со страницы",
+    "search_canonical_foreign": "основным адресом в коде указан другой сайт — {host}",
+    "search_canonical_foreign_effect": "Google может показывать в поиске его, а не эту страницу",
     # отчёт: удобство чтения
     "readability_good_contrast": "текст хорошо виден на фоне",
     "readability_good_alt": "у картинок есть подписи",
