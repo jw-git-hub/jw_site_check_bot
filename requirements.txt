@@ -8,3 +8,4 @@ pydantic-settings==2.15.0
 loguru==0.7.3
 cryptography==50.0.1
 idna==3.20
+phonenumberslite==9.0.40

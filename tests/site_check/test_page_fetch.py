@@ -168,6 +168,18 @@ async def test_loader_reads_head_and_checks_the_image():
     assert preview.html.startswith("<html lang='ru'><head>")
 
 
+async def test_loader_parses_contacts_of_the_whole_page():
+    body = HEAD + b'<p>text</p><footer><a href="tel:+79127127004">call</a></footer>'
+    sender = FakeSender({PAGE: page_answer(body), IMAGE: Answer(status=200, content_type="image/jpeg")})
+    preview = await PreviewLoader(sender).load(PAGE)
+    assert (preview.contacts.call_links, preview.contacts.complete) == (1, True)
+
+
+async def test_failed_load_has_no_contacts():
+    preview = await PreviewLoader(FakeSender({PAGE: Answer(status=429, content_type=HTML)})).load(PAGE)
+    assert preview.contacts is None
+
+
 async def test_loader_page_without_image_does_not_request_one():
     sender = FakeSender({PAGE: page_answer(b"<head><title>Shop</title></head>")})
     preview = await PreviewLoader(sender).load(PAGE)
@@ -290,6 +302,12 @@ async def test_page_is_cut_at_the_limit_and_marked_incomplete(site, monkeypatch)
 async def test_whole_page_is_read_when_asked(site, monkeypatch):
     monkeypatch.setattr(page_fetch, "STOP_AT_HEAD", False)
     monkeypatch.setattr(page_fetch, "PAGE_MAX_BYTES", WHOLE_PAGE_LIMIT_BYTES)
+    server, send = site
+    answer = await send(str(server.make_url("/long")), True)
+    assert answer.complete and answer.body.endswith(LONG_TAIL)
+
+
+async def test_version_1_2_reads_the_whole_page(site):
     server, send = site
     answer = await send(str(server.make_url("/long")), True)
     assert answer.complete and answer.body.endswith(LONG_TAIL)

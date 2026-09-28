@@ -25,12 +25,13 @@ from aiohttp.abc import AbstractResolver, ResolveResult
 from bot.site_check.audits import file_name, strip_params
 from bot.site_check.head_tags import HeadTags, parse_head
 from bot.site_check.net_guard import AddressGuard
+from bot.site_check.page_contacts import ContactFacts, parse_contacts
 from bot.site_check.probe import GUARD_REFUSALS
 from bot.site_check.tls_check import REDIRECT_STATUSES, USER_AGENT
 from bot.site_check.url_input import Target, own_request_target
 
-PAGE_MAX_BYTES = 512 * 1024      # ТЗ, С5; версия 1.2 — 2 МБ (задача 35)
-STOP_AT_HEAD = True              # версия 1.1 читает только до </head>; 1.2 — всю страницу (задача 35)
+PAGE_MAX_BYTES = 2 * 1024 * 1024  # ТЗ, С5, версия 1.2: вся страница
+STOP_AT_HEAD = False              # контакты — по всей странице (ТЗ, 5.10)
 READ_CHUNK_BYTES = 64 * 1024
 PAGE_TIMEOUT_SECONDS = 8         # вся загрузка страницы с переходами; внешний срок 12 с — в pipeline.py
 IMAGE_TIMEOUT_SECONDS = 4
@@ -120,6 +121,7 @@ class PagePreview:
     image: ImageCheck | None     # None — в head нет картинки превью или head не получен
     html: str = ""               # декодированное прочитанное: разбор head, в версии 1.2 — и контактов (задача 35)
     complete: bool = False       # прочитано всё, что просили, — а не обрезано PAGE_MAX_BYTES
+    contacts: ContactFacts | None = None  # None — загрузка не удалась (page_contacts.py, задача 35)
 
 
 def is_readable_page(answer: Answer) -> bool:
@@ -227,7 +229,7 @@ class PreviewLoader:
         head = parse_head(html)
         image = await check_image(self._send, head.preview_image) if head.preview_image else None
         return PagePreview(strip_params(landing.url), head, None, answer.status, len(answer.body), elapsed_ms, image,
-                           html, answer.complete)
+                           html, answer.complete, parse_contacts(html, answer.complete))
 
 
 class AiohttpSender:
