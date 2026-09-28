@@ -6,8 +6,11 @@ from typing import TYPE_CHECKING
 
 from bot.core.i18n import Lang, Texts
 from bot.site_check.audits import ELLIPSIS, AuditState
+from bot.site_check.contacts_block import TAP_EVERYWHERE
 from bot.site_check.findings import BlockVerdict, Finding, FindingItem, Grade
 from bot.site_check.head_tags import HeadTags
+from bot.site_check.markers import BOOKINGS, CHATS, COUNTER_ORDER, PLATFORM_STATS, TILDA_STATS, WIX_STATS
+from bot.site_check.page_contacts import ContactFacts
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.readability_block import ReadabilityFacts
 from bot.site_check.thresholds import QUOTE_MAX_CHARS
@@ -129,3 +132,44 @@ def _alt_lines(texts: Texts, lang: Lang, item: FindingItem) -> list[str]:
     first = (texts.get(lang, "readability_no_alt", count=count, names=NAMES_JOIN.join(item.examples))
              if item.examples else texts.get(lang, "readability_no_alt_plain", count=count))
     return [first, texts.get(lang, "readability_no_alt_effect")]
+
+
+CONTACT_FINDING_KEYS = {Finding.NO_CONTACTS: "contacts_none", Finding.NO_PRIVACY_POLICY: "contacts_no_policy",
+                        Finding.NO_ANALYTICS: "contacts_no_counter"}
+PLATFORM_STAT_NAMES = {TILDA_STATS: "Tilda", WIX_STATS: "Wix"}
+
+
+def contacts_lines(texts: Texts, lang: Lang, request: "ReportRequest", verdict: BlockVerdict) -> list[str]:
+    """Способы связи — первой строкой, находки, счётчики — последней (ТЗ, 5.10)."""
+    facts = request.preview.contacts
+    markers = facts.markers | (request.page.service_markers if request.page else frozenset())
+    ways = _contact_ways(texts, lang, facts, markers)
+    lines = [texts.get(lang, "contacts_ways", ways=NAMES_JOIN.join(ways))] if ways else []
+    lines += [_contact_finding(texts, lang, item) for item in verdict.findings]
+    return lines + _counter_lines(texts, lang, markers)
+
+
+def _contact_ways(texts: Texts, lang: Lang, facts: ContactFacts, markers: frozenset[str]) -> list[str]:
+    found = {"call": facts.call_links, "whatsapp": facts.whatsapp, "telegram": facts.telegram, "viber": facts.viber,
+             "email": facts.email, "form": facts.personal_forms, "chat": markers & CHATS,
+             "booking": markers & BOOKINGS}
+    return [texts.get(lang, f"contacts_way_{way}") for way, present in found.items() if present]
+
+
+def _contact_finding(texts: Texts, lang: Lang, item: FindingItem) -> str:
+    if item.finding is Finding.PHONE_NOT_LINK:
+        where = "everywhere" if item.detail == TAP_EVERYWHERE else "android"
+        return texts.get(lang, f"contacts_phone_text_{where}")
+    if item.finding is Finding.CALL_WITHOUT_CODE:
+        return texts.get(lang, "contacts_call_without_code", number=item.examples[0])
+    return texts.get(lang, CONTACT_FINDING_KEYS[item.finding])
+
+
+def _counter_lines(texts: Texts, lang: Lang, markers: frozenset[str]) -> list[str]:
+    names = [texts.get(lang, f"service_{name}") for name in COUNTER_ORDER if name in markers]
+    if names:
+        key = "contacts_counter_one" if len(names) == 1 else "contacts_counter_many"
+        listed = NAMES_JOIN.join(names[:-1]) + texts.get(lang, "and_last") + names[-1] if len(names) > 1 else names[0]
+        return [texts.get(lang, key, names=listed)]
+    platform = next((PLATFORM_STAT_NAMES[name] for name in sorted(markers & PLATFORM_STATS)), None)
+    return [texts.get(lang, "contacts_counter_platform", platform=platform)] if platform else []

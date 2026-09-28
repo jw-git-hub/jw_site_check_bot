@@ -5,6 +5,7 @@ from pathlib import Path
 
 from bot.site_check.head_tags import HeadTags
 from bot.site_check.lighthouse import AuditState, FileWeight, ImageFacts, MobileFacts, PageFacts, PostNumbers, SpeedFacts
+from bot.site_check.page_contacts import ContactFacts
 from bot.site_check.page_fetch import ImageCheck, ImageState, PagePreview
 from bot.site_check.pagespeed import AUDIT_IDS
 from bot.site_check.readability_block import ReadabilityFacts
@@ -49,14 +50,20 @@ def head(title="Сайт", description="Описание сайта", og_title=N
                     lang=lang, complete=complete)
 
 
+def contacts(call_links=1, short=(), text_phones=0, tap_blocked=False, whatsapp=False, telegram=False, email=False,
+             forms=0, policy=True, markers=frozenset({"metrika"}), complete=True) -> ContactFacts:
+    return ContactFacts(call_links, tuple(short), text_phones, tap_blocked, whatsapp, telegram, False, email, forms,
+                        policy, frozenset(markers), complete)
+
+
 def preview(page_head=None, image_state=ImageState.OK, image_status=200, failure=None, status=200,
-            url="https://site.test/") -> PagePreview:
+            url="https://site.test/", contact_facts=None) -> PagePreview:
     """Своя загрузка страницы: по умолчанию удалась, head с заголовком, описанием и картинкой 70 КБ."""
     if failure is not None:
         return PagePreview(url, None, failure, status, 0, 0.0, None)
     tags = page_head or head()
     image = ImageCheck("og.jpg", image_state, image_status, "image/jpeg", 70_415) if tags.preview_image else None
-    return PagePreview(url, tags, None, status, 6_102, 400.0, image)
+    return PagePreview(url, tags, None, status, 6_102, 400.0, image, "", True, contact_facts)
 
 
 def audit(score=1, mode="numeric", value=None, lcp_savings=None, items=None) -> dict:

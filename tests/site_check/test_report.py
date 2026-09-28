@@ -14,8 +14,8 @@ from bot.site_check.report import ReportRequest, build_report, fix_text, summary
 from bot.site_check.search_block import BlockSource
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts, SummaryKind, Verdict, judge
-from tests.builders import (MB, TINY_JPEG, TODAY, cert, head, images, mobile, page, preview, readability, security,
-                            search, speed)
+from tests.builders import (MB, TINY_JPEG, TODAY, cert, contacts, head, images, mobile, page, preview, readability,
+                            security, search, speed)
 from tests.fakes import rich_text
 
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
@@ -503,3 +503,42 @@ def test_owner_sees_why_the_new_blocks_are_missing():
     assert "Своя загрузка страницы | ответ 403 — не страница" in stub
     assert "Своя загрузка страницы | не запускалась или упала" in rich_text(
         post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT))
+
+
+def test_contacts_lines_ways_findings_and_counters():
+    facts = contacts(short=("43-43-48",), markers=frozenset({"metrika", "top_mail"}))
+    text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert ("Заявки и контакты — стоит поправить\n> связаться можно: звонком в одно касание\n"
+            "> по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться\n"
+            "> посещения считают Яндекс Метрика и Top.Mail.ru") in text
+
+
+def test_contacts_ways_in_order_and_missing_counter():
+    facts = contacts(call_links=0, telegram=True, email=True, forms=1, markers=frozenset())
+    text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert ("> связаться можно: в Telegram, по почте, через форму заявки\n"
+            "> счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли") in text
+    assert "> Поставить счётчик посещений — станет видно, сколько людей заходит и откуда." in text
+
+
+def test_platform_statistics_line_and_phone_text_wording():
+    facts = contacts(call_links=0, text_phones=1, tap_blocked=True, markers=frozenset({"tilda_stats"}))
+    text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert "> телефон написан просто текстом — по нему нельзя нажать, чтобы позвонить" in text
+    assert "> посещения считает статистика Tilda" in text
+
+
+def test_owner_sees_how_the_page_was_read_and_what_was_found():
+    facts = contacts(short=("43-43-48",), forms=2, complete=False, markers=frozenset({"metrika", "jivo"}))
+    text = rich_text(post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT, preview(contact_facts=facts)))
+    assert "Страница прочитана | обрезана на 2 МБ" in text
+    assert "Контакты | tel: 1, без кода: 1, телефонов текстом: 0, форм с личными полями: 2" in text
+    assert "Сервисы на странице | jivo, metrika" in text
+    assert "Ссылка на политику персональных данных | есть" in text
+
+
+def test_contacts_lines_in_english():
+    facts = contacts(call_links=0, text_phones=1)
+    text = rich_text(report("en", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert "Leads and contacts — worth fixing" in text
+    assert "> the phone is plain text — on Android it can't be tapped to call" in text

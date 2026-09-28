@@ -18,6 +18,7 @@ from typing import Any
 
 from bot.site_check.audits import (AuditState, as_number, audit_entry, audit_items, audit_state, file_name,
                                    is_number, numeric_value, strip_params)
+from bot.site_check.markers import find_markers
 from bot.site_check.pagespeed import AUDIT_IDS
 from bot.site_check.readability_block import ReadabilityFacts, parse_readability
 from bot.site_check.search_block import SearchFacts, parse_search
@@ -102,6 +103,8 @@ class PageFacts:
     readability: ReadabilityFacts | None = None
     # Что мерил Lighthouse, с параметрами — только для своей загрузки страницы; не хранится и не пишется в журнал.
     measured_url: str = ""
+    # Сервисы по запросам страницы (markers.py, ТЗ 5.10) — счётчики и чаты, которые рисует скрипт.
+    service_markers: frozenset[str] = frozenset()
     # Снимок первого экрана (ТЗ, 5.9); не хранится (5.1: «скриншоты не храним») — не в repr, не в базе, не в /site.
     screenshot: bytes | None = field(default=None, repr=False)
 
@@ -158,6 +161,7 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
         search=parse_search(audits),
         readability=parse_readability(audits),
         measured_url=str(result.get("finalDisplayedUrl") or result.get("requestedUrl") or ""),
+        service_markers=find_markers(" ".join(_url(item) for item in audit_items(audits, "network-requests"))),
         screenshot=parse_screenshot(audits),
     )
 

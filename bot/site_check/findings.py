@@ -22,6 +22,7 @@ class Block(StrEnum):
     MOBILE = "mobile"
     SECURITY = "security"
     IMAGES = "images"
+    CONTACTS = "contacts"
     SEARCH = "search"
     PREVIEW = "preview"
     READABILITY = "readability"
@@ -66,6 +67,11 @@ class Finding(StrEnum):
     LOW_CONTRAST = "low_contrast"
     NO_ALT = "no_alt"
     NO_LANG = "no_lang"
+    NO_CONTACTS = "no_contacts"
+    PHONE_NOT_LINK = "phone_not_link"
+    CALL_WITHOUT_CODE = "call_without_code"
+    NO_PRIVACY_POLICY = "no_privacy_policy"
+    NO_ANALYTICS = "no_analytics"
 
 
 FINDING_ORDER = tuple(Finding)
@@ -109,6 +115,11 @@ class FixKey(StrEnum):
     RAISE_CONTRAST = "fix_raise_contrast"
     ADD_ALT = "fix_add_alt"
     SET_LANG = "fix_set_lang"
+    ADD_CONTACTS = "fix_add_contacts"
+    LINK_PHONE = "fix_link_phone"
+    FULL_CALL_NUMBER = "fix_full_call_number"
+    ADD_POLICY_LINK = "fix_add_policy_link"
+    ADD_COUNTER = "fix_add_counter"
 
 
 @dataclass(frozen=True)

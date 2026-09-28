@@ -37,6 +37,7 @@ def post_numbers(texts: Texts, lang: Lang, page: PageFacts, security: SecurityFa
              for name, size in page.post.third_parties]
     rows += _search_rows(texts, lang, page.search, preview)
     rows += _preview_rows(texts, lang, preview)
+    rows += _contacts_rows(texts, lang, preview)
     rows += _readability_rows(texts, lang, page.readability, preview)
     rows += _category_rows(texts, lang, page.post.category_scores)
     rows.append(_screenshot_row(texts, lang, page))
@@ -134,6 +135,19 @@ def _image_text(texts: Texts, lang: Lang, image: ImageCheck | None) -> str:
         return texts.get(lang, "post_preview_image_ok", name=image.name, kind=image.content_type, size=size)
     return texts.get(lang, f"post_preview_image_{image.state}", status=image.status or NO_VALUE,
                      kind=image.content_type or NO_VALUE)
+
+
+def _contacts_rows(texts: Texts, lang: Lang, preview: PagePreview | None) -> list[list[str]]:
+    facts = preview.contacts if preview else None
+    if facts is None:
+        return []
+    counts = texts.get(lang, "post_contacts_value", calls=facts.call_links, short=len(facts.short_call_links),
+                       text=facts.text_phones, forms=facts.personal_forms)
+    read = "post_page_whole" if facts.complete else "post_page_cut"
+    return [[texts.get(lang, "post_page_read"), texts.get(lang, read)],
+            [texts.get(lang, "post_contacts"), counts],
+            [texts.get(lang, "post_services"), NAMES_SEPARATOR.join(sorted(facts.markers)) or NO_VALUE],
+            [texts.get(lang, "post_policy"), texts.get(lang, "post_yes" if facts.policy_link else "post_no")]]
 
 
 def _readability_rows(texts: Texts, lang: Lang, facts: ReadabilityFacts | None,

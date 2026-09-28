@@ -6,6 +6,7 @@ from enum import StrEnum
 from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
+from bot.site_check.contacts_block import judge_contacts
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
                                      UnknownReason, graded)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
@@ -21,13 +22,14 @@ MAX_FIXES = 3
 FIXED_WIDTH = re.compile(r"width\s*=\s*\d", re.IGNORECASE)
 
 CORE_BLOCKS = (Block.SPEED, Block.MOBILE, Block.SECURITY, Block.IMAGES)
-NEW_BLOCKS = (Block.SEARCH, Block.PREVIEW, Block.READABILITY)  # версия 1.1: «неизвестно» не печатается (ТЗ, 6.1)
+NEW_BLOCKS = (Block.CONTACTS, Block.SEARCH, Block.PREVIEW, Block.READABILITY)  # ТЗ, 7.1: контакты — после картинок
 REPORT_ORDER = (*CORE_BLOCKS, *NEW_BLOCKS)  # ТЗ, 7.1
-# ТЗ, 6.3: сперва все «плохо», потом все «стоит поправить», у каждой группы свой порядок блоков. У ссылки
-# в мессенджерах и удобства чтения «плохо» не бывает (ТЗ, 6.1) — в первом порядке их нет.
+# ТЗ, 6.3: сперва все «плохо», потом все «стоит поправить», у каждой группы свой порядок блоков. У заявок
+# и контактов, ссылки в мессенджерах и удобства чтения «плохо» не бывает (ТЗ, 6.1) — в первом порядке их нет.
 BAD_PRIORITY = (Block.SECURITY, Block.SEARCH, Block.MOBILE, Block.SPEED, Block.IMAGES)
-FIX_PRIORITY = (Block.SECURITY, Block.MOBILE, Block.SPEED, Block.IMAGES, Block.SEARCH, Block.PREVIEW,
+FIX_PRIORITY = (Block.SECURITY, Block.MOBILE, Block.SPEED, Block.IMAGES, Block.CONTACTS, Block.SEARCH, Block.PREVIEW,
                 Block.READABILITY)
+LAST_RESORT = frozenset({Finding.NO_ANALYTICS})  # ТЗ, 6.3 п. 7: последствие для владельца, не для посетителя
 
 
 class SummaryKind(StrEnum):
@@ -73,6 +75,9 @@ FIX_KEYS = {
     Finding.PREVIEW_IMAGE_RELATIVE: FixKey.FULL_PREVIEW_IMAGE_URL,
     Finding.NO_PREVIEW_TITLE: FixKey.ADD_PREVIEW_TITLE, Finding.LOW_CONTRAST: FixKey.RAISE_CONTRAST,
     Finding.NO_ALT: FixKey.ADD_ALT, Finding.NO_LANG: FixKey.SET_LANG,
+    Finding.NO_CONTACTS: FixKey.ADD_CONTACTS, Finding.PHONE_NOT_LINK: FixKey.LINK_PHONE,
+    Finding.CALL_WITHOUT_CODE: FixKey.FULL_CALL_NUMBER, Finding.NO_PRIVACY_POLICY: FixKey.ADD_POLICY_LINK,
+    Finding.NO_ANALYTICS: FixKey.ADD_COUNTER,
 }
 SLOW_FIX_KEYS = {Cause.IMAGES: FixKey.COMPRESS_IMAGES, Cause.SCRIPTS: FixKey.TRIM_SCRIPTS,
                  Cause.SERVER: FixKey.FIX_SERVER, Cause.UNKNOWN: FixKey.FIND_SLOWDOWN}
@@ -85,6 +90,7 @@ def judge(page: PageFacts | None, security: SecurityFacts, today: date,
         Block.MOBILE: _mobile_block(page, security),
         Block.SECURITY: _security_block(page, security, today),
         Block.IMAGES: _images_block(page, security),
+        Block.CONTACTS: judge_contacts(preview, page.service_markers if page else frozenset()),
         Block.SEARCH: judge_search(page.search if page else None, preview),
         Block.PREVIEW: judge_preview(preview),
         Block.READABILITY: judge_readability(page.readability if page else None),
@@ -256,17 +262,22 @@ def pick_troubles(blocks: dict[Block, BlockVerdict]) -> tuple[FindingItem, ...]:
     """Главная находка каждого проблемного блока: сперва «плохо», потом «стоит поправить» (ТЗ, 6.2–6.3)."""
     bad = [blocks[block] for block in BAD_PRIORITY if blocks[block].grade is Grade.BAD]
     fix = [blocks[block] for block in FIX_PRIORITY if blocks[block].grade is Grade.FIX]
-    return tuple(verdict.findings[0] for verdict in bad + fix)[:MAX_TROUBLES]
+    return tuple(_last_resort_last(verdict.findings[0] for verdict in bad + fix))[:MAX_TROUBLES]
 
 
 def pick_fixes(blocks: dict[Block, BlockVerdict]) -> tuple[FixItem, ...]:
-    ordered = _by_grade(blocks, BAD_PRIORITY, Grade.BAD) + _by_grade(blocks, FIX_PRIORITY, Grade.FIX)
+    ordered = _last_resort_last(_by_grade(blocks, BAD_PRIORITY, Grade.BAD) + _by_grade(blocks, FIX_PRIORITY, Grade.FIX))
     fixes: list[FixItem] = []
     for item in ordered:
         key = fix_key(item)
         if key not in {fix.key for fix in fixes}:
             fixes.append(FixItem(key, item))
     return tuple(fixes[:MAX_FIXES])
+
+
+def _last_resort_last(items) -> list[FindingItem]:
+    """«Нет счётчика» — после всех остальных находок (ТЗ, 6.3); порядок прочих не меняется (сортировка устойчива)."""
+    return sorted(items, key=lambda item: item.finding in LAST_RESORT)
 
 
 def _by_grade(blocks: dict[Block, BlockVerdict], order: tuple[Block, ...], grade: Grade) -> list[FindingItem]:

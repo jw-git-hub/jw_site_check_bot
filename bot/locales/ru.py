@@ -40,6 +40,7 @@ TEXTS = {
     "block_mobile": "Телефон",
     "block_security": "Защита",
     "block_images": "Картинки",
+    "block_contacts": "Заявки и контакты",
     "block_search": "Поиск в Google",
     "block_preview": "Ссылка в мессенджерах",
     "block_readability": "Удобство чтения",
@@ -90,6 +91,11 @@ TEXTS = {
     "trouble_low_contrast": "местами текст плохо виден",
     "trouble_no_alt": "у картинок нет подписей",
     "trouble_no_lang": "не указан язык страницы",
+    "trouble_no_contacts": "на странице нет способа связаться",
+    "trouble_phone_not_link": "по телефону на сайте нельзя нажать",
+    "trouble_call_without_code": "кнопка звонка набирает номер без кода города",
+    "trouble_no_privacy_policy": "у формы заявки нет политики персональных данных",
+    "trouble_no_analytics": "нет счётчика посещений",
     "cert_reason_expired": "сертификат истёк",
     "cert_reason_not_yet_valid": "сертификат ещё не действует",
     "cert_reason_wrong_host": "сертификат выдан на другой адрес",
@@ -180,6 +186,12 @@ TEXTS = {
     "fix_raise_contrast": "Сделать бледный текст темнее или фон под ним контрастнее — его станет легко прочитать.",
     "fix_add_alt": "Подписать картинки (alt) — их поймут Google и программы чтения с экрана.",
     "fix_set_lang": "Указать язык страницы в коде (lang=\"ru\").",
+    "fix_add_contacts": "Добавить на страницу телефон, мессенджер или форму заявки — чтобы клиенту было с чего "
+                        "начать.",
+    "fix_link_phone": "Сделать телефон ссылкой для звонка (tel:) — позвонить можно будет одним нажатием.",
+    "fix_full_call_number": "Указать в кнопке звонка номер с кодом города — тогда с мобильного дозвонятся.",
+    "fix_add_policy_link": "Добавить рядом с формой ссылку на политику обработки персональных данных.",
+    "fix_add_counter": "Поставить счётчик посещений — станет видно, сколько людей заходит и откуда.",
     # отчёт: поиск в Google
     "search_open": "страница открыта для поисковиков",
     "search_title_quote": "заголовок для поиска: «{title}»",
@@ -220,6 +232,33 @@ TEXTS = {
                                  "что там",
     "readability_no_lang": "в коде не указан язык страницы — программа чтения вслух может читать текст с чужим "
                            "произношением",
+    # отчёт: заявки и контакты
+    "contacts_ways": "связаться можно: {ways}",
+    "contacts_way_call": "звонком в одно касание",
+    "contacts_way_whatsapp": "в WhatsApp",
+    "contacts_way_telegram": "в Telegram",
+    "contacts_way_viber": "в Viber",
+    "contacts_way_email": "по почте",
+    "contacts_way_form": "через форму заявки",
+    "contacts_way_chat": "в чате на сайте",
+    "contacts_way_booking": "через онлайн-запись",
+    "contacts_none": "на странице не нашёл ни телефона, ни мессенджера, ни формы заявки — клиенту не с чего начать "
+                     "разговор",
+    "contacts_phone_text_everywhere": "телефон написан просто текстом — по нему нельзя нажать, чтобы позвонить",
+    "contacts_phone_text_android": "телефон написан просто текстом — на Android по нему нельзя нажать, чтобы "
+                                   "позвонить",
+    "contacts_call_without_code": "по кнопке звонка набирается {number} — с мобильного без кода города не "
+                                  "дозвониться",
+    "contacts_no_policy": "рядом с формой заявки нет ссылки на политику обработки персональных данных — её требует "
+                          "закон о персональных данных (152-ФЗ)",
+    "contacts_no_counter": "счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли",
+    "contacts_counter_one": "посещения считает {names}",
+    "contacts_counter_many": "посещения считают {names}",
+    "contacts_counter_platform": "посещения считает статистика {platform}",
+    "service_metrika": "Яндекс Метрика",
+    "service_google_analytics": "Google Analytics",
+    "service_liveinternet": "LiveInternet",
+    "service_top_mail": "Top.Mail.ru",
     # отчёт: кнопки
     "discuss_button": "💬 Обсудить с разработчиком",
     "another_button": "🔍 Проверить другой сайт",
@@ -288,6 +327,16 @@ TEXTS = {
     "post_categories": "Lighthouse: SEO / доступность",
     "post_screenshot": "Снимок первого экрана",
     "post_screenshot_none": "нет в ответе",
+    "post_page_read": "Страница прочитана",
+    "post_page_whole": "целиком",
+    "post_page_cut": "обрезана на 2 МБ",
+    "post_contacts": "Контакты",
+    "post_contacts_value": "tel: {calls}, без кода: {short}, телефонов текстом: {text}, форм с личными полями: "
+                           "{forms}",
+    "post_services": "Сервисы на странице",
+    "post_policy": "Ссылка на политику персональных данных",
+    "post_yes": "есть",
+    "post_no": "нет",
     # служебные сообщения
     "checking": "Проверяю {site}…",
     "queued": "Передо мной ещё {sites} — ждать примерно {minutes} мин. Отчёт появится в этом сообщении.",
