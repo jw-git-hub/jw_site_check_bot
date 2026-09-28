@@ -11,6 +11,7 @@ NOT_APPLICABLE_MODE = "notApplicable"
 UNKNOWN_MODES = frozenset({"error", "manual"})
 MAX_NAME_LENGTH = 40
 ELLIPSIS = "…"
+WHITESPACE = re.compile(r"\s+")
 BUILD_HASH = re.compile(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9_-]{8,}$")
 
 
