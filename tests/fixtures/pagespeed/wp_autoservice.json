@@ -1,0 +1,2694 @@
+{
+ "http_status": 200,
+ "response": {
+  "lighthouseResult": {
+   "requestedUrl": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+   "finalDisplayedUrl": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+   "lighthouseVersion": "13.5.0",
+   "runWarnings": [],
+   "audits": {
+    "largest-contentful-paint": {
+     "id": "largest-contentful-paint",
+     "title": "Largest Contentful Paint",
+     "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+     "score": 0.21,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "5.3 s",
+     "numericValue": 5324.3857521426,
+     "numericUnit": "millisecond"
+    },
+    "first-contentful-paint": {
+     "id": "first-contentful-paint",
+     "title": "First Contentful Paint",
+     "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+     "score": 0.48,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "3.0 s",
+     "numericValue": 3049.754012669513,
+     "numericUnit": "millisecond"
+    },
+    "total-blocking-time": {
+     "id": "total-blocking-time",
+     "title": "Total Blocking Time",
+     "description": "Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms, expressed in milliseconds. [Learn more about the Total Blocking Time metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0 ms",
+     "numericValue": 0,
+     "numericUnit": "millisecond"
+    },
+    "cumulative-layout-shift": {
+     "id": "cumulative-layout-shift",
+     "title": "Cumulative Layout Shift",
+     "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0.001",
+     "details": {
+      "type": "debugdata",
+      "items": [
+       {
+        "cumulativeLayoutShiftMainFrame": 0.001085023795709724,
+        "newEngineResultDiffered": false
+       }
+      ]
+     },
+     "numericValue": 0.001085023795709724,
+     "numericUnit": "unitless"
+    },
+    "speed-index": {
+     "id": "speed-index",
+     "title": "Speed Index",
+     "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+     "score": 0.15,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "8.9 s",
+     "numericValue": 8882.317648503875,
+     "numericUnit": "millisecond"
+    },
+    "server-response-time": {
+     "id": "server-response-time",
+     "title": "Initial server response time was short",
+     "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Root document took 0 ms",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "overallSavingsMs": 0,
+      "type": "opportunity",
+      "items": [
+       {
+        "responseTime": 2,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+       }
+      ],
+      "headings": [
+       {
+        "valueType": "url",
+        "label": "URL",
+        "key": "url"
+       },
+       {
+        "label": "Time Spent",
+        "valueType": "timespanMs",
+        "key": "responseTime"
+       }
+      ]
+     },
+     "numericValue": 2,
+     "numericUnit": "millisecond"
+    },
+    "image-delivery-insight": {
+     "id": "image-delivery-insight",
+     "title": "Improve image delivery",
+     "description": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 491 KiB",
+     "metricSavings": {
+      "LCP": 950,
+      "FCP": 0
+     },
+     "details": {
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url",
+        "subItemsHeading": {
+         "key": "reason",
+         "valueType": "text"
+        }
+       },
+       {
+        "label": "Resource Size",
+        "valueType": "bytes",
+        "key": "totalBytes"
+       },
+       {
+        "label": "Est Savings",
+        "valueType": "bytes",
+        "key": "wastedBytes",
+        "subItemsHeading": {
+         "valueType": "bytes",
+         "key": "wastedBytes"
+        }
+       }
+      ],
+      "debugData": {
+       "wastedBytes": 502469,
+       "type": "debugdata"
+      },
+      "items": [
+       {
+        "totalBytes": 211139,
+        "wastedBytes": 121139,
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 121139,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "lhId": "page-0-DIV",
+         "boundingRect": {
+          "bottom": 837,
+          "height": 687,
+          "left": 0,
+          "width": 412,
+          "top": 150,
+          "right": 412
+         },
+         "nodeLabel": "АвтоСервис 24 часа в Кирове\n\nоперативность, профессионализм и разумные цены\nЗво…",
+         "type": "node",
+         "selector": "body.home > div#mm-0 > div.maincol > div#1",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,0,DIV",
+         "snippet": "<div id=\"1\" class=\"top-block\">"
+        },
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/05/header-3.jpg"
+       },
+       {
+        "node": {
+         "snippet": "<div class=\"image-wrap photo3\">",
+         "lhId": "page-1-DIV",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,4,DIV,1,DIV",
+         "nodeLabel": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "selector": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "boundingRect": {
+          "left": 330,
+          "top": 2325,
+          "width": 82,
+          "height": 575,
+          "bottom": 2900,
+          "right": 412
+         },
+         "type": "node"
+        },
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size.",
+           "wastedBytes": 117384
+          }
+         ]
+        },
+        "totalBytes": 199051,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/zhestjano-svarochnye-raboty.jpg",
+        "wastedBytes": 117384
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-dvigatelja.jpg",
+        "node": {
+         "type": "node",
+         "snippet": "<div class=\"image-wrap photo1\">",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,0,DIV,2,DIV",
+         "selector": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "lhId": "page-2-DIV",
+         "boundingRect": {
+          "right": 412,
+          "width": 82,
+          "left": 330,
+          "bottom": 1751,
+          "height": 524,
+          "top": 1226
+         },
+         "nodeLabel": "div.maincol > div#2 > div.box-25 > div.image-wrap"
+        },
+        "totalBytes": 179415,
+        "wastedBytes": 97748,
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 97748,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        }
+       },
+       {
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 79464,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/shinomontazh-2.jpg",
+        "wastedBytes": 79464,
+        "node": {
+         "lhId": "page-3-DIV",
+         "nodeLabel": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "boundingRect": {
+          "right": 82,
+          "width": 82,
+          "bottom": 3425,
+          "height": 524,
+          "left": 0,
+          "top": 2900
+         },
+         "snippet": "<div class=\"image-wrap photo4\">",
+         "type": "node",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,5,DIV,0,DIV",
+         "selector": "div.maincol > div#2 > div.box-25 > div.image-wrap"
+        },
+        "totalBytes": 161131
+       },
+       {
+        "node": {
+         "snippet": "<div class=\"image-wrap photo2\">",
+         "type": "node",
+         "selector": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,2,DIV,0,DIV",
+         "lhId": "page-4-DIV",
+         "nodeLabel": "div.maincol > div#2 > div.box-25 > div.image-wrap",
+         "boundingRect": {
+          "top": 1751,
+          "left": 0,
+          "height": 575,
+          "bottom": 2325,
+          "width": 82,
+          "right": 82
+         }
+        },
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-podveski-2.jpg",
+        "subItems": {
+         "items": [
+          {
+           "wastedBytes": 61334,
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size."
+          }
+         ],
+         "type": "subitems"
+        },
+        "totalBytes": 143001,
+        "wastedBytes": 61334
+       },
+       {
+        "node": {
+         "boundingRect": {
+          "width": 100,
+          "right": 116,
+          "left": 16,
+          "top": 0,
+          "bottom": 100,
+          "height": 100
+         },
+         "lhId": "page-5-IMG",
+         "nodeLabel": "АвтоСервис 24 часа",
+         "snippet": "<img src=\"/wp-content/uploads/2016/03/logo.png\" alt=\"АвтоСервис 24 часа\">",
+         "selector": "div.header-logo-inner > div.site-title > a > img",
+         "path": "4,HTML,2,BODY,1,DIV,0,DIV,0,DIV,0,DIV,0,A,0,IMG",
+         "type": "node"
+        },
+        "subItems": {
+         "items": [
+          {
+           "reason": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size.",
+           "wastedBytes": 25400
+          }
+         ],
+         "type": "subitems"
+        },
+        "totalBytes": 27067,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/logo.png",
+        "wastedBytes": 25400
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "lcp-discovery-insight": {
+     "id": "lcp-discovery-insight",
+     "title": "LCP request discovery",
+     "description": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading",
+     "score": 0,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "LCP": 0
+     },
+     "details": {
+      "items": [
+       {
+        "items": {
+         "priorityHinted": {
+          "value": false,
+          "label": "fetchpriority=high should be applied"
+         },
+         "eagerlyLoaded": {
+          "value": true,
+          "label": "LCP resources should not use loading=lazy"
+         },
+         "requestDiscoverable": {
+          "value": true,
+          "label": "Request is discoverable in initial document"
+         }
+        },
+        "type": "checklist"
+       },
+       {
+        "nodeLabel": "АвтоСервис 24 часа в Кирове\n\nоперативность, профессионализм и разумные цены\nЗво…",
+        "lhId": "page-0-DIV",
+        "selector": "body.home > div#mm-0 > div.maincol > div#1",
+        "path": "4,HTML,2,BODY,1,DIV,2,DIV,0,DIV",
+        "snippet": "<div id=\"1\" class=\"top-block\">",
+        "type": "node",
+        "boundingRect": {
+         "right": 412,
+         "top": 150,
+         "width": 412,
+         "bottom": 837,
+         "height": 687,
+         "left": 0
+        }
+       }
+      ],
+      "type": "list"
+     }
+    },
+    "render-blocking-insight": {
+     "id": "render-blocking-insight",
+     "title": "Render-blocking requests",
+     "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 2,800 ms",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 2800
+     },
+     "details": {
+      "items": [
+       {
+        "totalBytes": 30701,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/js/jquery/jquery.min.js",
+        "wastedMs": 1423
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/css/dist/block-library/style.min.css",
+        "wastedMs": 949,
+        "totalBytes": 16185
+       },
+       {
+        "wastedMs": 1423,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/titan-framework-gp-css.css",
+        "totalBytes": 279
+       },
+       {
+        "wastedMs": 476,
+        "totalBytes": 5153,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/js/jquery/jquery-migrate.min.js"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/plugins/wp-featherlight/css/wp-featherlight.min.css",
+        "totalBytes": 1675,
+        "wastedMs": 476
+       },
+       {
+        "wastedMs": 1423,
+        "totalBytes": 1925,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/jquery.mmenu.css"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/plugins/wp-pagenavi/pagenavi-css.css",
+        "wastedMs": 1423,
+        "totalBytes": 657
+       },
+       {
+        "wastedMs": 1423,
+        "totalBytes": 6341,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/font-awesome.min.css"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/style.css",
+        "wastedMs": 1423,
+        "totalBytes": 9756
+       },
+       {
+        "totalBytes": 877,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/reset.css",
+        "wastedMs": 476
+       },
+       {
+        "url": "https://fonts.googleapis.com/css",
+        "wastedMs": 751,
+        "totalBytes": 2493
+       },
+       {
+        "totalBytes": 1348,
+        "url": "https://fonts.googleapis.com/css",
+        "wastedMs": 751
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "key": "totalBytes",
+        "label": "Transfer Size",
+        "valueType": "bytes"
+       },
+       {
+        "label": "Duration",
+        "key": "wastedMs",
+        "valueType": "timespanMs"
+       }
+      ]
+     }
+    },
+    "unused-javascript": {
+     "id": "unused-javascript",
+     "title": "Reduce unused JavaScript",
+     "description": "Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. [Learn how to reduce unused JavaScript](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/).",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 32 KiB",
+     "metricSavings": {
+      "LCP": 150,
+      "FCP": 0
+     },
+     "details": {
+      "overallSavingsBytes": 32349,
+      "items": [
+       {
+        "wastedPercent": 44.36139081545657,
+        "totalBytes": 72921,
+        "wastedBytes": 32349,
+        "url": "https://mc.yandex.ru/metrika/watch.js"
+       }
+      ],
+      "type": "opportunity",
+      "debugData": {
+       "metricSavings": {
+        "FCP": 0,
+        "LCP": 160
+       },
+       "type": "debugdata"
+      },
+      "sortedBy": [
+       "wastedBytes"
+      ],
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url",
+        "subItemsHeading": {
+         "key": "source",
+         "valueType": "code"
+        }
+       },
+       {
+        "key": "totalBytes",
+        "subItemsHeading": {
+         "key": "sourceBytes"
+        },
+        "valueType": "bytes",
+        "label": "Transfer Size"
+       },
+       {
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "key": "sourceWastedBytes"
+        },
+        "label": "Est Savings",
+        "key": "wastedBytes"
+       }
+      ],
+      "overallSavingsMs": 160
+     },
+     "numericValue": 160,
+     "numericUnit": "millisecond"
+    },
+    "legacy-javascript-insight": {
+     "id": "legacy-javascript-insight",
+     "title": "Legacy JavaScript",
+     "description": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "label": "URL",
+        "subItemsHeading": {
+         "valueType": "source-location",
+         "key": "location"
+        },
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "subItemsHeading": {
+         "key": "signal"
+        },
+        "key": null,
+        "valueType": "code"
+       },
+       {
+        "key": "wastedBytes",
+        "label": "Wasted bytes",
+        "valueType": "bytes"
+       }
+      ],
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      },
+      "type": "table"
+     }
+    },
+    "duplicated-javascript-insight": {
+     "id": "duplicated-javascript-insight",
+     "title": "Duplicated JavaScript",
+     "description": "Remove large, [duplicate JavaScript modules](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) from bundles to reduce unnecessary bytes consumed by network activity.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 0
+      },
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "label": "Source",
+        "subItemsHeading": {
+         "valueType": "url",
+         "key": "url"
+        },
+        "valueType": "code",
+        "key": "source"
+       },
+       {
+        "subItemsHeading": {
+         "key": "sourceTransferBytes"
+        },
+        "granularity": 10,
+        "key": "wastedBytes",
+        "valueType": "bytes",
+        "label": "Duplicated bytes"
+       }
+      ]
+     }
+    },
+    "document-latency-insight": {
+     "id": "document-latency-insight",
+     "title": "Document request latency",
+     "description": "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "type": "checklist",
+      "items": {
+       "noRedirects": {
+        "value": true,
+        "label": "Avoids redirects"
+       },
+       "serverResponseIsFast": {
+        "value": true,
+        "label": "Server responds quickly (observed 2 ms)"
+       },
+       "usesCompression": {
+        "value": true,
+        "label": "Applies text compression"
+       }
+      },
+      "debugData": {
+       "redirectDuration": 0,
+       "wastedBytes": 0,
+       "uncompressedResponseBytes": 0,
+       "serverResponseTime": 2,
+       "type": "debugdata"
+      }
+     }
+    },
+    "third-parties-insight": {
+     "id": "third-parties-insight",
+     "title": "3rd parties",
+     "description": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developer.chrome.com/docs/performance/insights/third-parties) to prioritize your page's content.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "mainThreadTime": 138.79000014066696,
+        "entity": "Yandex Metrica",
+        "transferSize": 100061,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "url": "https://mc.yandex.ru/metrika/watch.js",
+           "transferSize": 73949,
+           "mainThreadTime": 123.75000017881393
+          },
+          {
+           "url": "https://mc.yandex.com/metrika/match.html",
+           "transferSize": 6476,
+           "mainThreadTime": 11.079999953508377
+          },
+          {
+           "transferSize": 13908,
+           "url": "https://mc.yandex.com/metrika/tag_phono.js",
+           "mainThreadTime": 3.9600000083446503
+          },
+          {
+           "transferSize": 2040,
+           "mainThreadTime": 0,
+           "url": "https://mc.yandex.com/watch/36054500/1"
+          },
+          {
+           "transferSize": 939,
+           "mainThreadTime": 0,
+           "url": "https://mc.yandex.com/metrika/advert.gif"
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://mc.yandex.ru/sync_cookie_image_finish",
+           "transferSize": 819
+          },
+          {
+           "transferSize": 646,
+           "mainThreadTime": 0,
+           "url": "https://mc.yandex.com/watch/26302566"
+          },
+          {
+           "url": "https://mc.yandex.com/watch/26302566",
+           "mainThreadTime": 0,
+           "transferSize": 646
+          },
+          {
+           "url": "https://mc.yandex.ru/sync_cookie_image_finish_secondary",
+           "transferSize": 638,
+           "mainThreadTime": 0
+          }
+         ]
+        }
+       },
+       {
+        "transferSize": 147395,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "url": "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icaFF31CPbaYA.woff2",
+           "transferSize": 49732,
+           "mainThreadTime": 0
+          },
+          {
+           "url": "https://fonts.gstatic.com/s/opensans/v44/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
+           "transferSize": 43775,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 26399,
+           "url": "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icaEF31CPbaYI_F.woff2"
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 23648,
+           "url": "https://fonts.gstatic.com/s/opensans/v44/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSumu0SC55K5gw.woff2"
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 2493,
+           "url": "https://fonts.googleapis.com/css"
+          },
+          {
+           "transferSize": 1348,
+           "mainThreadTime": 0,
+           "url": "https://fonts.googleapis.com/css"
+          }
+         ]
+        },
+        "mainThreadTime": 0,
+        "entity": "Google Fonts"
+       }
+      ],
+      "headings": [
+       {
+        "label": "3rd party",
+        "valueType": "text",
+        "key": "entity",
+        "subItemsHeading": {
+         "key": "url",
+         "valueType": "url"
+        }
+       },
+       {
+        "subItemsHeading": {
+         "key": "transferSize"
+        },
+        "granularity": 1,
+        "key": "transferSize",
+        "label": "Transfer size",
+        "valueType": "bytes"
+       },
+       {
+        "label": "Main thread time",
+        "valueType": "ms",
+        "subItemsHeading": {
+         "key": "mainThreadTime"
+        },
+        "granularity": 1,
+        "key": "mainThreadTime"
+       }
+      ],
+      "type": "table",
+      "isEntityGrouped": true
+     }
+    },
+    "viewport-insight": {
+     "id": "viewport-insight",
+     "title": "Optimize viewport for mobile",
+     "description": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "INP": 0
+     },
+     "details": {
+      "items": [
+       {
+        "node": {
+         "path": "4,HTML,1,HEAD,2,META",
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+         "boundingRect": {
+          "top": 0,
+          "right": 0,
+          "left": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+         },
+         "type": "node",
+         "nodeLabel": "head > meta",
+         "selector": "head > meta",
+         "lhId": "page-10-META"
+        }
+       }
+      ],
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "target-size": {
+     "id": "target-size",
+     "title": "Touch targets have sufficient size and spacing.",
+     "description": "Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. [Learn more about touch targets](https://dequeuniversity.com/rules/axe/4.13/target-size).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "key": "node",
+        "label": "Failing Elements"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "meta-viewport": {
+     "id": "meta-viewport",
+     "title": "`[user-scalable=\"no\"]` is not used in the `<meta name=\"viewport\">` element and the `[maximum-scale]` attribute is not less than 5.",
+     "description": "Disabling zooming is problematic for users with low vision who rely on screen magnification to properly see the contents of a web page. [Learn more about the viewport meta tag](https://dequeuniversity.com/rules/axe/4.13/meta-viewport).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "node",
+        "label": "Failing Elements",
+        "key": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        }
+       }
+      ]
+     }
+    },
+    "is-on-https": {
+     "id": "is-on-https",
+     "title": "Uses HTTPS",
+     "description": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more about HTTPS](https://developer.chrome.com/docs/lighthouse/pwa/is-on-https/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "label": "Insecure URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "label": "Request Resolution",
+        "valueType": "text",
+        "key": "resolution"
+       }
+      ],
+      "items": []
+     }
+    },
+    "total-byte-weight": {
+     "id": "total-byte-weight",
+     "title": "Avoids enormous network payloads",
+     "description": "Large network payloads cost users real money and are highly correlated with long load times. [Learn how to reduce payload sizes](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Total size was 1,318 KiB",
+     "details": {
+      "items": [
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/05/header-3.jpg",
+        "totalBytes": 211429
+       },
+       {
+        "totalBytes": 199341,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/zhestjano-svarochnye-raboty.jpg"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-dvigatelja.jpg",
+        "totalBytes": 179705
+       },
+       {
+        "totalBytes": 161421,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/shinomontazh-2.jpg"
+       },
+       {
+        "totalBytes": 143291,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-podveski-2.jpg"
+       },
+       {
+        "url": "https://mc.yandex.ru/metrika/watch.js",
+        "totalBytes": 73949
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/fonts/fontawesome-webfont.woff2",
+        "totalBytes": 64752
+       },
+       {
+        "url": "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icaFF31CPbaYA.woff2",
+        "totalBytes": 49732
+       },
+       {
+        "totalBytes": 43775,
+        "url": "https://fonts.gstatic.com/s/opensans/v44/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2"
+       },
+       {
+        "totalBytes": 30701,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/js/jquery/jquery.min.js"
+       }
+      ],
+      "sortedBy": [
+       "totalBytes"
+      ],
+      "headings": [
+       {
+        "valueType": "url",
+        "label": "URL",
+        "key": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "valueType": "bytes",
+        "key": "totalBytes"
+       }
+      ],
+      "type": "table"
+     },
+     "numericValue": 1349154,
+     "numericUnit": "byte"
+    },
+    "resource-summary": {
+     "id": "resource-summary",
+     "title": "Resources Summary",
+     "description": "Aggregates all network requests and groups them by type",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "transferSize": 1349154,
+        "resourceType": "total",
+        "label": "Total",
+        "requestCount": 51
+       },
+       {
+        "resourceType": "image",
+        "transferSize": 929727,
+        "label": "Image",
+        "requestCount": 12
+       },
+       {
+        "resourceType": "font",
+        "transferSize": 208306,
+        "requestCount": 5,
+        "label": "Font"
+       },
+       {
+        "label": "Script",
+        "requestCount": 11,
+        "transferSize": 141794,
+        "resourceType": "script"
+       },
+       {
+        "label": "Stylesheet",
+        "requestCount": 10,
+        "transferSize": 41536,
+        "resourceType": "stylesheet"
+       },
+       {
+        "label": "Document",
+        "transferSize": 18218,
+        "resourceType": "document",
+        "requestCount": 3
+       },
+       {
+        "resourceType": "other",
+        "transferSize": 9573,
+        "requestCount": 10,
+        "label": "Other"
+       },
+       {
+        "label": "Media",
+        "requestCount": 0,
+        "resourceType": "media",
+        "transferSize": 0
+       },
+       {
+        "requestCount": 25,
+        "transferSize": 254989,
+        "resourceType": "third-party",
+        "label": "Third-party"
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "label": "Resource Type",
+        "key": "label",
+        "valueType": "text"
+       },
+       {
+        "label": "Requests",
+        "key": "requestCount",
+        "valueType": "numeric"
+       },
+       {
+        "label": "Transfer Size",
+        "key": "transferSize",
+        "valueType": "bytes"
+       }
+      ]
+     }
+    },
+    "network-requests": {
+     "id": "network-requests",
+     "title": "Network Requests",
+     "description": "Lists the network requests that were made during page load.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "resourceSize": 44809,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "cache": "none",
+        "finished": true,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+        "rendererStartTime": 0,
+        "resourceType": "Document",
+        "networkRequestTime": 0.8260000050067902,
+        "mimeType": "text/html",
+        "statusCode": 200,
+        "transferSize": 11742,
+        "priority": "VeryHigh",
+        "networkEndTime": 1958.8879999816418,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "finished": true,
+        "transferSize": 1348,
+        "protocol": "h2",
+        "url": "https://fonts.googleapis.com/css",
+        "entity": "Google Fonts",
+        "statusCode": 200,
+        "networkRequestTime": 1975.0159999728203,
+        "mimeType": "text/css",
+        "networkEndTime": 1984.8260000050068,
+        "resourceSize": 2207,
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 1971.5499999821186,
+        "cache": "none",
+        "priority": "VeryHigh",
+        "resourceType": "Stylesheet",
+        "sessionTargetType": "page"
+       },
+       {
+        "resourceType": "Stylesheet",
+        "protocol": "h2",
+        "statusCode": 200,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkEndTime": 3285.3370000123978,
+        "resourceSize": 119358,
+        "rendererStartTime": 1971.8930000066757,
+        "cache": "none",
+        "networkRequestTime": 1975.3700000047684,
+        "priority": "VeryHigh",
+        "transferSize": 16185,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/css/dist/block-library/style.min.css",
+        "mimeType": "text/css",
+        "sessionTargetType": "page"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/style.css",
+        "networkRequestTime": 1975.4289999902248,
+        "protocol": "h2",
+        "transferSize": 9756,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "resourceType": "Stylesheet",
+        "sessionTargetType": "page",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "statusCode": 200,
+        "cache": "none",
+        "priority": "VeryHigh",
+        "resourceSize": 42652,
+        "rendererStartTime": 1972.0139999985695,
+        "mimeType": "text/css",
+        "networkEndTime": 2303.0349999964237
+       },
+       {
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "entity": "Google Fonts",
+        "rendererStartTime": 1972.111999988556,
+        "finished": true,
+        "protocol": "h2",
+        "transferSize": 2493,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "networkRequestTime": 1975.4799999892712,
+        "url": "https://fonts.googleapis.com/css",
+        "resourceType": "Stylesheet",
+        "mimeType": "text/css",
+        "priority": "VeryHigh",
+        "networkEndTime": 1987.1459999978542,
+        "resourceSize": 17559
+       },
+       {
+        "resourceSize": 7850,
+        "networkEndTime": 2955.4749999940395,
+        "statusCode": 200,
+        "mimeType": "text/css",
+        "priority": "VeryHigh",
+        "resourceType": "Stylesheet",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "rendererStartTime": 1972.2029999792576,
+        "transferSize": 1925,
+        "experimentalFromMainFrame": true,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/jquery.mmenu.css",
+        "protocol": "h2",
+        "networkRequestTime": 1975.6519999802113,
+        "sessionTargetType": "page",
+        "finished": true,
+        "cache": "none"
+       },
+       {
+        "cache": "none",
+        "sessionTargetType": "page",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkRequestTime": 1975.7269999682903,
+        "priority": "VeryHigh",
+        "statusCode": 200,
+        "transferSize": 6341,
+        "rendererStartTime": 1972.2989999949932,
+        "mimeType": "text/css",
+        "networkEndTime": 2950.5230000019073,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/font-awesome.min.css",
+        "resourceType": "Stylesheet",
+        "finished": true,
+        "protocol": "h2",
+        "resourceSize": 26693,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "sessionTargetType": "page",
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "transferSize": 279,
+        "protocol": "h2",
+        "rendererStartTime": 1972.4919999837875,
+        "statusCode": 200,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceType": "Stylesheet",
+        "cache": "none",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/titan-framework-gp-css.css",
+        "resourceSize": 0,
+        "mimeType": "text/css",
+        "networkRequestTime": 1975.8379999697208,
+        "networkEndTime": 2976.9000000059605,
+        "priority": "VeryHigh"
+       },
+       {
+        "cache": "none",
+        "transferSize": 657,
+        "networkRequestTime": 1975.9269999861717,
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 2955.1949999928474,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/plugins/wp-pagenavi/pagenavi-css.css",
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "resourceSize": 374,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "experimentalFromMainFrame": true,
+        "priority": "VeryHigh",
+        "rendererStartTime": 1972.5939999818802,
+        "mimeType": "text/css",
+        "resourceType": "Stylesheet"
+       },
+       {
+        "networkRequestTime": 1976.0149999856949,
+        "priority": "VeryHigh",
+        "sessionTargetType": "page",
+        "resourceType": "Stylesheet",
+        "mimeType": "text/css",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "rendererStartTime": 1972.7299999892712,
+        "resourceSize": 5073,
+        "protocol": "h2",
+        "finished": true,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/plugins/wp-featherlight/css/wp-featherlight.min.css",
+        "cache": "none",
+        "transferSize": 1675,
+        "networkEndTime": 2957.0550000071526
+       },
+       {
+        "sessionTargetType": "page",
+        "finished": true,
+        "protocol": "h2",
+        "rendererStartTime": 1972.8560000061989,
+        "experimentalFromMainFrame": true,
+        "transferSize": 30701,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkEndTime": 3596.013999968767,
+        "mimeType": "application/javascript",
+        "resourceType": "Script",
+        "priority": "High",
+        "networkRequestTime": 1976.0879999995232,
+        "resourceSize": 87553,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/js/jquery/jquery.min.js",
+        "cache": "none",
+        "statusCode": 200
+       },
+       {
+        "priority": "High",
+        "mimeType": "application/javascript",
+        "transferSize": 5153,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkRequestTime": 1976.1629999876022,
+        "cache": "none",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "finished": true,
+        "resourceSize": 13577,
+        "sessionTargetType": "page",
+        "rendererStartTime": 1972.958999991417,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-includes/js/jquery/jquery-migrate.min.js",
+        "resourceType": "Script",
+        "networkEndTime": 2957.337999999523
+       },
+       {
+        "cache": "none",
+        "statusCode": 200,
+        "priority": "Medium",
+        "transferSize": 27354,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/logo.png",
+        "mimeType": "image/png",
+        "networkEndTime": 2623.576999992132,
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "networkRequestTime": 1978.3019999861717,
+        "protocol": "h2",
+        "rendererStartTime": 1973.04699999094,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 27067
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 1973.1270000040531,
+        "resourceType": "Script",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceSize": 2516,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/superfish.js",
+        "finished": true,
+        "networkRequestTime": 1985.2029999792576,
+        "cache": "none",
+        "statusCode": 200,
+        "networkEndTime": 2978.1659999787807,
+        "mimeType": "application/javascript",
+        "priority": "Medium",
+        "transferSize": 1352
+       },
+       {
+        "statusCode": 200,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "priority": "Medium",
+        "transferSize": 1752,
+        "mimeType": "application/javascript",
+        "cache": "none",
+        "networkRequestTime": 2624.9189999997616,
+        "resourceType": "Script",
+        "rendererStartTime": 1973.2019999921322,
+        "resourceSize": 3397,
+        "protocol": "h2",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/responsiveslides.min.js",
+        "finished": true,
+        "networkEndTime": 2950.1539999842644,
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/theia-sticky-sidebar.js",
+        "mimeType": "application/javascript",
+        "networkEndTime": 3596.432999998331,
+        "cache": "none",
+        "priority": "Medium",
+        "transferSize": 2986,
+        "rendererStartTime": 1973.4399999976158,
+        "resourceSize": 8913,
+        "networkRequestTime": 2954.0379999876022,
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceType": "Script"
+       },
+       {
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "rendererStartTime": 1973.641999989748,
+        "sessionTargetType": "page",
+        "transferSize": 924,
+        "priority": "Medium",
+        "resourceType": "Script",
+        "networkRequestTime": 2980.407000005245,
+        "mimeType": "application/javascript",
+        "statusCode": 200,
+        "networkEndTime": 3306.4899999797344,
+        "resourceSize": 1220,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/jquery.cookie.js",
+        "cache": "none"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/custom.js",
+        "transferSize": 1213,
+        "cache": "none",
+        "networkEndTime": 3636.7789999842644,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "protocol": "h2",
+        "networkRequestTime": 3309.2709999978542,
+        "finished": true,
+        "statusCode": 200,
+        "resourceSize": 2074,
+        "sessionTargetType": "page",
+        "priority": "Medium",
+        "rendererStartTime": 1973.7840000092983,
+        "experimentalFromMainFrame": true,
+        "mimeType": "application/javascript",
+        "resourceType": "Script"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 1973.8799999952316,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceType": "Script",
+        "networkRequestTime": 3612.005999982357,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/js/jquery.mmenu.min.js",
+        "sessionTargetType": "page",
+        "resourceSize": 13501,
+        "mimeType": "application/javascript",
+        "priority": "Medium",
+        "cache": "none",
+        "statusCode": 200,
+        "transferSize": 4474,
+        "finished": true,
+        "networkEndTime": 3937.1129999756813,
+        "protocol": "h2"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 3942.28900000453,
+        "finished": true,
+        "protocol": "h2",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/plugins/wp-featherlight/js/wpFeatherlight.pkgd.min.js",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkRequestTime": 3615.117999970913,
+        "transferSize": 5382,
+        "cache": "none",
+        "rendererStartTime": 1973.9560000002384,
+        "mimeType": "application/javascript",
+        "priority": "Medium",
+        "resourceType": "Script",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "resourceSize": 14299
+       },
+       {
+        "statusCode": 200,
+        "resourceSize": 1136,
+        "resourceType": "Stylesheet",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "priority": "VeryHigh",
+        "mimeType": "text/css",
+        "networkRequestTime": 2304.611999988556,
+        "transferSize": 877,
+        "experimentalFromMainFrame": true,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/reset.css",
+        "rendererStartTime": 2304.1649999916553,
+        "networkEndTime": 2631.2249999940395,
+        "protocol": "h2",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "finished": true
+       },
+       {
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/img/bg.png",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "rendererStartTime": 3620.349000006914,
+        "resourceSize": 3213,
+        "protocol": "h2",
+        "finished": true,
+        "statusCode": 200,
+        "networkRequestTime": 3620.953999966383,
+        "networkEndTime": 5597.364999979734,
+        "mimeType": "image/png",
+        "transferSize": 3498,
+        "priority": "High"
+       },
+       {
+        "resourceType": "Image",
+        "resourceSize": 211139,
+        "finished": true,
+        "protocol": "h2",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/05/header-3.jpg",
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 3621.3629999756813,
+        "priority": "High",
+        "rendererStartTime": 3621.0399999916553,
+        "cache": "none",
+        "transferSize": 211429,
+        "mimeType": "image/jpeg",
+        "networkEndTime": 6205.097999989986
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-dvigatelja.jpg",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceType": "Image",
+        "rendererStartTime": 3621.8499999940395,
+        "cache": "none",
+        "finished": true,
+        "networkRequestTime": 3622.2209999859333,
+        "resourceSize": 179415,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "networkEndTime": 5563.838999986649,
+        "mimeType": "image/jpeg",
+        "transferSize": 179705,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "priority": "Low"
+       },
+       {
+        "networkEndTime": 4923.0250000059605,
+        "priority": "Low",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/jpeg",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/remont-podveski-2.jpg",
+        "cache": "none",
+        "rendererStartTime": 3622.024999976158,
+        "transferSize": 143291,
+        "protocol": "h2",
+        "finished": true,
+        "resourceType": "Image",
+        "statusCode": 200,
+        "networkRequestTime": 3622.3790000081062,
+        "resourceSize": 143001
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "resourceSize": 199051,
+        "mimeType": "image/jpeg",
+        "priority": "Low",
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "networkEndTime": 5881.821999996901,
+        "networkRequestTime": 3622.490999996662,
+        "resourceType": "Image",
+        "rendererStartTime": 3622.190999984741,
+        "statusCode": 200,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/zhestjano-svarochnye-raboty.jpg",
+        "finished": true,
+        "transferSize": 199341,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "cache": "none"
+       },
+       {
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/shinomontazh-2.jpg",
+        "protocol": "h2",
+        "finished": true,
+        "networkRequestTime": 3622.7229999899864,
+        "statusCode": 200,
+        "transferSize": 161421,
+        "rendererStartTime": 3622.3009999990463,
+        "experimentalFromMainFrame": true,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceType": "Image",
+        "priority": "Low",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "resourceSize": 161131,
+        "mimeType": "image/jpeg",
+        "networkEndTime": 5928.331000000238
+       },
+       {
+        "finished": true,
+        "protocol": "h2",
+        "resourceType": "Font",
+        "url": "https://fonts.gstatic.com/s/opensans/v44/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSumu0SC55K5gw.woff2",
+        "resourceSize": 22836,
+        "networkRequestTime": 3624.309999972582,
+        "networkEndTime": 3628.514999985695,
+        "priority": "VeryHigh",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "mimeType": "font/woff2",
+        "cache": "none",
+        "entity": "Google Fonts",
+        "rendererStartTime": 3623.7029999792576,
+        "statusCode": 200,
+        "transferSize": 23648
+       },
+       {
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "networkEndTime": 4922.196999996901,
+        "transferSize": 64752,
+        "protocol": "h2",
+        "finished": true,
+        "rendererStartTime": 3623.9379999935627,
+        "cache": "none",
+        "resourceType": "Font",
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/fonts/fontawesome-webfont.woff2",
+        "mimeType": "font/woff2",
+        "experimentalFromMainFrame": true,
+        "entity": "xn---43-5cdkauz5cvjeg.xn--p1ai",
+        "resourceSize": 64464,
+        "networkRequestTime": 3624.440999984741,
+        "priority": "VeryHigh"
+       },
+       {
+        "priority": "VeryHigh",
+        "entity": "Google Fonts",
+        "experimentalFromMainFrame": true,
+        "mimeType": "font/woff2",
+        "cache": "none",
+        "resourceSize": 25600,
+        "resourceType": "Font",
+        "networkRequestTime": 3624.5409999787807,
+        "protocol": "h2",
+        "url": "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icaEF31CPbaYI_F.woff2",
+        "finished": true,
+        "transferSize": 26399,
+        "statusCode": 200,
+        "rendererStartTime": 3624.0340000092983,
+        "sessionTargetType": "page",
+        "networkEndTime": 3632.809999972582
+       },
+       {
+        "priority": "VeryHigh",
+        "resourceType": "Font",
+        "mimeType": "font/woff2",
+        "resourceSize": 42964,
+        "cache": "none",
+        "entity": "Google Fonts",
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "networkEndTime": 3627.9839999973774,
+        "statusCode": 200,
+        "networkRequestTime": 3624.673999994993,
+        "experimentalFromMainFrame": true,
+        "url": "https://fonts.gstatic.com/s/opensans/v44/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
+        "rendererStartTime": 3624.1529999673367,
+        "transferSize": 43775
+       },
+       {
+        "entity": "Google Fonts",
+        "resourceSize": 48920,
+        "networkEndTime": 3639.2060000002384,
+        "url": "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icaFF31CPbaYA.woff2",
+        "rendererStartTime": 3635.1429999768734,
+        "resourceType": "Font",
+        "statusCode": 200,
+        "finished": true,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "networkRequestTime": 3635.59399998188,
+        "experimentalFromMainFrame": true,
+        "transferSize": 49732,
+        "cache": "none",
+        "mimeType": "font/woff2",
+        "priority": "VeryHigh"
+       },
+       {
+        "rendererStartTime": 3946.3910000026226,
+        "experimentalFromMainFrame": true,
+        "mimeType": "application/javascript",
+        "sessionTargetType": "page",
+        "url": "https://mc.yandex.ru/metrika/watch.js",
+        "statusCode": 200,
+        "priority": "Low",
+        "transferSize": 73949,
+        "cache": "none",
+        "networkEndTime": 4387.539999991655,
+        "networkRequestTime": 3947.071000009775,
+        "resourceType": "Script",
+        "resourceSize": 216998,
+        "protocol": "h2",
+        "entity": "Yandex Metrica",
+        "finished": true
+       },
+       {
+        "rendererStartTime": 4437.795999974012,
+        "priority": "Low",
+        "networkEndTime": 5952.606000006199,
+        "mimeType": "text/plain",
+        "resourceSize": 0,
+        "sessionTargetType": "page",
+        "cache": "none",
+        "protocol": "http/1.1",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "statusCode": 302,
+        "entity": "Yandex Metrica",
+        "networkRequestTime": 4438.5139999985695,
+        "transferSize": 827,
+        "url": "https://mc.yandex.com/sync_cookie_image_check"
+       },
+       {
+        "transferSize": 939,
+        "rendererStartTime": 4439.354999989271,
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "cache": "none",
+        "entity": "Yandex Metrica",
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/gif",
+        "networkRequestTime": 4439.8839999735355,
+        "url": "https://mc.yandex.com/metrika/advert.gif",
+        "resourceSize": 43,
+        "priority": "Low",
+        "resourceType": "Image",
+        "statusCode": 200,
+        "networkEndTime": 4750.513999968767
+       },
+       {
+        "sessionTargetType": "page",
+        "statusCode": 302,
+        "url": "https://mc.yandex.com/watch/36054500",
+        "priority": "High",
+        "rendererStartTime": 5932.030000001192,
+        "resourceSize": 0,
+        "networkRequestTime": 5934.425999999046,
+        "protocol": "http/1.1",
+        "entity": "Yandex Metrica",
+        "finished": true,
+        "transferSize": 3095,
+        "networkEndTime": 6261.222000002861,
+        "experimentalFromMainFrame": true,
+        "cache": "none"
+       },
+       {
+        "statusCode": 302,
+        "networkEndTime": 6265.50799998641,
+        "rendererStartTime": 5952.606000006199,
+        "mimeType": "text/plain",
+        "url": "https://mc.yandex.ru/sync_cookie_image_start",
+        "resourceSize": 0,
+        "priority": "Low",
+        "sessionTargetType": "page",
+        "cache": "none",
+        "networkRequestTime": 5952.997999995947,
+        "experimentalFromMainFrame": true,
+        "entity": "Yandex Metrica",
+        "protocol": "http/1.1",
+        "finished": true,
+        "transferSize": 582
+       },
+       {
+        "sessionTargetType": "page",
+        "networkRequestTime": 6262.601999998093,
+        "transferSize": 2040,
+        "cache": "none",
+        "statusCode": 200,
+        "networkEndTime": 6573.8779999911785,
+        "rendererStartTime": 6261.222000002861,
+        "protocol": "h2",
+        "finished": true,
+        "url": "https://mc.yandex.com/watch/36054500/1",
+        "experimentalFromMainFrame": true,
+        "resourceSize": 841,
+        "entity": "Yandex Metrica",
+        "resourceType": "Fetch",
+        "mimeType": "application/json",
+        "priority": "High"
+       },
+       {
+        "transferSize": 1142,
+        "networkRequestTime": 6266.746999979019,
+        "priority": "Low",
+        "mimeType": "text/plain",
+        "resourceSize": 0,
+        "statusCode": 302,
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 6580.58599999547,
+        "rendererStartTime": 6265.50799998641,
+        "cache": "none",
+        "finished": true,
+        "protocol": "http/1.1",
+        "entity": "Yandex Metrica",
+        "url": "https://mc.yandex.com/sync_cookie_image_decide",
+        "sessionTargetType": "page"
+       },
+       {
+        "mimeType": "text/plain",
+        "priority": "Low",
+        "url": "https://mc.yandex.com/sync_cookie_image_check_secondary",
+        "cache": "none",
+        "networkEndTime": 6889.865000009537,
+        "resourceSize": 0,
+        "rendererStartTime": 6576.754000008106,
+        "protocol": "http/1.1",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "sessionTargetType": "page",
+        "entity": "Yandex Metrica",
+        "transferSize": 570,
+        "networkRequestTime": 6577.332999974489,
+        "statusCode": 302
+       },
+       {
+        "priority": "Low",
+        "networkEndTime": 6891.795999974012,
+        "mimeType": "image/gif",
+        "experimentalFromMainFrame": true,
+        "entity": "Yandex Metrica",
+        "sessionTargetType": "page",
+        "transferSize": 819,
+        "rendererStartTime": 6580.58599999547,
+        "resourceType": "Image",
+        "protocol": "h2",
+        "cache": "none",
+        "statusCode": 200,
+        "finished": true,
+        "networkRequestTime": 6584.220999985933,
+        "resourceSize": 43,
+        "url": "https://mc.yandex.ru/sync_cookie_image_finish"
+       },
+       {
+        "url": "https://mc.yandex.ru/sync_cookie_image_start_secondary",
+        "mimeType": "text/plain",
+        "statusCode": 302,
+        "priority": "Low",
+        "transferSize": 600,
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "networkRequestTime": 6890.120999991894,
+        "protocol": "http/1.1",
+        "rendererStartTime": 6889.865000009537,
+        "finished": true,
+        "entity": "Yandex Metrica",
+        "networkEndTime": 8108.223999977112,
+        "resourceSize": 0,
+        "sessionTargetType": "page"
+       },
+       {
+        "url": "https://mc.yandex.com/metrika/tag_phono.js",
+        "statusCode": 200,
+        "resourceType": "Script",
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "resourceSize": 55164,
+        "finished": true,
+        "rendererStartTime": 8085.39699998498,
+        "experimentalFromMainFrame": true,
+        "entity": "Yandex Metrica",
+        "networkEndTime": 8445.101999998093,
+        "cache": "none",
+        "priority": "Low",
+        "networkRequestTime": 8090.127000004053,
+        "mimeType": "application/javascript",
+        "transferSize": 13908
+       },
+       {
+        "protocol": "http/1.1",
+        "finished": true,
+        "rendererStartTime": 8108.223999977112,
+        "networkRequestTime": 8111.713999986649,
+        "url": "https://mc.yandex.com/sync_cookie_image_decide_secondary",
+        "entity": "Yandex Metrica",
+        "resourceSize": 0,
+        "sessionTargetType": "page",
+        "statusCode": 302,
+        "priority": "Low",
+        "mimeType": "text/plain",
+        "experimentalFromMainFrame": true,
+        "transferSize": 717,
+        "networkEndTime": 8428.026999980211,
+        "cache": "none"
+       },
+       {
+        "entity": "Yandex Metrica",
+        "url": "https://mc.yandex.com/metrika/match.html",
+        "statusCode": 200,
+        "finished": true,
+        "protocol": "h2",
+        "transferSize": 3238,
+        "networkEndTime": 8446.345999985933,
+        "resourceType": "Document",
+        "rendererStartTime": 8128.085000008345,
+        "networkRequestTime": 8130.014999985695,
+        "resourceSize": 7000,
+        "priority": "VeryHigh",
+        "mimeType": "text/html",
+        "cache": "none",
+        "sessionTargetType": "page"
+       },
+       {
+        "mimeType": "image/gif",
+        "sessionTargetType": "page",
+        "networkRequestTime": 8129.234999984503,
+        "cache": "none",
+        "resourceType": "Image",
+        "priority": "Low",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "entity": "Yandex Metrica",
+        "url": "https://mc.yandex.com/watch/26302566",
+        "rendererStartTime": 8118.274999976158,
+        "resourceSize": 43,
+        "protocol": "h2",
+        "finished": true,
+        "transferSize": 646,
+        "networkEndTime": 8434.24399998784
+       },
+       {
+        "priority": "Low",
+        "resourceType": "Image",
+        "mimeType": "image/gif",
+        "entity": "Yandex Metrica",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 8740.875999987125,
+        "resourceSize": 43,
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "url": "https://mc.yandex.ru/sync_cookie_image_finish_secondary",
+        "networkRequestTime": 8428.779000014067,
+        "statusCode": 200,
+        "transferSize": 638,
+        "cache": "none",
+        "rendererStartTime": 8428.026999980211
+       },
+       {
+        "cache": "none",
+        "priority": "Low",
+        "transferSize": 646,
+        "mimeType": "image/gif",
+        "url": "https://mc.yandex.com/watch/26302566",
+        "networkRequestTime": 8469.845999985933,
+        "rendererStartTime": 8469.286999970675,
+        "resourceType": "Image",
+        "statusCode": 200,
+        "finished": true,
+        "sessionTargetType": "page",
+        "resourceSize": 43,
+        "protocol": "h2",
+        "entity": "Yandex Metrica",
+        "networkEndTime": 8778.814999997616,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "networkRequestTime": 8787.483999997377,
+        "priority": "VeryHigh",
+        "mimeType": "text/html",
+        "url": "https://mc.yandex.com/metrika/match.html",
+        "transferSize": 3238,
+        "statusCode": 200,
+        "finished": true,
+        "protocol": "h2",
+        "resourceType": "Document",
+        "rendererStartTime": 8783.578999966383,
+        "resourceSize": 7000,
+        "cache": "none",
+        "entity": "Yandex Metrica",
+        "networkEndTime": 10029.116999983788,
+        "sessionTargetType": "page"
+       },
+       {
+        "priority": "High",
+        "finished": false,
+        "networkRequestTime": 10041.639999985695,
+        "transferSize": 0,
+        "statusCode": -1,
+        "rendererStartTime": 10041.639999985695,
+        "resourceSize": 0,
+        "cache": "none",
+        "url": "https://hdrc.yandex.net/",
+        "entity": "yandex.net",
+        "resourceType": "XHR",
+        "sessionTargetType": "page"
+       },
+       {
+        "priority": "High",
+        "finished": false,
+        "rendererStartTime": 10048.35199996829,
+        "statusCode": -1,
+        "resourceType": "XHR",
+        "url": "https://mdd.yandex.net/",
+        "networkRequestTime": 10048.35199996829,
+        "cache": "none",
+        "resourceSize": 0,
+        "entity": "yandex.net",
+        "transferSize": 0,
+        "sessionTargetType": "page"
+       }
+      ],
+      "headings": [
+       {
+        "key": "url",
+        "valueType": "url",
+        "label": "URL"
+       },
+       {
+        "label": "Protocol",
+        "valueType": "text",
+        "key": "protocol"
+       },
+       {
+        "key": "networkRequestTime",
+        "granularity": 1,
+        "label": "Network Request Time",
+        "valueType": "ms"
+       },
+       {
+        "label": "Network End Time",
+        "key": "networkEndTime",
+        "granularity": 1,
+        "valueType": "ms"
+       },
+       {
+        "displayUnit": "kb",
+        "label": "Transfer Size",
+        "granularity": 1,
+        "key": "transferSize",
+        "valueType": "bytes"
+       },
+       {
+        "key": "resourceSize",
+        "valueType": "bytes",
+        "granularity": 1,
+        "label": "Resource Size",
+        "displayUnit": "kb"
+       },
+       {
+        "label": "Status Code",
+        "valueType": "text",
+        "key": "statusCode"
+       },
+       {
+        "label": "MIME Type",
+        "valueType": "text",
+        "key": "mimeType"
+       },
+       {
+        "label": "Resource Type",
+        "valueType": "text",
+        "key": "resourceType"
+       }
+      ],
+      "debugData": {
+       "initiators": [
+        {
+         "columnNumber": 115,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "type": "parser",
+         "lineNumber": 16
+        },
+        {
+         "type": "parser",
+         "lineNumber": 37,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 184
+        },
+        {
+         "columnNumber": 173,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 48,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 159,
+         "lineNumber": 49,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "type": "parser"
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 178,
+         "lineNumber": 50,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 183,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 51
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 52,
+         "columnNumber": 187,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 177,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 53
+        },
+        {
+         "columnNumber": 197,
+         "lineNumber": 54,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 55,
+         "type": "parser",
+         "columnNumber": 142,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 56,
+         "columnNumber": 153,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 91,
+         "lineNumber": 78,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "columnNumber": 153,
+         "lineNumber": 277,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "columnNumber": 171,
+         "type": "parser",
+         "lineNumber": 278,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "lineNumber": 279,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 175,
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "lineNumber": 280,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 154
+        },
+        {
+         "columnNumber": 137,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 281
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 156,
+         "lineNumber": 282,
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 283,
+         "columnNumber": 175
+        },
+        {
+         "type": "parser",
+         "columnNumber": 0,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/style.css",
+         "lineNumber": 0
+        },
+        {
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 146,
+         "lineNumber": 281
+        },
+        {
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 146,
+         "lineNumber": 281
+        },
+        {
+         "lineNumber": 281,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 146,
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "columnNumber": 146,
+         "lineNumber": 281,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 146,
+         "type": "parser",
+         "lineNumber": 281
+        },
+        {
+         "type": "parser",
+         "columnNumber": 146,
+         "lineNumber": 281,
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/"
+        },
+        {
+         "url": "https://fonts.googleapis.com/css",
+         "type": "parser"
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/themes/secret-garden3/css/font-awesome.min.css",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://fonts.googleapis.com/css"
+        },
+        {
+         "url": "https://fonts.googleapis.com/css",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "url": "https://fonts.googleapis.com/css"
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "type": "parser",
+         "columnNumber": 116,
+         "lineNumber": 317
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "columnNumber": 116,
+         "type": "parser",
+         "lineNumber": 317
+        },
+        {
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "type": "parser",
+         "lineNumber": 317,
+         "columnNumber": 116
+        },
+        {
+         "columnNumber": 116,
+         "type": "parser",
+         "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/",
+         "lineNumber": 317
+        }
+       ],
+       "networkStartTimeTs": 164417772196,
+       "type": "debugdata"
+      },
+      "type": "table"
+     }
+    },
+    "is-crawlable": {
+     "id": "is-crawlable",
+     "title": "Page isn’t blocked from indexing",
+     "description": "Search engines are unable to include your pages in search results if they don't have permission to crawl them. [Learn more about crawler directives](https://developer.chrome.com/docs/lighthouse/seo/is-crawlable/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "label": "Blocking Directive Source",
+        "key": "source",
+        "valueType": "code"
+       }
+      ],
+      "type": "table",
+      "items": []
+     },
+     "warnings": []
+    },
+    "robots-txt": {
+     "id": "robots-txt",
+     "title": "robots.txt is valid",
+     "description": "If your robots.txt file is malformed, crawlers may not be able to understand how you want your website to be crawled or indexed. [Learn more about robots.txt](https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "label": "Line #",
+        "valueType": "text",
+        "key": "index"
+       },
+       {
+        "label": "Content",
+        "valueType": "code",
+        "key": "line"
+       },
+       {
+        "valueType": "code",
+        "label": "Error",
+        "key": "message"
+       }
+      ]
+     }
+    },
+    "document-title": {
+     "id": "document-title",
+     "title": "Document has a `<title>` element",
+     "description": "The title gives screen reader users an overview of the page, and search engine users rely on it heavily to determine if a page is relevant to their search. [Learn more about document titles](https://dequeuniversity.com/rules/axe/4.13/document-title).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node"
+       }
+      ],
+      "type": "table",
+      "items": []
+     }
+    },
+    "meta-description": {
+     "id": "meta-description",
+     "title": "Document has a meta description",
+     "description": "Meta descriptions may be included in search results to concisely summarize page content. [Learn more about the meta description](https://developer.chrome.com/docs/lighthouse/seo/meta-description/).",
+     "score": 1,
+     "scoreDisplayMode": "binary"
+    },
+    "color-contrast": {
+     "id": "color-contrast",
+     "title": "Background and foreground colors do not have a sufficient contrast ratio.",
+     "description": "Low-contrast text is difficult or impossible for many users to read. [Learn how to provide sufficient color contrast](https://dequeuniversity.com/rules/axe/4.13/color-contrast).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "key": "node",
+        "valueType": "node"
+       }
+      ],
+      "type": "table",
+      "items": [
+       {
+        "node": {
+         "lhId": "1-0-A",
+         "boundingRect": {
+          "width": 183,
+          "right": 297,
+          "left": 114,
+          "height": 47,
+          "bottom": 775,
+          "top": 728
+         },
+         "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.92 (foreground color: #ffffff, background color: #ff101f, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,0,DIV,0,DIV,6,A",
+         "nodeLabel": "НАШИ ЦЕНЫ",
+         "selector": "div.maincol > div#1 > div.top-text > a.btn",
+         "type": "node",
+         "snippet": "<a class=\"btn\" href=\"/tseny/\">"
+        }
+       }
+      ],
+      "debugData": {
+       "impact": "serious",
+       "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+       ],
+       "type": "debugdata"
+      }
+     }
+    },
+    "image-alt": {
+     "id": "image-alt",
+     "title": "Image elements have `[alt]` attributes",
+     "description": "Informative elements should aim for short, descriptive alternate text. Decorative elements can be ignored with an empty alt attribute. [Learn more about the `alt` attribute](https://dequeuniversity.com/rules/axe/4.13/image-alt).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "key": "node",
+        "valueType": "node"
+       }
+      ]
+     }
+    },
+    "html-has-lang": {
+     "id": "html-has-lang",
+     "title": "`<html>` element has a `[lang]` attribute",
+     "description": "If a page doesn't specify a `lang` attribute, a screen reader assumes that the page is in the default language that the user chose when setting up the screen reader. If the page isn't actually in the default language, then the screen reader might not announce the page's text correctly. [Learn more about the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-has-lang).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements"
+       }
+      ]
+     }
+    },
+    "html-lang-valid": {
+     "id": "html-lang-valid",
+     "title": "`<html>` element has a valid value for its `[lang]` attribute",
+     "description": "Specifying a valid [BCP 47 language](https://www.w3.org/International/questions/qa-choosing-language-tags#question) helps screen readers announce text properly. [Learn how to use the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-lang-valid).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "valueType": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "key": "node",
+        "label": "Failing Elements"
+       }
+      ]
+     }
+    },
+    "link-name": {
+     "id": "link-name",
+     "title": "Links do not have a discernible name",
+     "description": "Link text (and alternate text for images, when used as links) that is discernible, unique, and focusable improves the navigation experience for screen reader users. [Learn how to make links accessible](https://dequeuniversity.com/rules/axe/4.13/link-name).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [
+       {
+        "node": {
+         "nodeLabel": "div#2 > div.box-25 > div.image-wrap > a",
+         "lhId": "1-3-A",
+         "boundingRect": {
+          "top": 1226,
+          "height": 0,
+          "bottom": 1226,
+          "right": 330,
+          "width": 0,
+          "left": 330
+         },
+         "snippet": "<a rel=\"lightbox\" href=\"/wp-content/uploads/2016/03/remont-dvigatelja.jpg\" data-featherlight=\"image\">",
+         "selector": "div#2 > div.box-25 > div.image-wrap > a",
+         "type": "node",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,0,DIV,2,DIV,0,A",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+       },
+       {
+        "node": {
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,2,DIV,0,DIV,0,A",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+         "boundingRect": {
+          "left": 0,
+          "width": 0,
+          "top": 1751,
+          "right": 0,
+          "bottom": 1751,
+          "height": 0
+         },
+         "type": "node",
+         "nodeLabel": "div#2 > div.box-25 > div.image-wrap > a",
+         "selector": "div#2 > div.box-25 > div.image-wrap > a",
+         "snippet": "<a rel=\"lightbox\" href=\"/wp-content/uploads/2016/03/remont-podveski-2.jpg\" data-featherlight=\"image\">",
+         "lhId": "1-4-A"
+        }
+       },
+       {
+        "node": {
+         "snippet": "<a rel=\"lightbox\" href=\"/wp-content/uploads/2016/03/zhestjano-svarochnye-raboty.jpg\" data-featherlight=\"image\">",
+         "lhId": "1-5-A",
+         "selector": "div#2 > div.box-25 > div.image-wrap > a",
+         "nodeLabel": "div#2 > div.box-25 > div.image-wrap > a",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,4,DIV,1,DIV,0,A",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+         "boundingRect": {
+          "height": 0,
+          "bottom": 2325,
+          "right": 330,
+          "top": 2325,
+          "width": 0,
+          "left": 330
+         },
+         "type": "node"
+        }
+       },
+       {
+        "node": {
+         "type": "node",
+         "snippet": "<a rel=\"lightbox\" href=\"/wp-content/uploads/2016/03/shinomontazh-2.jpg\" data-featherlight=\"image\">",
+         "selector": "div#2 > div.box-25 > div.image-wrap > a",
+         "path": "4,HTML,2,BODY,1,DIV,2,DIV,7,DIV,5,DIV,0,DIV,0,A",
+         "lhId": "1-6-A",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+         "boundingRect": {
+          "top": 2900,
+          "height": 0,
+          "bottom": 2900,
+          "left": 0,
+          "width": 0,
+          "right": 0
+         },
+         "nodeLabel": "div#2 > div.box-25 > div.image-wrap > a"
+        }
+       },
+       {
+        "node": {
+         "boundingRect": {
+          "height": 50,
+          "bottom": 8153,
+          "left": 180,
+          "width": 51,
+          "right": 231,
+          "top": 8103
+         },
+         "lhId": "1-7-A",
+         "nodeLabel": "body.home > div#mm-0 > div#footer > a#backtop",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+         "snippet": "<a id=\"backtop\" href=\"#top\">",
+         "type": "node",
+         "path": "4,HTML,2,BODY,1,DIV,3,DIV,2,A",
+         "selector": "body.home > div#mm-0 > div#footer > a#backtop"
+        }
+       }
+      ],
+      "headings": [
+       {
+        "key": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "label": "Failing Elements"
+       }
+      ],
+      "type": "table",
+      "debugData": {
+       "impact": "serious",
+       "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag244",
+        "wcag412",
+        "section508",
+        "section508.22.a",
+        "TTv5",
+        "TT6.a",
+        "EN-301-549",
+        "EN-9.2.4.4",
+        "EN-9.4.1.2",
+        "ACT",
+        "RGAAv4",
+        "RGAA-6.2.1"
+       ],
+       "type": "debugdata"
+      }
+     }
+    },
+    "button-name": {
+     "id": "button-name",
+     "title": "Buttons have an accessible name",
+     "description": "When a button doesn't have an accessible name, screen readers announce it as \"button\", making it unusable for users who rely on screen readers. [Learn how to make buttons more accessible](https://dequeuniversity.com/rules/axe/4.13/button-name).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "label": {
+     "id": "label",
+     "title": "Form elements have associated labels",
+     "description": "Labels ensure that form controls are announced properly by assistive technologies, like screen readers. [Learn more about form element labels](https://dequeuniversity.com/rules/axe/4.13/label).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "final-screenshot": {
+     "id": "final-screenshot",
+     "title": "Final Screenshot",
+     "description": "The last screenshot captured of the pageload.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "type": "screenshot",
+      "data": "***снимок не хранится в записи (ТЗ, 5.9) — вместо base64 заглушка***",
+      "timing": 6243,
+      "timestamp": 164424015206
+     }
+    },
+    "image-aspect-ratio": {
+     "id": "image-aspect-ratio",
+     "title": "Displays images with correct aspect ratio",
+     "description": "Image display dimensions should match natural aspect ratio. [Learn more about image aspect ratio](https://developer.chrome.com/docs/lighthouse/best-practices/image-aspect-ratio/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "key": "url",
+        "valueType": "url",
+        "label": "URL"
+       },
+       {
+        "valueType": "text",
+        "label": "Aspect Ratio (Displayed)",
+        "key": "displayedAspectRatio"
+       },
+       {
+        "key": "actualAspectRatio",
+        "valueType": "text",
+        "label": "Aspect Ratio (Actual)"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "image-size-responsive": {
+     "id": "image-size-responsive",
+     "title": "Serves images with low resolution",
+     "description": "Image natural dimensions should be proportional to the display size and the pixel ratio to maximize image clarity. [Learn how to provide responsive images](https://web.dev/articles/serve-responsive-images).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "valueType": "text",
+        "label": "Displayed size",
+        "key": "displayedSize"
+       },
+       {
+        "key": "actualSize",
+        "valueType": "text",
+        "label": "Actual size"
+       },
+       {
+        "key": "expectedSize",
+        "valueType": "text",
+        "label": "Expected size"
+       }
+      ],
+      "items": [
+       {
+        "actualPixels": 10000,
+        "expectedSize": "150 x 150",
+        "displayedSize": "100 x 100",
+        "actualSize": "100 x 100",
+        "node": {
+         "lhId": "1-41-IMG",
+         "snippet": "<img src=\"/wp-content/uploads/2016/03/logo.png\" alt=\"АвтоСервис 24 часа\">",
+         "selector": "div.header-logo-inner > div.site-title > a > img",
+         "nodeLabel": "АвтоСервис 24 часа",
+         "boundingRect": {
+          "top": 0,
+          "right": 116,
+          "width": 100,
+          "left": 16,
+          "bottom": 100,
+          "height": 100
+         },
+         "path": "4,HTML,2,BODY,1,DIV,0,DIV,0,DIV,0,DIV,0,A,0,IMG",
+         "type": "node"
+        },
+        "expectedPixels": 22500,
+        "url": "https://xn---43-5cdkauz5cvjeg.xn--p1ai/wp-content/uploads/2016/03/logo.png"
+       }
+      ]
+     }
+    }
+   },
+   "categories": {
+    "accessibility": {
+     "score": 0.86
+    },
+    "seo": {
+     "score": 0.92
+    }
+   }
+  }
+ }
+}

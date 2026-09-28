@@ -14,7 +14,7 @@
      "score": 1,
      "scoreDisplayMode": "numeric",
      "displayValue": "0.8 s",
-     "numericValue": 756,
+     "numericValue": 757,
      "numericUnit": "millisecond"
     },
     "first-contentful-paint": {
@@ -24,7 +24,7 @@
      "score": 1,
      "scoreDisplayMode": "numeric",
      "displayValue": "0.8 s",
-     "numericValue": 756,
+     "numericValue": 757,
      "numericUnit": "millisecond"
     },
     "total-blocking-time": {
@@ -45,17 +45,17 @@
      "scoreDisplayMode": "numeric",
      "displayValue": "0",
      "details": {
+      "type": "debugdata",
       "items": [
        {
         "newEngineResult": {
          "cumulativeLayoutShiftMainFrame": 0,
          "cumulativeLayoutShift": 0
         },
-        "newEngineResultDiffered": false,
-        "cumulativeLayoutShiftMainFrame": 0
+        "cumulativeLayoutShiftMainFrame": 0,
+        "newEngineResultDiffered": false
        }
-      ],
-      "type": "debugdata"
+      ]
      },
      "numericValue": 0,
      "numericUnit": "unitless"
@@ -67,7 +67,7 @@
      "score": 1,
      "scoreDisplayMode": "numeric",
      "displayValue": "0.8 s",
-     "numericValue": 756,
+     "numericValue": 757,
      "numericUnit": "millisecond"
     },
     "server-response-time": {
@@ -82,24 +82,24 @@
       "FCP": 0
      },
      "details": {
+      "overallSavingsMs": 0,
+      "type": "opportunity",
+      "items": [
+       {
+        "url": "https://example.com/",
+        "responseTime": 1
+       }
+      ],
       "headings": [
        {
-        "key": "url",
+        "valueType": "url",
         "label": "URL",
-        "valueType": "url"
+        "key": "url"
        },
        {
         "key": "responseTime",
         "label": "Time Spent",
         "valueType": "timespanMs"
-       }
-      ],
-      "type": "opportunity",
-      "overallSavingsMs": 0,
-      "items": [
-       {
-        "responseTime": 1,
-        "url": "https://example.com/"
        }
       ]
      },
@@ -117,8 +117,8 @@
       "FCP": 0
      },
      "details": {
-      "items": [],
       "type": "table",
+      "items": [],
       "debugData": {
        "wastedBytes": 0,
        "type": "debugdata"
@@ -130,26 +130,26 @@
        },
        {
         "subItemsHeading": {
-         "key": "reason",
-         "valueType": "text"
+         "valueType": "text",
+         "key": "reason"
         },
+        "key": "url",
         "label": "URL",
-        "valueType": "url",
-        "key": "url"
+        "valueType": "url"
        },
        {
-        "valueType": "bytes",
         "key": "totalBytes",
+        "valueType": "bytes",
         "label": "Resource Size"
        },
        {
         "label": "Est Savings",
+        "valueType": "bytes",
         "key": "wastedBytes",
         "subItemsHeading": {
-         "valueType": "bytes",
-         "key": "wastedBytes"
-        },
-        "valueType": "bytes"
+         "key": "wastedBytes",
+         "valueType": "bytes"
+        }
        }
       ]
      }
@@ -172,11 +172,12 @@
       "FCP": 0
      },
      "details": {
+      "items": [],
       "type": "table",
       "headings": [
        {
-        "valueType": "url",
         "key": "url",
+        "valueType": "url",
         "label": "URL"
        },
        {
@@ -189,8 +190,7 @@
         "valueType": "timespanMs",
         "key": "wastedMs"
        }
-      ],
-      "items": []
+      ]
      }
     },
     "unused-javascript": {
@@ -215,10 +215,10 @@
        "wastedBytes"
       ],
       "items": [],
-      "overallSavingsMs": 0,
       "type": "opportunity",
       "headings": [],
-      "overallSavingsBytes": 0
+      "overallSavingsBytes": 0,
+      "overallSavingsMs": 0
      },
      "numericValue": 0,
      "numericUnit": "millisecond"
@@ -234,34 +234,34 @@
       "FCP": 0
      },
      "details": {
+      "type": "table",
       "debugData": {
-       "type": "debugdata",
-       "wastedBytes": 0
+       "wastedBytes": 0,
+       "type": "debugdata"
       },
       "headings": [
        {
         "label": "URL",
         "subItemsHeading": {
-         "valueType": "source-location",
-         "key": "location"
+         "key": "location",
+         "valueType": "source-location"
         },
         "key": "url",
         "valueType": "url"
        },
        {
         "key": null,
-        "valueType": "code",
         "subItemsHeading": {
          "key": "signal"
-        }
+        },
+        "valueType": "code"
        },
        {
-        "key": "wastedBytes",
+        "label": "Wasted bytes",
         "valueType": "bytes",
-        "label": "Wasted bytes"
+        "key": "wastedBytes"
        }
       ],
-      "type": "table",
       "items": []
      }
     },
@@ -276,31 +276,31 @@
       "FCP": 0
      },
      "details": {
-      "items": [],
       "debugData": {
        "wastedBytes": 0,
        "type": "debugdata"
       },
       "headings": [
        {
-        "label": "Source",
         "subItemsHeading": {
          "key": "url",
          "valueType": "url"
         },
         "valueType": "code",
+        "label": "Source",
         "key": "source"
        },
        {
         "key": "wastedBytes",
         "valueType": "bytes",
         "granularity": 10,
+        "label": "Duplicated bytes",
         "subItemsHeading": {
          "key": "sourceTransferBytes"
-        },
-        "label": "Duplicated bytes"
+        }
        }
       ],
+      "items": [],
       "type": "table"
      }
     },
@@ -315,27 +315,27 @@
       "FCP": 0
      },
      "details": {
+      "type": "checklist",
+      "debugData": {
+       "wastedBytes": 0,
+       "redirectDuration": 0,
+       "uncompressedResponseBytes": 0,
+       "type": "debugdata",
+       "serverResponseTime": 1
+      },
       "items": {
+       "usesCompression": {
+        "value": true,
+        "label": "Applies text compression"
+       },
        "noRedirects": {
         "value": true,
         "label": "Avoids redirects"
-       },
-       "usesCompression": {
-        "label": "Applies text compression",
-        "value": true
        },
        "serverResponseIsFast": {
         "value": true,
         "label": "Server responds quickly (observed 1 ms)"
        }
-      },
-      "type": "checklist",
-      "debugData": {
-       "uncompressedResponseBytes": 0,
-       "type": "debugdata",
-       "wastedBytes": 0,
-       "serverResponseTime": 1,
-       "redirectDuration": 0
       }
      }
     },
@@ -350,31 +350,31 @@
       "items": [],
       "headings": [
        {
+        "key": "entity",
         "subItemsHeading": {
          "valueType": "url",
          "key": "url"
         },
         "valueType": "text",
-        "label": "3rd party",
-        "key": "entity"
+        "label": "3rd party"
        },
        {
-        "granularity": 1,
-        "valueType": "bytes",
+        "label": "Transfer size",
         "subItemsHeading": {
          "key": "transferSize"
         },
-        "key": "transferSize",
-        "label": "Transfer size"
+        "granularity": 1,
+        "valueType": "bytes",
+        "key": "transferSize"
        },
        {
+        "label": "Main thread time",
         "granularity": 1,
-        "key": "mainThreadTime",
+        "valueType": "ms",
         "subItemsHeading": {
          "key": "mainThreadTime"
         },
-        "valueType": "ms",
-        "label": "Main thread time"
+        "key": "mainThreadTime"
        }
       ]
      }
@@ -389,33 +389,33 @@
       "INP": 0
      },
      "details": {
+      "items": [
+       {
+        "node": {
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+         "type": "node",
+         "boundingRect": {
+          "top": 0,
+          "height": 0,
+          "right": 0,
+          "left": 0,
+          "width": 0,
+          "bottom": 0
+         },
+         "nodeLabel": "head > meta",
+         "selector": "head > meta",
+         "path": "1,HTML,0,HEAD,2,META",
+         "lhId": "page-1-META"
+        }
+       }
+      ],
+      "type": "table",
       "headings": [
        {
         "valueType": "node",
         "key": "node"
        }
-      ],
-      "items": [
-       {
-        "node": {
-         "selector": "head > meta",
-         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
-         "path": "1,HTML,0,HEAD,2,META",
-         "lhId": "page-1-META",
-         "nodeLabel": "head > meta",
-         "boundingRect": {
-          "left": 0,
-          "top": 0,
-          "bottom": 0,
-          "width": 0,
-          "right": 0,
-          "height": 0
-         },
-         "type": "node"
-        }
-       }
-      ],
-      "type": "table"
+      ]
      }
     },
     "target-size": {
@@ -425,6 +425,7 @@
      "score": 1,
      "scoreDisplayMode": "binary",
      "details": {
+      "type": "table",
       "headings": [
        {
         "valueType": "node",
@@ -432,11 +433,10 @@
          "valueType": "node",
          "key": "relatedNode"
         },
-        "label": "Failing Elements",
-        "key": "node"
+        "key": "node",
+        "label": "Failing Elements"
        }
       ],
-      "type": "table",
       "items": []
      }
     },
@@ -449,17 +449,17 @@
      "details": {
       "headings": [
        {
-        "label": "Failing Elements",
-        "key": "node",
         "valueType": "node",
         "subItemsHeading": {
-         "key": "relatedNode",
-         "valueType": "node"
-        }
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "label": "Failing Elements"
        }
       ],
-      "items": [],
-      "type": "table"
+      "type": "table",
+      "items": []
      }
     },
     "is-on-https": {
@@ -469,20 +469,20 @@
      "score": 1,
      "scoreDisplayMode": "binary",
      "details": {
-      "type": "table",
       "items": [],
       "headings": [
        {
-        "label": "Insecure URL",
         "valueType": "url",
+        "label": "Insecure URL",
         "key": "url"
        },
        {
-        "valueType": "text",
         "label": "Request Resolution",
+        "valueType": "text",
         "key": "resolution"
        }
-      ]
+      ],
+      "type": "table"
      }
     },
     "total-byte-weight": {
@@ -496,22 +496,22 @@
       "sortedBy": [
        "totalBytes"
       ],
-      "headings": [
-       {
-        "label": "URL",
-        "valueType": "url",
-        "key": "url"
-       },
-       {
-        "label": "Transfer Size",
-        "valueType": "bytes",
-        "key": "totalBytes"
-       }
-      ],
       "items": [
        {
         "totalBytes": 563,
         "url": "https://example.com/"
+       }
+      ],
+      "headings": [
+       {
+        "key": "url",
+        "valueType": "url",
+        "label": "URL"
+       },
+       {
+        "valueType": "bytes",
+        "label": "Transfer Size",
+        "key": "totalBytes"
        }
       ],
       "type": "table"
@@ -528,75 +528,75 @@
      "details": {
       "headings": [
        {
-        "label": "Resource Type",
+        "valueType": "text",
         "key": "label",
-        "valueType": "text"
+        "label": "Resource Type"
        },
        {
-        "label": "Requests",
         "key": "requestCount",
+        "label": "Requests",
         "valueType": "numeric"
        },
        {
-        "label": "Transfer Size",
         "valueType": "bytes",
-        "key": "transferSize"
+        "key": "transferSize",
+        "label": "Transfer Size"
        }
       ],
       "items": [
        {
-        "requestCount": 1,
+        "transferSize": 563,
         "resourceType": "document",
-        "transferSize": 563,
-        "label": "Document"
+        "label": "Document",
+        "requestCount": 1
        },
        {
-        "resourceType": "total",
         "requestCount": 1,
-        "transferSize": 563,
-        "label": "Total"
+        "label": "Total",
+        "resourceType": "total",
+        "transferSize": 563
        },
        {
-        "requestCount": 0,
+        "transferSize": 0,
         "resourceType": "stylesheet",
-        "transferSize": 0,
-        "label": "Stylesheet"
-       },
-       {
-        "label": "Image",
-        "requestCount": 0,
-        "resourceType": "image",
-        "transferSize": 0
-       },
-       {
-        "transferSize": 0,
-        "label": "Media",
-        "resourceType": "media",
+        "label": "Stylesheet",
         "requestCount": 0
        },
        {
+        "requestCount": 0,
+        "transferSize": 0,
+        "resourceType": "image",
+        "label": "Image"
+       },
+       {
+        "requestCount": 0,
+        "transferSize": 0,
+        "resourceType": "media",
+        "label": "Media"
+       },
+       {
+        "requestCount": 0,
         "label": "Font",
         "transferSize": 0,
-        "resourceType": "font",
-        "requestCount": 0
+        "resourceType": "font"
        },
        {
-        "requestCount": 0,
         "resourceType": "script",
         "transferSize": 0,
+        "requestCount": 0,
         "label": "Script"
        },
        {
-        "requestCount": 0,
+        "transferSize": 0,
         "resourceType": "other",
-        "label": "Other",
-        "transferSize": 0
+        "requestCount": 0,
+        "label": "Other"
        },
        {
-        "requestCount": 0,
-        "label": "Third-party",
+        "transferSize": 0,
         "resourceType": "third-party",
-        "transferSize": 0
+        "label": "Third-party",
+        "requestCount": 0
        }
       ],
       "type": "table"
@@ -609,33 +609,308 @@
      "score": 1,
      "scoreDisplayMode": "informative",
      "details": {
-      "type": "table",
+      "headings": [
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": "protocol",
+        "valueType": "text",
+        "label": "Protocol"
+       },
+       {
+        "label": "Network Request Time",
+        "valueType": "ms",
+        "granularity": 1,
+        "key": "networkRequestTime"
+       },
+       {
+        "granularity": 1,
+        "label": "Network End Time",
+        "valueType": "ms",
+        "key": "networkEndTime"
+       },
+       {
+        "label": "Transfer Size",
+        "granularity": 1,
+        "key": "transferSize",
+        "displayUnit": "kb",
+        "valueType": "bytes"
+       },
+       {
+        "valueType": "bytes",
+        "granularity": 1,
+        "label": "Resource Size",
+        "displayUnit": "kb",
+        "key": "resourceSize"
+       },
+       {
+        "valueType": "text",
+        "label": "Status Code",
+        "key": "statusCode"
+       },
+       {
+        "label": "MIME Type",
+        "valueType": "text",
+        "key": "mimeType"
+       },
+       {
+        "valueType": "text",
+        "label": "Resource Type",
+        "key": "resourceType"
+       }
+      ],
       "items": [
        {
-        "finished": true,
-        "protocol": "h2",
-        "rendererStartTime": 0,
-        "resourceSize": 559,
         "priority": "VeryHigh",
-        "mimeType": "text/html",
-        "experimentalFromMainFrame": true,
-        "entity": "example.com",
-        "networkEndTime": 30.106000006198883,
-        "resourceType": "Document",
-        "cache": "none",
-        "statusCode": 200,
-        "networkRequestTime": 1.2259999960660934,
         "url": "https://example.com/",
+        "entity": "example.com",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "networkEndTime": 19.202999591827393,
+        "finished": true,
         "transferSize": 563,
-        "sessionTargetType": "page"
+        "mimeType": "text/html",
+        "resourceType": "Document",
+        "resourceSize": 559,
+        "networkRequestTime": 1.384000301361084,
+        "statusCode": 200,
+        "cache": "none",
+        "rendererStartTime": 0
        }
       ],
       "debugData": {
-       "networkStartTimeTs": 119865470089,
+       "networkStartTimeTs": 4293618282450,
        "initiators": [],
        "type": "debugdata"
       },
+      "type": "table"
+     }
+    },
+    "is-crawlable": {
+     "id": "is-crawlable",
+     "title": "Page isn’t blocked from indexing",
+     "description": "Search engines are unable to include your pages in search results if they don't have permission to crawl them. [Learn more about crawler directives](https://developer.chrome.com/docs/lighthouse/seo/is-crawlable/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
       "headings": [
+       {
+        "label": "Blocking Directive Source",
+        "valueType": "code",
+        "key": "source"
+       }
+      ],
+      "items": []
+     },
+     "warnings": []
+    },
+    "robots-txt": {
+     "id": "robots-txt",
+     "title": "robots.txt is valid",
+     "description": "If your robots.txt file is malformed, crawlers may not be able to understand how you want your website to be crawled or indexed. [Learn more about robots.txt](https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "document-title": {
+     "id": "document-title",
+     "title": "Document has a `<title>` element",
+     "description": "The title gives screen reader users an overview of the page, and search engine users rely on it heavily to determine if a page is relevant to their search. [Learn more about document titles](https://dequeuniversity.com/rules/axe/4.13/document-title).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements"
+       }
+      ]
+     }
+    },
+    "meta-description": {
+     "id": "meta-description",
+     "title": "Document does not have a meta description",
+     "description": "Meta descriptions may be included in search results to concisely summarize page content. [Learn more about the meta description](https://developer.chrome.com/docs/lighthouse/seo/meta-description/).",
+     "score": 0,
+     "scoreDisplayMode": "binary"
+    },
+    "color-contrast": {
+     "id": "color-contrast",
+     "title": "Background and foreground colors have a sufficient contrast ratio",
+     "description": "Low-contrast text is difficult or impossible for many users to read. [Learn how to provide sufficient color contrast](https://dequeuniversity.com/rules/axe/4.13/color-contrast).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        }
+       }
+      ]
+     }
+    },
+    "image-alt": {
+     "id": "image-alt",
+     "title": "Image elements have `[alt]` attributes",
+     "description": "Informative elements should aim for short, descriptive alternate text. Decorative elements can be ignored with an empty alt attribute. [Learn more about the `alt` attribute](https://dequeuniversity.com/rules/axe/4.13/image-alt).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "html-has-lang": {
+     "id": "html-has-lang",
+     "title": "`<html>` element has a `[lang]` attribute",
+     "description": "If a page doesn't specify a `lang` attribute, a screen reader assumes that the page is in the default language that the user chose when setting up the screen reader. If the page isn't actually in the default language, then the screen reader might not announce the page's text correctly. [Learn more about the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-has-lang).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        }
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "html-lang-valid": {
+     "id": "html-lang-valid",
+     "title": "`<html>` element has a valid value for its `[lang]` attribute",
+     "description": "Specifying a valid [BCP 47 language](https://www.w3.org/International/questions/qa-choosing-language-tags#question) helps screen readers announce text properly. [Learn how to use the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-lang-valid).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "valueType": "node"
+       }
+      ]
+     }
+    },
+    "link-name": {
+     "id": "link-name",
+     "title": "Links have a discernible name",
+     "description": "Link text (and alternate text for images, when used as links) that is discernible, unique, and focusable improves the navigation experience for screen reader users. [Learn how to make links accessible](https://dequeuniversity.com/rules/axe/4.13/link-name).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "key": "node"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "button-name": {
+     "id": "button-name",
+     "title": "Buttons have an accessible name",
+     "description": "When a button doesn't have an accessible name, screen readers announce it as \"button\", making it unusable for users who rely on screen readers. [Learn how to make buttons more accessible](https://dequeuniversity.com/rules/axe/4.13/button-name).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "label": {
+     "id": "label",
+     "title": "Form elements have associated labels",
+     "description": "Labels ensure that form controls are announced properly by assistive technologies, like screen readers. [Learn more about form element labels](https://dequeuniversity.com/rules/axe/4.13/label).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "final-screenshot": {
+     "id": "final-screenshot",
+     "title": "Final Screenshot",
+     "description": "The last screenshot captured of the pageload.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "data": "***снимок не хранится в записи (ТЗ, 5.9) — вместо base64 заглушка***",
+      "timing": 349,
+      "timestamp": 4293618631682,
+      "type": "screenshot"
+     }
+    },
+    "image-aspect-ratio": {
+     "id": "image-aspect-ratio",
+     "title": "Displays images with correct aspect ratio",
+     "description": "Image display dimensions should match natural aspect ratio. [Learn more about image aspect ratio](https://developer.chrome.com/docs/lighthouse/best-practices/image-aspect-ratio/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "label": "URL",
+        "key": "url",
+        "valueType": "url"
+       },
+       {
+        "valueType": "text",
+        "label": "Aspect Ratio (Displayed)",
+        "key": "displayedAspectRatio"
+       },
+       {
+        "label": "Aspect Ratio (Actual)",
+        "key": "actualAspectRatio",
+        "valueType": "text"
+       }
+      ]
+     }
+    },
+    "image-size-responsive": {
+     "id": "image-size-responsive",
+     "title": "Serves images with appropriate resolution",
+     "description": "Image natural dimensions should be proportional to the display size and the pixel ratio to maximize image clarity. [Learn how to provide responsive images](https://web.dev/articles/serve-responsive-images).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
        {
         "valueType": "url",
         "key": "url",
@@ -643,52 +918,31 @@
        },
        {
         "valueType": "text",
-        "label": "Protocol",
-        "key": "protocol"
+        "label": "Displayed size",
+        "key": "displayedSize"
        },
        {
-        "key": "networkRequestTime",
-        "valueType": "ms",
-        "granularity": 1,
-        "label": "Network Request Time"
-       },
-       {
-        "key": "networkEndTime",
-        "label": "Network End Time",
-        "valueType": "ms",
-        "granularity": 1
-       },
-       {
-        "key": "transferSize",
-        "granularity": 1,
-        "label": "Transfer Size",
-        "valueType": "bytes",
-        "displayUnit": "kb"
-       },
-       {
-        "key": "resourceSize",
-        "displayUnit": "kb",
-        "valueType": "bytes",
-        "granularity": 1,
-        "label": "Resource Size"
-       },
-       {
-        "label": "Status Code",
         "valueType": "text",
-        "key": "statusCode"
+        "label": "Actual size",
+        "key": "actualSize"
        },
        {
-        "label": "MIME Type",
-        "key": "mimeType",
-        "valueType": "text"
-       },
-       {
-        "label": "Resource Type",
+        "label": "Expected size",
         "valueType": "text",
-        "key": "resourceType"
+        "key": "expectedSize"
        }
-      ]
+      ],
+      "items": [],
+      "type": "table"
      }
+    }
+   },
+   "categories": {
+    "accessibility": {
+     "score": 0.96
+    },
+    "seo": {
+     "score": 0.8
     }
    }
   }

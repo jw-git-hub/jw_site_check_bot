@@ -1,0 +1,3171 @@
+{
+ "http_status": 200,
+ "response": {
+  "lighthouseResult": {
+   "requestedUrl": "https://salon4you.tilda.ws/",
+   "finalDisplayedUrl": "https://salon4you.tilda.ws/",
+   "lighthouseVersion": "13.5.0",
+   "runWarnings": [],
+   "audits": {
+    "largest-contentful-paint": {
+     "id": "largest-contentful-paint",
+     "title": "Largest Contentful Paint",
+     "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+     "score": 0.35,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "4.6 s",
+     "numericValue": 4573.680594733123,
+     "numericUnit": "millisecond"
+    },
+    "first-contentful-paint": {
+     "id": "first-contentful-paint",
+     "title": "First Contentful Paint",
+     "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+     "score": 0.31,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "3.6 s",
+     "numericValue": 3637.903773368094,
+     "numericUnit": "millisecond"
+    },
+    "total-blocking-time": {
+     "id": "total-blocking-time",
+     "title": "Total Blocking Time",
+     "description": "Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms, expressed in milliseconds. [Learn more about the Total Blocking Time metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0 ms",
+     "numericValue": 0,
+     "numericUnit": "millisecond"
+    },
+    "cumulative-layout-shift": {
+     "id": "cumulative-layout-shift",
+     "title": "Cumulative Layout Shift",
+     "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "0",
+     "details": {
+      "items": [
+       {
+        "cumulativeLayoutShiftMainFrame": 0,
+        "newEngineResultDiffered": false,
+        "newEngineResult": {
+         "cumulativeLayoutShift": 0,
+         "cumulativeLayoutShiftMainFrame": 0
+        }
+       }
+      ],
+      "type": "debugdata"
+     },
+     "numericValue": 0,
+     "numericUnit": "unitless"
+    },
+    "speed-index": {
+     "id": "speed-index",
+     "title": "Speed Index",
+     "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+     "score": 0.51,
+     "scoreDisplayMode": "numeric",
+     "displayValue": "5.7 s",
+     "numericValue": 5694.589727480631,
+     "numericUnit": "millisecond"
+    },
+    "server-response-time": {
+     "id": "server-response-time",
+     "title": "Initial server response time was short",
+     "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Root document took 0 ms",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "overallSavingsMs": 0,
+      "type": "opportunity",
+      "items": [
+       {
+        "responseTime": 2,
+        "url": "https://salon4you.tilda.ws/"
+       }
+      ],
+      "headings": [
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "key": "responseTime",
+        "valueType": "timespanMs",
+        "label": "Time Spent"
+       }
+      ]
+     },
+     "numericValue": 2,
+     "numericUnit": "millisecond"
+    },
+    "image-delivery-insight": {
+     "id": "image-delivery-insight",
+     "title": "Improve image delivery",
+     "description": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "type": "table",
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      },
+      "items": [],
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "valueType": "url",
+        "label": "URL",
+        "key": "url",
+        "subItemsHeading": {
+         "key": "reason",
+         "valueType": "text"
+        }
+       },
+       {
+        "label": "Resource Size",
+        "valueType": "bytes",
+        "key": "totalBytes"
+       },
+       {
+        "valueType": "bytes",
+        "key": "wastedBytes",
+        "subItemsHeading": {
+         "key": "wastedBytes",
+         "valueType": "bytes"
+        },
+        "label": "Est Savings"
+       }
+      ]
+     }
+    },
+    "lcp-discovery-insight": {
+     "id": "lcp-discovery-insight",
+     "title": "LCP request discovery",
+     "description": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading",
+     "score": 0,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "LCP": 0
+     },
+     "details": {
+      "type": "list",
+      "items": [
+       {
+        "type": "checklist",
+        "items": {
+         "eagerlyLoaded": {
+          "label": "LCP resources should not use loading=lazy",
+          "value": true
+         },
+         "priorityHinted": {
+          "label": "fetchpriority=high should be applied",
+          "value": false
+         },
+         "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": false
+         }
+        }
+       },
+       {
+        "path": "1,HTML,1,BODY,1,DIV,1,DIV,1,DIV,0,DIV,0,DIV,0,DIV,0,DIV,1,DIV,0,DIV,0,DIV",
+        "snippet": "<div class=\"t-cover__carrier loaded\" data-content-cover-bg=\"https://static.tildacdn.com/tild3536-3938-4131-a138-353564306463/ss-118678…\" style=\"background-image: url(&quot;https://thumb.tildacdn.com/tild3536-3938-4131-a138-…&quot;);\">",
+        "nodeLabel": "div.t-slds__items-wrapper > div.t-slds__item > div.t734__slds-wrapper > div.t-cover__carrier",
+        "lhId": "page-0-DIV",
+        "selector": "div.t-slds__items-wrapper > div.t-slds__item > div.t734__slds-wrapper > div.t-cover__carrier",
+        "boundingRect": {
+         "height": 823,
+         "top": 64,
+         "right": 412,
+         "left": 0,
+         "bottom": 887,
+         "width": 412
+        },
+        "type": "node"
+       }
+      ]
+     }
+    },
+    "render-blocking-insight": {
+     "id": "render-blocking-insight",
+     "title": "Render-blocking requests",
+     "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 3,450 ms",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 3450
+     },
+     "details": {
+      "headings": [
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "valueType": "bytes",
+        "key": "totalBytes",
+        "label": "Transfer Size"
+       },
+       {
+        "valueType": "timespanMs",
+        "label": "Duration",
+        "key": "wastedMs"
+       }
+      ],
+      "items": [
+       {
+        "wastedMs": 755,
+        "totalBytes": 1454,
+        "url": "https://static.tildacdn.com/css/tilda-cover-1.0.min.css"
+       },
+       {
+        "totalBytes": 4744,
+        "url": "https://static.tildacdn.com/js/tilda-events-1.0.min.js",
+        "wastedMs": 605
+       },
+       {
+        "url": "https://static.tildacdn.com/css/tilda-popup-1.1.min.css",
+        "wastedMs": 755,
+        "totalBytes": 1297
+       },
+       {
+        "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+        "totalBytes": 77444,
+        "wastedMs": 1955
+       },
+       {
+        "url": "https://static.tildacdn.com/js/tilda-cover-1.0.min.js",
+        "wastedMs": 755,
+        "totalBytes": 5917
+       },
+       {
+        "totalBytes": 7068,
+        "wastedMs": 755,
+        "url": "https://static.tildacdn.com/js/tilda-scripts-3.0.min.js"
+       },
+       {
+        "wastedMs": 905,
+        "totalBytes": 10601,
+        "url": "https://static.tildacdn.com/css/tilda-forms-1.0.min.css"
+       },
+       {
+        "totalBytes": 8399,
+        "url": "https://static.tildacdn.com/js/lazyload-1.3.min.js",
+        "wastedMs": 755
+       },
+       {
+        "wastedMs": 755,
+        "totalBytes": 1823,
+        "url": "https://static.tildacdn.com/css/tilda-grid-3.0.min.css"
+       },
+       {
+        "totalBytes": 38751,
+        "wastedMs": 2105,
+        "url": "https://static.tildacdn.com/js/jquery-1.10.2.min.js"
+       },
+       {
+        "wastedMs": 797,
+        "totalBytes": 12413,
+        "url": "https://salon4you.tilda.ws/tilda-blocks-2.14.css"
+       },
+       {
+        "totalBytes": 11771,
+        "url": "https://static.tildacdn.com/js/tilda-slds-1.4.min.js",
+        "wastedMs": 1055
+       },
+       {
+        "wastedMs": 1355,
+        "url": "https://static.tildacdn.com/css/tilda-catalog-1.1.min.css",
+        "totalBytes": 13730
+       },
+       {
+        "url": "https://static.tildacdn.com/css/tilda-animation-1.0.min.css",
+        "totalBytes": 2298,
+        "wastedMs": 755
+       },
+       {
+        "totalBytes": 12003,
+        "url": "https://static.tildacdn.com/js/tilda-menusub-1.0.min.js",
+        "wastedMs": 1055
+       },
+       {
+        "totalBytes": 11635,
+        "url": "https://static.tildacdn.com/js/tilda-zoom-2.0.min.js",
+        "wastedMs": 905
+       },
+       {
+        "wastedMs": 905,
+        "url": "https://static.tildacdn.com/js/hammer.min.js",
+        "totalBytes": 8765
+       },
+       {
+        "url": "https://static.tildacdn.com/css/tilda-menusub-1.0.min.css",
+        "wastedMs": 755,
+        "totalBytes": 1999
+       },
+       {
+        "wastedMs": 755,
+        "url": "https://static.tildacdn.com/js/tilda-animation-1.0.min.js",
+        "totalBytes": 7448
+       },
+       {
+        "totalBytes": 2964,
+        "url": "https://static.tildacdn.com/css/tilda-slds-1.4.min.css",
+        "wastedMs": 905
+       },
+       {
+        "totalBytes": 2977,
+        "wastedMs": 905,
+        "url": "https://static.tildacdn.com/css/tilda-zoom-2.0.min.css"
+       },
+       {
+        "url": "https://static.tildacdn.com/js/tilda-products-1.0.min.js",
+        "wastedMs": 455,
+        "totalBytes": 2309
+       },
+       {
+        "wastedMs": 1592,
+        "url": "https://salon4you.tilda.ws/tilda-blocks-2.7.js",
+        "totalBytes": 12600
+       },
+       {
+        "wastedMs": 751,
+        "totalBytes": 2506,
+        "url": "https://fonts.googleapis.com/css2"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "unused-javascript": {
+     "id": "unused-javascript",
+     "title": "Reduce unused JavaScript",
+     "description": "Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. [Learn how to reduce unused JavaScript](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/).",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 72 KiB",
+     "metricSavings": {
+      "LCP": 400,
+      "FCP": 400
+     },
+     "details": {
+      "overallSavingsBytes": 74198,
+      "debugData": {
+       "type": "debugdata",
+       "metricSavings": {
+        "LCP": 390,
+        "FCP": 390
+       }
+      },
+      "type": "opportunity",
+      "sortedBy": [
+       "wastedBytes"
+      ],
+      "headings": [
+       {
+        "subItemsHeading": {
+         "key": "source",
+         "valueType": "code"
+        },
+        "valueType": "url",
+        "label": "URL",
+        "key": "url"
+       },
+       {
+        "subItemsHeading": {
+         "key": "sourceBytes"
+        },
+        "valueType": "bytes",
+        "label": "Transfer Size",
+        "key": "totalBytes"
+       },
+       {
+        "valueType": "bytes",
+        "label": "Est Savings",
+        "key": "wastedBytes",
+        "subItemsHeading": {
+         "key": "sourceWastedBytes"
+        }
+       }
+      ],
+      "overallSavingsMs": 390,
+      "items": [
+       {
+        "wastedBytes": 74198,
+        "totalBytes": 76299,
+        "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+        "wastedPercent": 97.24565839654842
+       }
+      ]
+     },
+     "numericValue": 390,
+     "numericUnit": "millisecond"
+    },
+    "legacy-javascript-insight": {
+     "id": "legacy-javascript-insight",
+     "title": "Legacy JavaScript",
+     "description": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
+     "score": 0,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Est savings of 11 KiB",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 150
+     },
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "key": "url",
+        "subItemsHeading": {
+         "valueType": "source-location",
+         "key": "location"
+        },
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "subItemsHeading": {
+         "key": "signal"
+        },
+        "key": null,
+        "valueType": "code"
+       },
+       {
+        "label": "Wasted bytes",
+        "valueType": "bytes",
+        "key": "wastedBytes"
+       }
+      ],
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 11494
+      },
+      "items": [
+       {
+        "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+        "wastedBytes": 11494,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "location": {
+            "column": 6306,
+            "urlProvider": "network",
+            "line": 0,
+            "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+            "type": "source-location"
+           },
+           "signal": "@babel/plugin-transform-classes"
+          },
+          {
+           "location": {
+            "column": 670,
+            "line": 2,
+            "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+            "type": "source-location",
+            "urlProvider": "network"
+           },
+           "signal": "@babel/plugin-transform-regenerator"
+          },
+          {
+           "signal": "@babel/plugin-transform-spread",
+           "location": {
+            "column": 21276,
+            "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+            "urlProvider": "network",
+            "type": "source-location",
+            "line": 0
+           }
+          },
+          {
+           "signal": "Array.prototype.some",
+           "location": {
+            "column": 215558,
+            "urlProvider": "network",
+            "line": 2,
+            "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+            "type": "source-location"
+           }
+          },
+          {
+           "location": {
+            "column": 216403,
+            "urlProvider": "network",
+            "type": "source-location",
+            "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+            "line": 2
+           },
+           "signal": "String.prototype.trim"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    },
+    "duplicated-javascript-insight": {
+     "id": "duplicated-javascript-insight",
+     "title": "Duplicated JavaScript",
+     "description": "Remove large, [duplicate JavaScript modules](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) from bundles to reduce unnecessary bytes consumed by network activity.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "label": "Source",
+        "subItemsHeading": {
+         "key": "url",
+         "valueType": "url"
+        },
+        "valueType": "code",
+        "key": "source"
+       },
+       {
+        "subItemsHeading": {
+         "key": "sourceTransferBytes"
+        },
+        "key": "wastedBytes",
+        "label": "Duplicated bytes",
+        "granularity": 10,
+        "valueType": "bytes"
+       }
+      ],
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      },
+      "type": "table"
+     }
+    },
+    "document-latency-insight": {
+     "id": "document-latency-insight",
+     "title": "Document request latency",
+     "description": "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "metricSavings": {
+      "LCP": 0,
+      "FCP": 0
+     },
+     "details": {
+      "type": "checklist",
+      "debugData": {
+       "wastedBytes": 0,
+       "redirectDuration": 0,
+       "uncompressedResponseBytes": 0,
+       "serverResponseTime": 2,
+       "type": "debugdata"
+      },
+      "items": {
+       "usesCompression": {
+        "label": "Applies text compression",
+        "value": true
+       },
+       "noRedirects": {
+        "value": true,
+        "label": "Avoids redirects"
+       },
+       "serverResponseIsFast": {
+        "label": "Server responds quickly (observed 2 ms)",
+        "value": true
+       }
+      }
+     }
+    },
+    "third-parties-insight": {
+     "id": "third-parties-insight",
+     "title": "3rd parties",
+     "description": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developer.chrome.com/docs/performance/insights/third-parties) to prioritize your page's content.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "text",
+        "key": "entity",
+        "subItemsHeading": {
+         "key": "url",
+         "valueType": "url"
+        },
+        "label": "3rd party"
+       },
+       {
+        "subItemsHeading": {
+         "key": "transferSize"
+        },
+        "label": "Transfer size",
+        "key": "transferSize",
+        "valueType": "bytes",
+        "granularity": 1
+       },
+       {
+        "label": "Main thread time",
+        "subItemsHeading": {
+         "key": "mainThreadTime"
+        },
+        "granularity": 1,
+        "valueType": "ms",
+        "key": "mainThreadTime"
+       }
+      ],
+      "items": [
+       {
+        "entity": "Tilda",
+        "mainThreadTime": 134.435999751091,
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "mainThreadTime": 52.7600000500679,
+           "url": "https://static.tildacdn.com/js/jquery-1.10.2.min.js",
+           "transferSize": 38751
+          },
+          {
+           "mainThreadTime": 19.937999963760376,
+           "transferSize": 77444,
+           "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js"
+          },
+          {
+           "url": "https://static.tildacdn.com/js/tilda-scripts-3.0.min.js",
+           "mainThreadTime": 16.29699981212616,
+           "transferSize": 7068
+          },
+          {
+           "mainThreadTime": 13.125999867916107,
+           "url": "https://static.tildacdn.com/js/lazyload-1.3.min.js",
+           "transferSize": 8399
+          },
+          {
+           "url": "https://static.tildacdn.com/js/tildasimplestat-0.1.min.js",
+           "transferSize": 2859,
+           "mainThreadTime": 6.623000085353851
+          },
+          {
+           "mainThreadTime": 5.50599992275238,
+           "url": "https://static.tildacdn.com/js/tilda-slds-1.4.min.js",
+           "transferSize": 11771
+          },
+          {
+           "mainThreadTime": 4.528999984264374,
+           "url": "https://static.tildacdn.com/js/tilda-zoom-2.0.min.js",
+           "transferSize": 11635
+          },
+          {
+           "transferSize": 7448,
+           "mainThreadTime": 4.12200003862381,
+           "url": "https://static.tildacdn.com/js/tilda-animation-1.0.min.js"
+          },
+          {
+           "url": "https://static.tildacdn.com/js/hammer.min.js",
+           "transferSize": 8765,
+           "mainThreadTime": 3.715000033378601
+          },
+          {
+           "mainThreadTime": 3.4149999618530273,
+           "transferSize": 12003,
+           "url": "https://static.tildacdn.com/js/tilda-menusub-1.0.min.js"
+          },
+          {
+           "transferSize": 5917,
+           "mainThreadTime": 1.9550000429153442,
+           "url": "https://static.tildacdn.com/js/tilda-cover-1.0.min.js"
+          },
+          {
+           "transferSize": 4744,
+           "url": "https://static.tildacdn.com/js/tilda-events-1.0.min.js",
+           "mainThreadTime": 1.8220000267028809
+          },
+          {
+           "mainThreadTime": 0.6279999613761902,
+           "transferSize": 2309,
+           "url": "https://static.tildacdn.com/js/tilda-products-1.0.min.js"
+          },
+          {
+           "transferSize": 99229,
+           "url": "https://thumb.tildacdn.com/tild3536-3938-4131-a138-353564306463/-/cover/900x1800/center/center/-/format/webp/ss-118678189-protect.jpg",
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://thumb.tildacdn.com/tild3761-6131-4338-b330-666236623166/-/cover/900x1800/center/center/-/format/webp/attractive-beautiful.jpg",
+           "transferSize": 39924
+          },
+          {
+           "url": "https://static.tildacdn.com/tild3432-6565-4839-b736-303333643934/_1.png",
+           "mainThreadTime": 0,
+           "transferSize": 19173
+          },
+          {
+           "url": "https://static.tildacdn.com/css/tilda-catalog-1.1.min.css",
+           "mainThreadTime": 0,
+           "transferSize": 13730
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://thumb.tildacdn.com/tild6363-3638-4335-a335-643064396337/-/cover/900x1800/center/center/-/format/webp/noroot.png",
+           "transferSize": 12618
+          },
+          {
+           "url": "https://static.tildacdn.com/css/tilda-forms-1.0.min.css",
+           "mainThreadTime": 0,
+           "transferSize": 10601
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild6134-3433-4932-a331-353634366335/-/resizeb/20x/adult-body-fashion-3.jpg",
+           "transferSize": 4401
+          },
+          {
+           "url": "https://static.tildacdn.com/tild3761-6131-4338-b330-666236623166/-/resizeb/20x/attractive-beautiful.jpg",
+           "mainThreadTime": 0,
+           "transferSize": 4350
+          },
+          {
+           "transferSize": 4315,
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild3634-3961-4534-a336-316466343463/-/resizeb/20x/artist-attractive-be.jpg"
+          },
+          {
+           "url": "https://static.tildacdn.com/css/tilda-zoom-2.0.min.css",
+           "transferSize": 2977,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 2964,
+           "url": "https://static.tildacdn.com/css/tilda-slds-1.4.min.css"
+          },
+          {
+           "url": "https://static.tildacdn.com/css/tilda-animation-1.0.min.css",
+           "transferSize": 2298,
+           "mainThreadTime": 0
+          },
+          {
+           "transferSize": 1999,
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/css/tilda-menusub-1.0.min.css"
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1823,
+           "url": "https://static.tildacdn.com/css/tilda-grid-3.0.min.css"
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1454,
+           "url": "https://static.tildacdn.com/css/tilda-cover-1.0.min.css"
+          },
+          {
+           "transferSize": 1321,
+           "url": "https://static.tildacdn.com/img/tildacopy.png",
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1297,
+           "url": "https://static.tildacdn.com/css/tilda-popup-1.1.min.css"
+          },
+          {
+           "transferSize": 1243,
+           "url": "https://static.tildacdn.com/tild3135-3139-4534-b366-636361643435/-/resizeb/20x/50_offgif.jpg",
+           "mainThreadTime": 0
+          },
+          {
+           "transferSize": 1238,
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild3536-3938-4131-a138-353564306463/-/resizeb/20x/ss-118678189-protect.jpg"
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild3536-3163-4138-a263-613536626437/-/resizeb/20x/orig.jpg",
+           "transferSize": 1193
+          },
+          {
+           "url": "https://static.tildacdn.com/tild3934-6365-4430-a535-373765663266/-/resizeb/20x/orig.jpg",
+           "mainThreadTime": 0,
+           "transferSize": 1193
+          },
+          {
+           "transferSize": 1189,
+           "url": "https://static.tildacdn.com/tild3462-6364-4631-a337-353530343136/-/resizeb/20x/manicure-pedicure.jpg",
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1158,
+           "url": "https://static.tildacdn.com/tild6334-6164-4664-b661-363863383461/-/resizeb/20x/9-tricks-to-stop-thi.jpg"
+          },
+          {
+           "url": "https://static.tildacdn.com/tild6666-3036-4665-b836-333032663863/-/resizeb/20x/_1.jpg",
+           "mainThreadTime": 0,
+           "transferSize": 1151
+          },
+          {
+           "url": "https://static.tildacdn.com/tild3637-3266-4362-a131-393638316434/-/resizeb/20x/IMGL6261.jpg",
+           "transferSize": 1148,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1147,
+           "url": "https://static.tildacdn.com/tild6363-3638-4335-a335-643064396337/-/resizeb/20x/noroot.png"
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild6161-3033-4135-a664-366238613664/-/resizeb/20x/Customized-Hair-Trea.jpg",
+           "transferSize": 1144
+          },
+          {
+           "url": "https://static.tildacdn.com/lib/tildaicon/39323534-6530-4531-a161-353364616636/education_location.svg",
+           "transferSize": 1090,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 1029,
+           "url": "https://static.tildacdn.com/lib/tildaicon/38366165-3234-4666-b334-353037626330/6bs_quality.svg"
+          },
+          {
+           "transferSize": 1011,
+           "url": "https://static.tildacdn.com/tild3539-3338-4338-b234-386431333432/-3-06.svg",
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://static.tildacdn.com/tild3736-6138-4561-a664-393963363065/-3-04.svg",
+           "transferSize": 897
+          },
+          {
+           "url": "https://static.tildacdn.com/tild6135-6432-4932-b265-626334316539/-3-05.svg",
+           "transferSize": 881,
+           "mainThreadTime": 0
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 858,
+           "url": "https://static.tildacdn.com/lib/tildaicon/61386665-6361-4537-a163-336431626339/store_cost.svg"
+          }
+         ]
+        },
+        "transferSize": 441157
+       },
+       {
+        "entity": "Google Fonts",
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "mainThreadTime": 0,
+           "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2",
+           "transferSize": 38332
+          },
+          {
+           "mainThreadTime": 0,
+           "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2",
+           "transferSize": 20435
+          },
+          {
+           "mainThreadTime": 0,
+           "transferSize": 2506,
+           "url": "https://fonts.googleapis.com/css2"
+          }
+         ]
+        },
+        "mainThreadTime": 0,
+        "transferSize": 61273
+       }
+      ],
+      "isEntityGrouped": true
+     }
+    },
+    "viewport-insight": {
+     "id": "viewport-insight",
+     "title": "Optimize viewport for mobile",
+     "description": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
+     "score": 1,
+     "scoreDisplayMode": "numeric",
+     "metricSavings": {
+      "INP": 0
+     },
+     "details": {
+      "items": [
+       {
+        "node": {
+         "type": "node",
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+         "lhId": "page-4-META",
+         "boundingRect": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0,
+          "width": 0,
+          "height": 0
+         },
+         "path": "1,HTML,0,HEAD,2,META",
+         "nodeLabel": "head > meta",
+         "selector": "head > meta"
+        }
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       }
+      ]
+     }
+    },
+    "target-size": {
+     "id": "target-size",
+     "title": "Touch targets have sufficient size and spacing.",
+     "description": "Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. [Learn more about touch targets](https://dequeuniversity.com/rules/axe/4.13/target-size).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        }
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "meta-viewport": {
+     "id": "meta-viewport",
+     "title": "`[user-scalable=\"no\"]` is not used in the `<meta name=\"viewport\">` element and the `[maximum-scale]` attribute is not less than 5.",
+     "description": "Disabling zooming is problematic for users with low vision who rely on screen magnification to properly see the contents of a web page. [Learn more about the viewport meta tag](https://dequeuniversity.com/rules/axe/4.13/meta-viewport).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "is-on-https": {
+     "id": "is-on-https",
+     "title": "Uses HTTPS",
+     "description": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more about HTTPS](https://developer.chrome.com/docs/lighthouse/pwa/is-on-https/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "valueType": "url",
+        "label": "Insecure URL",
+        "key": "url"
+       },
+       {
+        "label": "Request Resolution",
+        "valueType": "text",
+        "key": "resolution"
+       }
+      ],
+      "type": "table",
+      "items": []
+     }
+    },
+    "total-byte-weight": {
+     "id": "total-byte-weight",
+     "title": "Avoids enormous network payloads",
+     "description": "Large network payloads cost users real money and are highly correlated with long load times. [Learn how to reduce payload sizes](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/).",
+     "score": 1,
+     "scoreDisplayMode": "metricSavings",
+     "displayValue": "Total size was 527 KiB",
+     "details": {
+      "items": [
+       {
+        "url": "https://thumb.tildacdn.com/tild3536-3938-4131-a138-353564306463/-/cover/900x1800/center/center/-/format/webp/ss-118678189-protect.jpg",
+        "totalBytes": 99229
+       },
+       {
+        "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+        "totalBytes": 77444
+       },
+       {
+        "totalBytes": 39924,
+        "url": "https://thumb.tildacdn.com/tild3761-6131-4338-b330-666236623166/-/cover/900x1800/center/center/-/format/webp/attractive-beautiful.jpg"
+       },
+       {
+        "totalBytes": 38751,
+        "url": "https://static.tildacdn.com/js/jquery-1.10.2.min.js"
+       },
+       {
+        "totalBytes": 38332,
+        "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2"
+       },
+       {
+        "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2",
+        "totalBytes": 20435
+       },
+       {
+        "url": "https://static.tildacdn.com/tild3432-6565-4839-b736-303333643934/_1.png",
+        "totalBytes": 19173
+       },
+       {
+        "url": "https://static.tildacdn.com/css/tilda-catalog-1.1.min.css",
+        "totalBytes": 13730
+       },
+       {
+        "url": "https://thumb.tildacdn.com/tild6363-3638-4335-a335-643064396337/-/cover/900x1800/center/center/-/format/webp/noroot.png",
+        "totalBytes": 12618
+       },
+       {
+        "totalBytes": 12600,
+        "url": "https://salon4you.tilda.ws/tilda-blocks-2.7.js"
+       }
+      ],
+      "headings": [
+       {
+        "valueType": "url",
+        "label": "URL",
+        "key": "url"
+       },
+       {
+        "label": "Transfer Size",
+        "valueType": "bytes",
+        "key": "totalBytes"
+       }
+      ],
+      "type": "table",
+      "sortedBy": [
+       "totalBytes"
+      ]
+     },
+     "numericValue": 539894,
+     "numericUnit": "byte"
+    },
+    "resource-summary": {
+     "id": "resource-summary",
+     "title": "Resources Summary",
+     "description": "Aggregates all network requests and groups them by type",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "items": [
+       {
+        "requestCount": 53,
+        "transferSize": 539894,
+        "label": "Total",
+        "resourceType": "total"
+       },
+       {
+        "requestCount": 14,
+        "label": "Script",
+        "transferSize": 211713,
+        "resourceType": "script"
+       },
+       {
+        "resourceType": "image",
+        "label": "Image",
+        "requestCount": 24,
+        "transferSize": 202901
+       },
+       {
+        "label": "Font",
+        "requestCount": 2,
+        "transferSize": 58767,
+        "resourceType": "font"
+       },
+       {
+        "transferSize": 54062,
+        "requestCount": 11,
+        "label": "Stylesheet",
+        "resourceType": "stylesheet"
+       },
+       {
+        "transferSize": 12451,
+        "label": "Document",
+        "requestCount": 1,
+        "resourceType": "document"
+       },
+       {
+        "resourceType": "media",
+        "transferSize": 0,
+        "label": "Media",
+        "requestCount": 0
+       },
+       {
+        "label": "Other",
+        "resourceType": "other",
+        "transferSize": 0,
+        "requestCount": 1
+       },
+       {
+        "resourceType": "third-party",
+        "requestCount": 50,
+        "label": "Third-party",
+        "transferSize": 502430
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "text",
+        "key": "label",
+        "label": "Resource Type"
+       },
+       {
+        "key": "requestCount",
+        "valueType": "numeric",
+        "label": "Requests"
+       },
+       {
+        "valueType": "bytes",
+        "label": "Transfer Size",
+        "key": "transferSize"
+       }
+      ]
+     }
+    },
+    "network-requests": {
+     "id": "network-requests",
+     "title": "Network Requests",
+     "description": "Lists the network requests that were made during page load.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "debugData": {
+       "networkStartTimeTs": 493436355216,
+       "type": "debugdata",
+       "initiators": [
+        {
+         "columnNumber": 1352,
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 1448,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "columnNumber": 1626,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 0
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 1746,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "columnNumber": 1864,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "lineNumber": 0
+        },
+        {
+         "lineNumber": 0,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 1979
+        },
+        {
+         "lineNumber": 0,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 2095
+        },
+        {
+         "columnNumber": 2211,
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 0,
+         "type": "parser",
+         "columnNumber": 2326,
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 2444,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "columnNumber": 2560,
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 2626,
+         "type": "parser",
+         "lineNumber": 0
+        },
+        {
+         "columnNumber": 2705,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "lineNumber": 0
+        },
+        {
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 0,
+         "columnNumber": 2762
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 2853,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 2950,
+         "lineNumber": 0
+        },
+        {
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "columnNumber": 3043
+        },
+        {
+         "lineNumber": 0,
+         "type": "parser",
+         "columnNumber": 3137,
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "columnNumber": 3232,
+         "lineNumber": 0,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "columnNumber": 3324,
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 0,
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 3408,
+         "lineNumber": 0,
+         "type": "parser"
+        },
+        {
+         "lineNumber": 0,
+         "columnNumber": 3504,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "type": "parser",
+         "columnNumber": 3596,
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "lineNumber": 0,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "columnNumber": 3691
+        },
+        {
+         "columnNumber": 1382,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 1
+        },
+        {
+         "lineNumber": 15,
+         "columnNumber": 4275,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "type": "parser",
+         "columnNumber": 4882,
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 15
+        },
+        {
+         "columnNumber": 5424,
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 15,
+         "type": "parser"
+        },
+        {
+         "columnNumber": 1439,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "lineNumber": 24
+        },
+        {
+         "columnNumber": 1970,
+         "lineNumber": 24,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 24,
+         "type": "parser",
+         "columnNumber": 2464,
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 24,
+         "columnNumber": 5994
+        },
+        {
+         "lineNumber": 24,
+         "columnNumber": 599,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 599,
+         "type": "parser",
+         "lineNumber": 24
+        },
+        {
+         "lineNumber": 24,
+         "columnNumber": 599,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "lineNumber": 24,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "columnNumber": 599
+        },
+        {
+         "lineNumber": 24,
+         "url": "https://salon4you.tilda.ws/",
+         "columnNumber": 599,
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "columnNumber": 599,
+         "lineNumber": 24
+        },
+        {
+         "columnNumber": 599,
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 24,
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "lineNumber": 24,
+         "columnNumber": 599,
+         "type": "parser"
+        },
+        {
+         "lineNumber": 24,
+         "columnNumber": 599,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "lineNumber": 24,
+         "type": "parser",
+         "columnNumber": 599,
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "columnNumber": 599,
+         "lineNumber": 24,
+         "type": "parser",
+         "url": "https://salon4you.tilda.ws/"
+        },
+        {
+         "lineNumber": 24,
+         "columnNumber": 599,
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser"
+        },
+        {
+         "url": "https://salon4you.tilda.ws/",
+         "type": "parser",
+         "lineNumber": 24,
+         "columnNumber": 599
+        },
+        {
+         "url": "https://fonts.googleapis.com/css2",
+         "type": "parser"
+        },
+        {
+         "url": "https://fonts.googleapis.com/css2",
+         "type": "parser"
+        }
+       ]
+      },
+      "items": [
+       {
+        "sessionTargetType": "page",
+        "networkEndTime": 789.4749999642372,
+        "statusCode": 200,
+        "finished": true,
+        "protocol": "h2",
+        "entity": "tilda.ws",
+        "rendererStartTime": 0,
+        "mimeType": "text/html",
+        "networkRequestTime": 3.3949999809265137,
+        "resourceType": "Document",
+        "cache": "none",
+        "priority": "VeryHigh",
+        "resourceSize": 57634,
+        "transferSize": 12451,
+        "url": "https://salon4you.tilda.ws/",
+        "experimentalFromMainFrame": true
+       },
+       {
+        "sessionTargetType": "page",
+        "transferSize": 1823,
+        "priority": "VeryHigh",
+        "resourceSize": 4514,
+        "cache": "none",
+        "resourceType": "Stylesheet",
+        "rendererStartTime": 803.3729999661446,
+        "networkRequestTime": 804.5429999828339,
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/css",
+        "statusCode": 200,
+        "url": "https://static.tildacdn.com/css/tilda-grid-3.0.min.css",
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 1794.6840000152588,
+        "entity": "Tilda"
+       },
+       {
+        "sessionTargetType": "page",
+        "resourceType": "Stylesheet",
+        "url": "https://salon4you.tilda.ws/tilda-blocks-2.14.css",
+        "networkRequestTime": 804.6610000133514,
+        "priority": "VeryHigh",
+        "resourceSize": 65754,
+        "networkEndTime": 1787.2609999775887,
+        "transferSize": 12413,
+        "rendererStartTime": 803.7909999489784,
+        "statusCode": 200,
+        "cache": "none",
+        "mimeType": "text/css",
+        "protocol": "h2",
+        "entity": "tilda.ws",
+        "finished": true,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "rendererStartTime": 803.9219999909401,
+        "networkRequestTime": 804.8829999566078,
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 821.2469999790192,
+        "finished": true,
+        "resourceSize": 21760,
+        "transferSize": 2506,
+        "statusCode": 200,
+        "protocol": "h2",
+        "cache": "none",
+        "entity": "Google Fonts",
+        "resourceType": "Stylesheet",
+        "sessionTargetType": "page",
+        "mimeType": "text/css",
+        "url": "https://fonts.googleapis.com/css2",
+        "priority": "VeryHigh"
+       },
+       {
+        "protocol": "h2",
+        "finished": true,
+        "networkEndTime": 1746.5519999861717,
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "cache": "none",
+        "networkRequestTime": 805.1449999809265,
+        "rendererStartTime": 804.0599999427795,
+        "priority": "VeryHigh",
+        "sessionTargetType": "page",
+        "mimeType": "text/css",
+        "resourceType": "Stylesheet",
+        "statusCode": 200,
+        "transferSize": 2298,
+        "resourceSize": 18638,
+        "url": "https://static.tildacdn.com/css/tilda-animation-1.0.min.css"
+       },
+       {
+        "entity": "Tilda",
+        "mimeType": "text/css",
+        "networkEndTime": 1725.1839999556541,
+        "networkRequestTime": 805.2879999876022,
+        "priority": "VeryHigh",
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "resourceType": "Stylesheet",
+        "rendererStartTime": 804.1909999847412,
+        "resourceSize": 5016,
+        "protocol": "h2",
+        "transferSize": 1999,
+        "finished": true,
+        "url": "https://static.tildacdn.com/css/tilda-menusub-1.0.min.css"
+       },
+       {
+        "mimeType": "text/css",
+        "networkRequestTime": 805.5029999613762,
+        "sessionTargetType": "page",
+        "networkEndTime": 1713.3019999861717,
+        "rendererStartTime": 804.3249999284744,
+        "priority": "VeryHigh",
+        "cache": "none",
+        "statusCode": 200,
+        "resourceSize": 9882,
+        "transferSize": 2964,
+        "resourceType": "Stylesheet",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "entity": "Tilda",
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/css/tilda-slds-1.4.min.css"
+       },
+       {
+        "resourceSize": 2746,
+        "priority": "VeryHigh",
+        "transferSize": 1454,
+        "experimentalFromMainFrame": true,
+        "resourceType": "Stylesheet",
+        "mimeType": "text/css",
+        "statusCode": 200,
+        "networkEndTime": 2115.7199999690056,
+        "rendererStartTime": 804.4749999642372,
+        "url": "https://static.tildacdn.com/css/tilda-cover-1.0.min.css",
+        "finished": true,
+        "cache": "none",
+        "protocol": "h2",
+        "networkRequestTime": 805.6930000185966,
+        "entity": "Tilda",
+        "sessionTargetType": "page"
+       },
+       {
+        "resourceSize": 1724,
+        "protocol": "h2",
+        "finished": true,
+        "transferSize": 1297,
+        "rendererStartTime": 804.62399995327,
+        "resourceType": "Stylesheet",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "networkEndTime": 2115.4139999747276,
+        "cache": "none",
+        "url": "https://static.tildacdn.com/css/tilda-popup-1.1.min.css",
+        "priority": "VeryHigh",
+        "statusCode": 200,
+        "mimeType": "text/css",
+        "networkRequestTime": 805.9859999418259
+       },
+       {
+        "priority": "VeryHigh",
+        "resourceType": "Stylesheet",
+        "transferSize": 2977,
+        "resourceSize": 9389,
+        "experimentalFromMainFrame": true,
+        "url": "https://static.tildacdn.com/css/tilda-zoom-2.0.min.css",
+        "mimeType": "text/css",
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "finished": true,
+        "statusCode": 200,
+        "rendererStartTime": 804.8029999732971,
+        "networkEndTime": 1712.8889999985695,
+        "entity": "Tilda",
+        "cache": "none",
+        "networkRequestTime": 806.1499999761581
+       },
+       {
+        "transferSize": 13730,
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 69297,
+        "mimeType": "text/css",
+        "resourceType": "Stylesheet",
+        "cache": "none",
+        "url": "https://static.tildacdn.com/css/tilda-catalog-1.1.min.css",
+        "priority": "VeryHigh",
+        "networkRequestTime": 806.3379999995232,
+        "sessionTargetType": "page",
+        "rendererStartTime": 804.9619999527931,
+        "protocol": "h2",
+        "networkEndTime": 1750.9340000152588,
+        "entity": "Tilda",
+        "finished": true
+       },
+       {
+        "networkEndTime": 2017.3159999847412,
+        "mimeType": "text/css",
+        "rendererStartTime": 805.12399995327,
+        "entity": "Tilda",
+        "networkRequestTime": 806.5,
+        "priority": "VeryHigh",
+        "sessionTargetType": "page",
+        "url": "https://static.tildacdn.com/css/tilda-forms-1.0.min.css",
+        "cache": "none",
+        "resourceType": "Stylesheet",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "finished": true,
+        "transferSize": 10601,
+        "protocol": "h2",
+        "resourceSize": 56904
+       },
+       {
+        "statusCode": 200,
+        "protocol": "h2",
+        "networkEndTime": 1794.2009999752045,
+        "finished": true,
+        "entity": "Tilda",
+        "cache": "none",
+        "url": "https://static.tildacdn.com/js/jquery-1.10.2.min.js",
+        "sessionTargetType": "page",
+        "resourceType": "Script",
+        "transferSize": 38751,
+        "networkRequestTime": 806.6899999976158,
+        "resourceSize": 93064,
+        "priority": "High",
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 805.2800000309944,
+        "mimeType": "application/javascript"
+       },
+       {
+        "networkEndTime": 2024.1830000281334,
+        "networkRequestTime": 807.3759999871254,
+        "finished": true,
+        "entity": "Tilda",
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/js/tilda-scripts-3.0.min.js",
+        "statusCode": 200,
+        "priority": "High",
+        "experimentalFromMainFrame": true,
+        "rendererStartTime": 805.442999958992,
+        "sessionTargetType": "page",
+        "resourceType": "Script",
+        "mimeType": "application/javascript",
+        "transferSize": 7068,
+        "cache": "none",
+        "resourceSize": 23377
+       },
+       {
+        "transferSize": 12600,
+        "resourceSize": 56168,
+        "priority": "High",
+        "entity": "tilda.ws",
+        "resourceType": "Script",
+        "statusCode": 200,
+        "networkRequestTime": 807.7419999241829,
+        "mimeType": "application/javascript",
+        "rendererStartTime": 805.5939999222755,
+        "cache": "none",
+        "protocol": "h2",
+        "finished": true,
+        "url": "https://salon4you.tilda.ws/tilda-blocks-2.7.js",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 1107.0879999399185
+       },
+       {
+        "networkEndTime": 1807.910000026226,
+        "mimeType": "application/javascript",
+        "statusCode": 200,
+        "entity": "Tilda",
+        "priority": "High",
+        "url": "https://static.tildacdn.com/js/lazyload-1.3.min.js",
+        "transferSize": 8399,
+        "resourceSize": 20225,
+        "rendererStartTime": 805.7469999790192,
+        "networkRequestTime": 807.8849999904633,
+        "resourceType": "Script",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2"
+       },
+       {
+        "networkEndTime": 1724.705999970436,
+        "cache": "none",
+        "finished": true,
+        "protocol": "h2",
+        "statusCode": 200,
+        "url": "https://static.tildacdn.com/js/tilda-animation-1.0.min.js",
+        "priority": "High",
+        "rendererStartTime": 805.8980000019073,
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "transferSize": 7448,
+        "sessionTargetType": "page",
+        "networkRequestTime": 808.0509999990463,
+        "resourceSize": 26658,
+        "mimeType": "application/javascript",
+        "resourceType": "Script"
+       },
+       {
+        "networkRequestTime": 808.1399999260902,
+        "mimeType": "application/javascript",
+        "cache": "none",
+        "statusCode": 200,
+        "priority": "High",
+        "url": "https://static.tildacdn.com/js/tilda-cover-1.0.min.js",
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "rendererStartTime": 806.0670000314713,
+        "networkEndTime": 2114.8759999275208,
+        "protocol": "h2",
+        "resourceType": "Script",
+        "finished": true,
+        "sessionTargetType": "page",
+        "resourceSize": 16409,
+        "transferSize": 5917
+       },
+       {
+        "protocol": "h2",
+        "resourceType": "Script",
+        "networkEndTime": 2116.0450000166893,
+        "finished": true,
+        "resourceSize": 13439,
+        "transferSize": 4744,
+        "cache": "none",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "priority": "High",
+        "entity": "Tilda",
+        "rendererStartTime": 806.3100000023842,
+        "mimeType": "application/javascript",
+        "url": "https://static.tildacdn.com/js/tilda-events-1.0.min.js",
+        "networkRequestTime": 809.5419999957085
+       },
+       {
+        "mimeType": "application/javascript",
+        "entity": "Tilda",
+        "rendererStartTime": 806.5019999742508,
+        "transferSize": 12003,
+        "sessionTargetType": "page",
+        "resourceSize": 40590,
+        "experimentalFromMainFrame": true,
+        "priority": "High",
+        "resourceType": "Script",
+        "cache": "none",
+        "statusCode": 200,
+        "finished": true,
+        "networkRequestTime": 812.1459999680519,
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/js/tilda-menusub-1.0.min.js",
+        "networkEndTime": 1748.9850000143051
+       },
+       {
+        "rendererStartTime": 806.7590000033379,
+        "cache": "none",
+        "finished": true,
+        "networkEndTime": 1768.199999988079,
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/js/tilda-slds-1.4.min.js",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "priority": "High",
+        "statusCode": 200,
+        "networkRequestTime": 818.1969999670982,
+        "resourceType": "Script",
+        "resourceSize": 40121,
+        "mimeType": "application/javascript",
+        "transferSize": 11771
+       },
+       {
+        "resourceType": "Script",
+        "transferSize": 8765,
+        "resourceSize": 20726,
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "entity": "Tilda",
+        "protocol": "h2",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "networkRequestTime": 818.2979999780655,
+        "mimeType": "application/javascript",
+        "networkEndTime": 1728.0989999771118,
+        "priority": "High",
+        "cache": "none",
+        "rendererStartTime": 806.8840000033379,
+        "url": "https://static.tildacdn.com/js/hammer.min.js"
+       },
+       {
+        "priority": "High",
+        "entity": "Tilda",
+        "mimeType": "application/javascript",
+        "url": "https://static.tildacdn.com/js/tilda-products-1.0.min.js",
+        "finished": true,
+        "networkRequestTime": 818.386999964714,
+        "networkEndTime": 1707.2729999423027,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "resourceType": "Script",
+        "experimentalFromMainFrame": true,
+        "transferSize": 2309,
+        "rendererStartTime": 807.005999982357,
+        "cache": "none",
+        "resourceSize": 4808
+       },
+       {
+        "rendererStartTime": 807.1459999680519,
+        "entity": "Tilda",
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "networkEndTime": 1729.0939999818802,
+        "resourceType": "Script",
+        "statusCode": 200,
+        "priority": "High",
+        "resourceSize": 35319,
+        "transferSize": 11635,
+        "networkRequestTime": 818.4860000014305,
+        "url": "https://static.tildacdn.com/js/tilda-zoom-2.0.min.js",
+        "cache": "none",
+        "mimeType": "application/javascript",
+        "experimentalFromMainFrame": true
+       },
+       {
+        "finished": true,
+        "url": "https://static.tildacdn.com/js/tilda-catalog-1.1.min.js",
+        "protocol": "h2",
+        "cache": "none",
+        "networkEndTime": 2116.716000020504,
+        "resourceSize": 240913,
+        "sessionTargetType": "page",
+        "transferSize": 77444,
+        "networkRequestTime": 818.5719999670982,
+        "priority": "High",
+        "resourceType": "Script",
+        "mimeType": "application/javascript",
+        "entity": "Tilda",
+        "rendererStartTime": 807.2979999780655,
+        "experimentalFromMainFrame": true,
+        "statusCode": 200
+       },
+       {
+        "priority": "Medium",
+        "url": "https://static.tildacdn.com/tild3432-6565-4839-b736-303333643934/_1.png",
+        "mimeType": "image/png",
+        "networkRequestTime": 818.6549999713898,
+        "entity": "Tilda",
+        "cache": "none",
+        "statusCode": 200,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "rendererStartTime": 807.4689999818802,
+        "transferSize": 19173,
+        "networkEndTime": 2114.4029999375343,
+        "resourceSize": 18747,
+        "resourceType": "Image"
+       },
+       {
+        "mimeType": "image/svg+xml",
+        "entity": "Tilda",
+        "url": "https://static.tildacdn.com/lib/tildaicon/38366165-3234-4666-b334-353037626330/6bs_quality.svg",
+        "sessionTargetType": "page",
+        "transferSize": 1029,
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 1037,
+        "priority": "Medium",
+        "resourceType": "Image",
+        "rendererStartTime": 807.6089999675751,
+        "cache": "none",
+        "networkEndTime": 2115.179000020027,
+        "networkRequestTime": 818.8100000023842,
+        "finished": true,
+        "protocol": "h2"
+       },
+       {
+        "networkEndTime": 2421.6439999341965,
+        "protocol": "h2",
+        "finished": true,
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 2118.123000025749,
+        "rendererStartTime": 807.727999985218,
+        "cache": "none",
+        "mimeType": "image/svg+xml",
+        "url": "https://static.tildacdn.com/lib/tildaicon/39323534-6530-4531-a161-353364616636/education_location.svg",
+        "resourceSize": 1091,
+        "transferSize": 1090,
+        "priority": "Medium",
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "entity": "Tilda"
+       },
+       {
+        "cache": "none",
+        "entity": "Tilda",
+        "priority": "Medium",
+        "rendererStartTime": 807.8589999675751,
+        "resourceSize": 652,
+        "statusCode": 200,
+        "transferSize": 858,
+        "networkRequestTime": 2118.3519999980927,
+        "resourceType": "Image",
+        "mimeType": "image/svg+xml",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2426.4589999318123,
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/lib/tildaicon/61386665-6361-4537-a163-336431626339/store_cost.svg",
+        "finished": true
+       },
+       {
+        "priority": "Medium",
+        "rendererStartTime": 807.9729999899864,
+        "experimentalFromMainFrame": true,
+        "url": "https://static.tildacdn.com/tild3736-6138-4561-a664-393963363065/-3-04.svg",
+        "networkEndTime": 2511.3579999804497,
+        "sessionTargetType": "page",
+        "cache": "none",
+        "mimeType": "image/svg+xml",
+        "resourceSize": 599,
+        "transferSize": 897,
+        "resourceType": "Image",
+        "finished": true,
+        "protocol": "h2",
+        "networkRequestTime": 2209.9199999570847,
+        "entity": "Tilda",
+        "statusCode": 200
+       },
+       {
+        "finished": true,
+        "transferSize": 881,
+        "protocol": "h2",
+        "resourceSize": 503,
+        "resourceType": "Image",
+        "networkEndTime": 2516.0109999775887,
+        "url": "https://static.tildacdn.com/tild6135-6432-4932-b265-626334316539/-3-05.svg",
+        "sessionTargetType": "page",
+        "priority": "Low",
+        "mimeType": "image/svg+xml",
+        "rendererStartTime": 808.0849999785423,
+        "networkRequestTime": 2210.5779999494553,
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "entity": "Tilda"
+       },
+       {
+        "networkEndTime": 2516.3230000138283,
+        "finished": true,
+        "resourceType": "Image",
+        "protocol": "h2",
+        "url": "https://static.tildacdn.com/tild3539-3338-4338-b234-386431333432/-3-06.svg",
+        "resourceSize": 951,
+        "statusCode": 200,
+        "transferSize": 1011,
+        "entity": "Tilda",
+        "cache": "none",
+        "networkRequestTime": 2210.6710000038147,
+        "experimentalFromMainFrame": true,
+        "priority": "Low",
+        "rendererStartTime": 808.2099999785423,
+        "mimeType": "image/svg+xml",
+        "sessionTargetType": "page"
+       },
+       {
+        "priority": "Low",
+        "entity": "Tilda",
+        "url": "https://static.tildacdn.com/img/tildacopy.png",
+        "cache": "none",
+        "networkEndTime": 2516.5259999632835,
+        "mimeType": "image/png",
+        "transferSize": 1321,
+        "resourceSize": 819,
+        "protocol": "h2",
+        "resourceType": "Image",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "networkRequestTime": 2210.774999976158,
+        "rendererStartTime": 808.3429999947548
+       },
+       {
+        "resourceType": "Image",
+        "transferSize": 1238,
+        "cache": "none",
+        "url": "https://static.tildacdn.com/tild3536-3938-4131-a138-353564306463/-/resizeb/20x/ss-118678189-protect.jpg",
+        "resourceSize": 845,
+        "finished": true,
+        "protocol": "h2",
+        "mimeType": "image/jpeg",
+        "statusCode": 200,
+        "rendererStartTime": 2219.274999976158,
+        "entity": "Tilda",
+        "networkEndTime": 2530.5479999780655,
+        "networkRequestTime": 2219.8930000066757,
+        "experimentalFromMainFrame": true,
+        "priority": "Low",
+        "sessionTargetType": "page"
+       },
+       {
+        "sessionTargetType": "page",
+        "networkEndTime": 2530.1159999370575,
+        "finished": true,
+        "protocol": "h2",
+        "rendererStartTime": 2219.7379999756813,
+        "networkRequestTime": 2220.1999999284744,
+        "resourceType": "Image",
+        "entity": "Tilda",
+        "transferSize": 1147,
+        "resourceSize": 840,
+        "url": "https://static.tildacdn.com/tild6363-3638-4335-a335-643064396337/-/resizeb/20x/noroot.png",
+        "priority": "Low",
+        "cache": "none",
+        "statusCode": 200,
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/png"
+       },
+       {
+        "resourceType": "Image",
+        "finished": true,
+        "resourceSize": 3999,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "transferSize": 4350,
+        "url": "https://static.tildacdn.com/tild3761-6131-4338-b330-666236623166/-/resizeb/20x/attractive-beautiful.jpg",
+        "networkEndTime": 2528.525000035763,
+        "cache": "none",
+        "statusCode": 200,
+        "networkRequestTime": 2220.746999979019,
+        "rendererStartTime": 2219.986999988556,
+        "priority": "High",
+        "entity": "Tilda",
+        "sessionTargetType": "page",
+        "mimeType": "image/jpeg"
+       },
+       {
+        "url": "https://static.tildacdn.com/tild6334-6164-4664-b661-363863383461/-/resizeb/20x/9-tricks-to-stop-thi.jpg",
+        "cache": "none",
+        "mimeType": "image/jpeg",
+        "rendererStartTime": 2221.138000011444,
+        "statusCode": 200,
+        "networkRequestTime": 2221.6549999713898,
+        "priority": "Low",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "entity": "Tilda",
+        "resourceType": "Image",
+        "resourceSize": 848,
+        "networkEndTime": 2529.830999970436,
+        "transferSize": 1158,
+        "finished": true,
+        "protocol": "h2"
+       },
+       {
+        "networkRequestTime": 2222.1689999699593,
+        "priority": "Low",
+        "statusCode": 200,
+        "mimeType": "image/jpeg",
+        "protocol": "h2",
+        "experimentalFromMainFrame": true,
+        "finished": true,
+        "entity": "Tilda",
+        "sessionTargetType": "page",
+        "url": "https://static.tildacdn.com/tild6134-3433-4932-a331-353634366335/-/resizeb/20x/adult-body-fashion-3.jpg",
+        "resourceType": "Image",
+        "cache": "none",
+        "transferSize": 4401,
+        "networkEndTime": 2533.436999976635,
+        "rendererStartTime": 2221.360000014305,
+        "resourceSize": 4008
+       },
+       {
+        "networkEndTime": 2540.5109999775887,
+        "mimeType": "image/jpeg",
+        "resourceType": "Image",
+        "transferSize": 1193,
+        "resourceSize": 842,
+        "cache": "none",
+        "url": "https://static.tildacdn.com/tild3536-3163-4138-a263-613536626437/-/resizeb/20x/orig.jpg",
+        "statusCode": 200,
+        "priority": "Low",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "entity": "Tilda",
+        "protocol": "h2",
+        "networkRequestTime": 2222.277999997139,
+        "finished": true,
+        "rendererStartTime": 2221.559000015259
+       },
+       {
+        "priority": "Low",
+        "resourceType": "Image",
+        "experimentalFromMainFrame": true,
+        "mimeType": "image/jpeg",
+        "statusCode": 200,
+        "cache": "none",
+        "entity": "Tilda",
+        "resourceSize": 835,
+        "transferSize": 1144,
+        "finished": true,
+        "url": "https://static.tildacdn.com/tild6161-3033-4135-a664-366238613664/-/resizeb/20x/Customized-Hair-Trea.jpg",
+        "networkEndTime": 2529.524999976158,
+        "protocol": "h2",
+        "rendererStartTime": 2222.5509999990463,
+        "sessionTargetType": "page",
+        "networkRequestTime": 2222.992999970913
+       },
+       {
+        "finished": true,
+        "protocol": "h2",
+        "cache": "none",
+        "url": "https://static.tildacdn.com/tild3637-3266-4362-a131-393638316434/-/resizeb/20x/IMGL6261.jpg",
+        "entity": "Tilda",
+        "resourceType": "Image",
+        "rendererStartTime": 2222.8360000252724,
+        "resourceSize": 841,
+        "networkEndTime": 2527.9919999837875,
+        "priority": "Low",
+        "transferSize": 1148,
+        "mimeType": "image/jpeg",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "networkRequestTime": 2223.388999938965
+       },
+       {
+        "finished": true,
+        "protocol": "h2",
+        "statusCode": 200,
+        "cache": "none",
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "priority": "Low",
+        "url": "https://static.tildacdn.com/tild3462-6364-4631-a337-353530343136/-/resizeb/20x/manicure-pedicure.jpg",
+        "transferSize": 1189,
+        "resourceSize": 838,
+        "networkRequestTime": 2223.8539999723434,
+        "networkEndTime": 2539.6259999871254,
+        "resourceType": "Image",
+        "rendererStartTime": 2223.070999979973,
+        "entity": "Tilda",
+        "mimeType": "image/jpeg"
+       },
+       {
+        "rendererStartTime": 2223.292999982834,
+        "statusCode": 200,
+        "finished": true,
+        "protocol": "h2",
+        "resourceType": "Image",
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "resourceSize": 842,
+        "networkRequestTime": 2223.9819999933243,
+        "entity": "Tilda",
+        "transferSize": 1193,
+        "priority": "Low",
+        "networkEndTime": 2544.6990000009537,
+        "cache": "none",
+        "url": "https://static.tildacdn.com/tild3934-6365-4430-a535-373765663266/-/resizeb/20x/orig.jpg",
+        "mimeType": "image/jpeg"
+       },
+       {
+        "priority": "Low",
+        "experimentalFromMainFrame": true,
+        "url": "https://static.tildacdn.com/tild6666-3036-4665-b836-333032663863/-/resizeb/20x/_1.jpg",
+        "networkEndTime": 2544.0120000243187,
+        "mimeType": "image/jpeg",
+        "networkRequestTime": 2224.087999999523,
+        "cache": "none",
+        "finished": true,
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "transferSize": 1151,
+        "resourceSize": 843,
+        "entity": "Tilda",
+        "statusCode": 200,
+        "rendererStartTime": 2223.509000003338,
+        "resourceType": "Image"
+       },
+       {
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "networkRequestTime": 2224.304000020027,
+        "protocol": "h2",
+        "finished": true,
+        "rendererStartTime": 2223.71899998188,
+        "resourceSize": 4006,
+        "transferSize": 4315,
+        "networkEndTime": 2535.4039999842644,
+        "resourceType": "Image",
+        "priority": "Low",
+        "url": "https://static.tildacdn.com/tild3634-3961-4534-a336-316466343463/-/resizeb/20x/artist-attractive-be.jpg",
+        "entity": "Tilda",
+        "mimeType": "image/jpeg",
+        "statusCode": 200
+       },
+       {
+        "finished": true,
+        "protocol": "h2",
+        "networkRequestTime": 2224.7770000100136,
+        "resourceSize": 848,
+        "url": "https://static.tildacdn.com/tild3135-3139-4534-b366-636361643435/-/resizeb/20x/50_offgif.jpg",
+        "priority": "Low",
+        "entity": "Tilda",
+        "transferSize": 1243,
+        "resourceType": "Image",
+        "rendererStartTime": 2224.2389999628067,
+        "statusCode": 200,
+        "mimeType": "image/jpeg",
+        "networkEndTime": 2540.2379999756813,
+        "sessionTargetType": "page",
+        "cache": "none",
+        "experimentalFromMainFrame": true
+       },
+       {
+        "networkEndTime": 2229.689999997616,
+        "entity": "Google Fonts",
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2",
+        "cache": "none",
+        "rendererStartTime": 2225.0300000309944,
+        "finished": true,
+        "protocol": "h2",
+        "resourceType": "Font",
+        "transferSize": 38332,
+        "mimeType": "font/woff2",
+        "resourceSize": 37520,
+        "priority": "VeryHigh",
+        "networkRequestTime": 2225.5669999718666,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "statusCode": 200,
+        "rendererStartTime": 2225.524999976158,
+        "mimeType": "font/woff2",
+        "sessionTargetType": "page",
+        "cache": "none",
+        "priority": "VeryHigh",
+        "networkRequestTime": 2226.0049999952316,
+        "entity": "Google Fonts",
+        "experimentalFromMainFrame": true,
+        "networkEndTime": 2231.810000002384,
+        "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2",
+        "protocol": "h2",
+        "resourceSize": 19624,
+        "transferSize": 20435,
+        "finished": true,
+        "resourceType": "Font"
+       },
+       {
+        "entity": "Tilda",
+        "rendererStartTime": 2265.6039999723434,
+        "finished": true,
+        "protocol": "h2",
+        "networkEndTime": 2573.5009999871254,
+        "url": "https://static.tildacdn.com/js/tildasimplestat-0.1.min.js",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "statusCode": 200,
+        "mimeType": "application/javascript",
+        "experimentalFromMainFrame": true,
+        "networkRequestTime": 2267.041000008583,
+        "resourceSize": 5828,
+        "transferSize": 2859,
+        "resourceType": "Script",
+        "priority": "Low"
+       },
+       {
+        "finished": true,
+        "protocol": "data",
+        "url": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0P…",
+        "experimentalFromMainFrame": true,
+        "statusCode": 200,
+        "rendererStartTime": 2347.0799999833107,
+        "networkRequestTime": 2347.0799999833107,
+        "sessionTargetType": "page",
+        "networkEndTime": 2347.24899995327,
+        "resourceType": "Image",
+        "transferSize": 0,
+        "priority": "Low",
+        "cache": "memory",
+        "resourceSize": 66,
+        "mimeType": "image/webp"
+       },
+       {
+        "entity": "Tilda",
+        "priority": "Low",
+        "mimeType": "image/jpeg",
+        "cache": "none",
+        "protocol": "h2",
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "finished": true,
+        "networkRequestTime": 2454.111999988556,
+        "networkEndTime": 2565.1019999980927,
+        "rendererStartTime": 2453.282000005245,
+        "url": "https://thumb.tildacdn.com/tild3761-6131-4338-b330-666236623166/-/cover/900x1800/center/center/-/format/webp/attractive-beautiful.jpg",
+        "experimentalFromMainFrame": true,
+        "transferSize": 39924,
+        "resourceSize": 39536,
+        "resourceType": "Image"
+       },
+       {
+        "rendererStartTime": 2453.5499999523163,
+        "mimeType": "image/jpeg",
+        "networkRequestTime": 2455.143999993801,
+        "transferSize": 99229,
+        "sessionTargetType": "page",
+        "resourceSize": 98840,
+        "url": "https://thumb.tildacdn.com/tild3536-3938-4131-a138-353564306463/-/cover/900x1800/center/center/-/format/webp/ss-118678189-protect.jpg",
+        "entity": "Tilda",
+        "resourceType": "Image",
+        "priority": "Low",
+        "statusCode": 200,
+        "cache": "none",
+        "protocol": "h2",
+        "networkEndTime": 2576.96799993515,
+        "finished": true,
+        "experimentalFromMainFrame": true
+       },
+       {
+        "sessionTargetType": "page",
+        "url": "https://thumb.tildacdn.com/tild6363-3638-4335-a335-643064396337/-/cover/900x1800/center/center/-/format/webp/noroot.png",
+        "priority": "Low",
+        "networkRequestTime": 2457.5379999876022,
+        "mimeType": "image/png",
+        "rendererStartTime": 2453.712999999523,
+        "experimentalFromMainFrame": true,
+        "protocol": "h2",
+        "resourceType": "Image",
+        "finished": true,
+        "resourceSize": 12230,
+        "networkEndTime": 2565.7979999780655,
+        "transferSize": 12618,
+        "entity": "Tilda",
+        "statusCode": 200,
+        "cache": "none"
+       },
+       {
+        "sessionTargetType": "page",
+        "experimentalFromMainFrame": true,
+        "url": "https://stat.tildacdn.com/event/",
+        "finished": false,
+        "cache": "none",
+        "rendererStartTime": 4587.072000026703,
+        "transferSize": 0,
+        "resourceSize": 0,
+        "entity": "Tilda",
+        "resourceType": "XHR",
+        "statusCode": -1,
+        "networkRequestTime": 4587.072000026703,
+        "priority": "High"
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "valueType": "text",
+        "label": "Protocol",
+        "key": "protocol"
+       },
+       {
+        "valueType": "ms",
+        "key": "networkRequestTime",
+        "label": "Network Request Time",
+        "granularity": 1
+       },
+       {
+        "key": "networkEndTime",
+        "granularity": 1,
+        "label": "Network End Time",
+        "valueType": "ms"
+       },
+       {
+        "key": "transferSize",
+        "granularity": 1,
+        "valueType": "bytes",
+        "displayUnit": "kb",
+        "label": "Transfer Size"
+       },
+       {
+        "valueType": "bytes",
+        "label": "Resource Size",
+        "granularity": 1,
+        "key": "resourceSize",
+        "displayUnit": "kb"
+       },
+       {
+        "valueType": "text",
+        "key": "statusCode",
+        "label": "Status Code"
+       },
+       {
+        "valueType": "text",
+        "key": "mimeType",
+        "label": "MIME Type"
+       },
+       {
+        "key": "resourceType",
+        "valueType": "text",
+        "label": "Resource Type"
+       }
+      ]
+     }
+    },
+    "is-crawlable": {
+     "id": "is-crawlable",
+     "title": "Page isn’t blocked from indexing",
+     "description": "Search engines are unable to include your pages in search results if they don't have permission to crawl them. [Learn more about crawler directives](https://developer.chrome.com/docs/lighthouse/seo/is-crawlable/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "label": "Blocking Directive Source",
+        "key": "source",
+        "valueType": "code"
+       }
+      ]
+     },
+     "warnings": []
+    },
+    "robots-txt": {
+     "id": "robots-txt",
+     "title": "robots.txt is valid",
+     "description": "If your robots.txt file is malformed, crawlers may not be able to understand how you want your website to be crawled or indexed. [Learn more about robots.txt](https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "label": "Line #",
+        "key": "index",
+        "valueType": "text"
+       },
+       {
+        "label": "Content",
+        "key": "line",
+        "valueType": "code"
+       },
+       {
+        "label": "Error",
+        "valueType": "code",
+        "key": "message"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "document-title": {
+     "id": "document-title",
+     "title": "Document has a `<title>` element",
+     "description": "The title gives screen reader users an overview of the page, and search engine users rely on it heavily to determine if a page is relevant to their search. [Learn more about document titles](https://dequeuniversity.com/rules/axe/4.13/document-title).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node"
+       }
+      ]
+     }
+    },
+    "meta-description": {
+     "id": "meta-description",
+     "title": "Document has a meta description",
+     "description": "Meta descriptions may be included in search results to concisely summarize page content. [Learn more about the meta description](https://developer.chrome.com/docs/lighthouse/seo/meta-description/).",
+     "score": 1,
+     "scoreDisplayMode": "binary"
+    },
+    "color-contrast": {
+     "id": "color-contrast",
+     "title": "Background and foreground colors do not have a sufficient contrast ratio.",
+     "description": "Low-contrast text is difficult or impossible for many users to read. [Learn how to provide sufficient color contrast](https://dequeuniversity.com/rules/axe/4.13/color-contrast).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "debugData": {
+       "impact": "serious",
+       "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+       ],
+       "type": "debugdata"
+      },
+      "type": "table",
+      "items": [
+       {
+        "subItems": {
+         "items": [
+          {
+           "relatedNode": {
+            "lhId": "1-1-DIV",
+            "nodeLabel": "This site was made on Tilda — a website builder that helps to create a website …",
+            "path": "1,HTML,1,BODY,4,DIV",
+            "snippet": "<div class=\"t-tildalabel t-tildalabel-free\" id=\"tildacopy\" data-tilda-sign=\"1040782#4476112\" style=\"display: block !important; visibility: visible !important;\">",
+            "selector": "body.t-body > div#tildacopy",
+            "type": "node",
+            "boundingRect": {
+             "right": 412,
+             "height": 335,
+             "top": 7915,
+             "width": 412,
+             "left": 0,
+             "bottom": 8250
+            }
+           }
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "selector": "body.t-body > div#tildacopy > div.t-tildalabel-free__links-wr > a.t-tildalabel-free__txt-link",
+         "nodeLabel": "How to remove this block?",
+         "type": "node",
+         "snippet": "<a class=\"t-tildalabel-free__txt-link\" href=\"https://help.tilda.cc/white-label\" target=\"_blank\" rel=\"noopener\">",
+         "path": "1,HTML,1,BODY,4,DIV,1,DIV,0,A",
+         "lhId": "1-0-A",
+         "boundingRect": {
+          "right": 312,
+          "left": 100,
+          "bottom": 8155,
+          "top": 8130,
+          "height": 25,
+          "width": 212
+         },
+         "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.65 (foreground color: #666666, background color: #000000, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+       },
+       {
+        "subItems": {
+         "items": [
+          {
+           "relatedNode": {
+            "type": "node",
+            "nodeLabel": "This site was made on Tilda — a website builder that helps to create a website …",
+            "boundingRect": {
+             "height": 335,
+             "width": 412,
+             "right": 412,
+             "bottom": 8250,
+             "left": 0,
+             "top": 7915
+            },
+            "snippet": "<div class=\"t-tildalabel t-tildalabel-free\" id=\"tildacopy\" data-tilda-sign=\"1040782#4476112\" style=\"display: block !important; visibility: visible !important;\">",
+            "path": "1,HTML,1,BODY,4,DIV",
+            "lhId": "1-1-DIV",
+            "selector": "body.t-body > div#tildacopy"
+           }
+          }
+         ],
+         "type": "subitems"
+        },
+        "node": {
+         "snippet": "<a class=\"t-tildalabel-free__txt-link\" href=\"https://tilda.cc/?upm=1040782\" target=\"_blank\" rel=\"noopener\">",
+         "selector": "body.t-body > div#tildacopy > div.t-tildalabel-free__links-wr > a.t-tildalabel-free__txt-link",
+         "type": "node",
+         "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.65 (foreground color: #666666, background color: #000000, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+         "nodeLabel": "About platform",
+         "boundingRect": {
+          "left": 100,
+          "bottom": 8180,
+          "top": 8155,
+          "right": 312,
+          "height": 25,
+          "width": 212
+         },
+         "path": "1,HTML,1,BODY,4,DIV,1,DIV,1,A",
+         "lhId": "1-2-A"
+        }
+       },
+       {
+        "node": {
+         "type": "node",
+         "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.65 (foreground color: #666666, background color: #000000, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+         "selector": "body.t-body > div#tildacopy > div.t-tildalabel-free__links-wr > a.t-tildalabel-free__txt-link",
+         "snippet": "<a class=\"t-tildalabel-free__txt-link\" href=\"https://tilda.cc/abuse/\" target=\"_blank\" rel=\"noopener\">",
+         "nodeLabel": "Submit a complaint",
+         "boundingRect": {
+          "width": 212,
+          "height": 25,
+          "bottom": 8205,
+          "left": 100,
+          "top": 8180,
+          "right": 312
+         },
+         "lhId": "1-3-A",
+         "path": "1,HTML,1,BODY,4,DIV,1,DIV,2,A"
+        },
+        "subItems": {
+         "type": "subitems",
+         "items": [
+          {
+           "relatedNode": {
+            "lhId": "1-1-DIV",
+            "snippet": "<div class=\"t-tildalabel t-tildalabel-free\" id=\"tildacopy\" data-tilda-sign=\"1040782#4476112\" style=\"display: block !important; visibility: visible !important;\">",
+            "boundingRect": {
+             "top": 7915,
+             "width": 412,
+             "bottom": 8250,
+             "height": 335,
+             "right": 412,
+             "left": 0
+            },
+            "path": "1,HTML,1,BODY,4,DIV",
+            "type": "node",
+            "selector": "body.t-body > div#tildacopy",
+            "nodeLabel": "This site was made on Tilda — a website builder that helps to create a website …"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "headings": [
+       {
+        "valueType": "node",
+        "label": "Failing Elements",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "key": "node"
+       }
+      ]
+     }
+    },
+    "image-alt": {
+     "id": "image-alt",
+     "title": "Image elements do not have `[alt]` attributes",
+     "description": "Informative elements should aim for short, descriptive alternate text. Decorative elements can be ignored with an empty alt attribute. [Learn more about the `alt` attribute](https://dequeuniversity.com/rules/axe/4.13/image-alt).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [
+       {
+        "node": {
+         "type": "node",
+         "snippet": "<img src=\"https://static.tildacdn.com/lib/tildaicon/38366165-3234-4666-b334-35303762…\" class=\"t490__img t-img\" imgfield=\"li_img__1476968690512\">",
+         "path": "1,HTML,1,BODY,1,DIV,5,DIV,1,DIV,1,DIV,0,DIV,0,IMG",
+         "selector": "div.t490 > div.t-container > div.t490__col > img.t490__img",
+         "lhId": "1-5-IMG",
+         "boundingRect": {
+          "bottom": 2179,
+          "width": 100,
+          "top": 2079,
+          "height": 100,
+          "left": 156,
+          "right": 256
+         },
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "nodeLabel": "div.t490 > div.t-container > div.t490__col > img.t490__img"
+        }
+       },
+       {
+        "node": {
+         "boundingRect": {
+          "right": 256,
+          "height": 100,
+          "top": 2371,
+          "width": 100,
+          "bottom": 2471,
+          "left": 156
+         },
+         "type": "node",
+         "nodeLabel": "div.t490 > div.t-container > div.t490__col > img.t490__img",
+         "snippet": "<img src=\"https://static.tildacdn.com/lib/tildaicon/39323534-6530-4531-a161-35336461…\" class=\"t490__img t-img\" imgfield=\"li_img__1476968700508\">",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "selector": "div.t490 > div.t-container > div.t490__col > img.t490__img",
+         "lhId": "1-6-IMG",
+         "path": "1,HTML,1,BODY,1,DIV,5,DIV,1,DIV,1,DIV,1,DIV,0,IMG"
+        }
+       },
+       {
+        "node": {
+         "selector": "div.t490 > div.t-container > div.t490__col > img.t490__img",
+         "path": "1,HTML,1,BODY,1,DIV,5,DIV,1,DIV,1,DIV,2,DIV,0,IMG",
+         "lhId": "1-7-IMG",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "snippet": "<img src=\"https://static.tildacdn.com/lib/tildaicon/61386665-6361-4537-a163-33643162…\" class=\"t490__img t-img\" imgfield=\"li_img__1476968722790\">",
+         "nodeLabel": "div.t490 > div.t-container > div.t490__col > img.t490__img",
+         "boundingRect": {
+          "width": 100,
+          "height": 100,
+          "bottom": 2746,
+          "left": 156,
+          "right": 256,
+          "top": 2646
+         },
+         "type": "node"
+        }
+       },
+       {
+        "node": {
+         "type": "node",
+         "selector": "div.t-container > div.t567__col > div.t567__col-wrapper_first > img.t567__img",
+         "snippet": "<img src=\"https://static.tildacdn.com/tild3736-6138-4561-a664-393963363065/-3-04.svg\" class=\"t567__img t-img\" imgfield=\"img\" style=\"width:60px;\">",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "path": "1,HTML,1,BODY,1,DIV,15,DIV,1,DIV,1,DIV,0,DIV,0,DIV,0,IMG",
+         "boundingRect": {
+          "right": 236,
+          "left": 176,
+          "bottom": 6979,
+          "height": 60,
+          "top": 6919,
+          "width": 60
+         },
+         "lhId": "1-8-IMG",
+         "nodeLabel": "div.t-container > div.t567__col > div.t567__col-wrapper_first > img.t567__img"
+        }
+       },
+       {
+        "node": {
+         "type": "node",
+         "snippet": "<img src=\"https://static.tildacdn.com/tild6135-6432-4932-b265-626334316539/-3-05.svg\" class=\"t567__img t-img\" imgfield=\"img2\" style=\"width:60px;\">",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "boundingRect": {
+          "bottom": 7262,
+          "top": 7202,
+          "width": 60,
+          "left": 176,
+          "height": 60,
+          "right": 236
+         },
+         "nodeLabel": "div.t-container > div.t567__col > div.t567__col-wrapper > img.t567__img",
+         "lhId": "1-9-IMG",
+         "selector": "div.t-container > div.t567__col > div.t567__col-wrapper > img.t567__img",
+         "path": "1,HTML,1,BODY,1,DIV,15,DIV,1,DIV,1,DIV,1,DIV,1,DIV,0,IMG"
+        }
+       },
+       {
+        "node": {
+         "selector": "div.t-container > div.t567__col > div.t567__col-wrapper > img.t567__img",
+         "path": "1,HTML,1,BODY,1,DIV,15,DIV,1,DIV,1,DIV,2,DIV,1,DIV,0,IMG",
+         "nodeLabel": "div.t-container > div.t567__col > div.t567__col-wrapper > img.t567__img",
+         "lhId": "1-10-IMG",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "snippet": "<img src=\"https://static.tildacdn.com/tild3539-3338-4338-b234-386431333432/-3-06.svg\" class=\"t567__img t-img\" imgfield=\"img3\" style=\"width:60px;\">",
+         "boundingRect": {
+          "bottom": 7524,
+          "width": 60,
+          "right": 236,
+          "top": 7464,
+          "left": 176,
+          "height": 60
+         },
+         "type": "node"
+        }
+       },
+       {
+        "node": {
+         "nodeLabel": "div#tildacopy > div.t-tildalabel-free__main > a > img",
+         "type": "node",
+         "selector": "div#tildacopy > div.t-tildalabel-free__main > a > img",
+         "explanation": "Fix any of the following:\n  Element does not have an alt attribute\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\"",
+         "boundingRect": {
+          "width": 40,
+          "bottom": 7990,
+          "left": 186,
+          "top": 7950,
+          "height": 40,
+          "right": 226
+         },
+         "lhId": "1-11-IMG",
+         "path": "1,HTML,1,BODY,4,DIV,0,DIV,0,A,0,IMG",
+         "snippet": "<img style=\"width:40px;\" src=\"https://static.tildacdn.com/img/tildacopy.png\">"
+        }
+       }
+      ],
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "label": "Failing Elements",
+        "valueType": "node"
+       }
+      ],
+      "type": "table",
+      "debugData": {
+       "tags": [
+        "cat.text-alternatives",
+        "wcag2a",
+        "wcag111",
+        "section508",
+        "section508.22.a",
+        "TTv5",
+        "TT7.a",
+        "TT7.b",
+        "EN-301-549",
+        "EN-9.1.1.1",
+        "ACT",
+        "RGAAv4",
+        "RGAA-1.1.1"
+       ],
+       "impact": "critical",
+       "type": "debugdata"
+      }
+     }
+    },
+    "html-has-lang": {
+     "id": "html-has-lang",
+     "title": "`<html>` element does not have a `[lang]` attribute",
+     "description": "If a page doesn't specify a `lang` attribute, a screen reader assumes that the page is in the default language that the user chose when setting up the screen reader. If the page isn't actually in the default language, then the screen reader might not announce the page's text correctly. [Learn more about the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-has-lang).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "debugData": {
+       "tags": [
+        "cat.language",
+        "wcag2a",
+        "wcag311",
+        "TTv5",
+        "TT11.a",
+        "EN-301-549",
+        "EN-9.3.1.1",
+        "ACT",
+        "RGAAv4",
+        "RGAA-8.3.1"
+       ],
+       "type": "debugdata",
+       "impact": "serious"
+      },
+      "type": "table",
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        }
+       }
+      ],
+      "items": [
+       {
+        "node": {
+         "snippet": "<html>",
+         "explanation": "Fix any of the following:\n  The <html> element does not have a lang attribute",
+         "path": "1,HTML",
+         "lhId": "1-4-HTML",
+         "selector": "html",
+         "nodeLabel": "html",
+         "type": "node",
+         "boundingRect": {
+          "bottom": 8250,
+          "width": 412,
+          "left": 0,
+          "top": 0,
+          "height": 8250,
+          "right": 412
+         }
+        }
+       }
+      ]
+     }
+    },
+    "html-lang-valid": {
+     "id": "html-lang-valid",
+     "title": "`<html>` element has a valid value for its `[lang]` attribute",
+     "description": "Specifying a valid [BCP 47 language](https://www.w3.org/International/questions/qa-choosing-language-tags#question) helps screen readers announce text properly. [Learn how to use the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-lang-valid).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "link-name": {
+     "id": "link-name",
+     "title": "Links do not have a discernible name",
+     "description": "Link text (and alternate text for images, when used as links) that is discernible, unique, and focusable improves the navigation experience for screen reader users. [Learn how to make links accessible](https://dequeuniversity.com/rules/axe/4.13/link-name).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements"
+       }
+      ],
+      "items": [
+       {
+        "node": {
+         "nodeLabel": "div.t188__wrapone > div.t188__wraptwo > div.t188__sociallinkimg > a",
+         "snippet": "<a href=\"https://www.facebook.com/salonkr4you\" target=\"_blank\" rel=\"nofollow noopener\">",
+         "type": "node",
+         "selector": "div.t188__wrapone > div.t188__wraptwo > div.t188__sociallinkimg > a",
+         "path": "1,HTML,1,BODY,1,DIV,17,DIV,1,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,A",
+         "lhId": "1-12-A",
+         "boundingRect": {
+          "bottom": 7854,
+          "width": 48,
+          "top": 7837,
+          "left": 151,
+          "height": 17,
+          "right": 199
+         },
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+       },
+       {
+        "node": {
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+         "type": "node",
+         "boundingRect": {
+          "left": 213,
+          "width": 48,
+          "height": 17,
+          "top": 7837,
+          "bottom": 7854,
+          "right": 261
+         },
+         "path": "1,HTML,1,BODY,1,DIV,17,DIV,1,DIV,0,DIV,0,DIV,0,DIV,1,DIV,0,A",
+         "snippet": "<a href=\"https://www.instagram.com/4you.kharkov\" target=\"_blank\" rel=\"nofollow noopener\">",
+         "lhId": "1-13-A",
+         "nodeLabel": "div.t188__wrapone > div.t188__wraptwo > div.t188__sociallinkimg > a",
+         "selector": "div.t188__wrapone > div.t188__wraptwo > div.t188__sociallinkimg > a"
+        }
+       },
+       {
+        "node": {
+         "lhId": "1-14-A",
+         "nodeLabel": "body.t-body > div#tildacopy > div.t-tildalabel-free__main > a",
+         "snippet": "<a href=\"https://tilda.cc/?upm=1040782\" target=\"_blank\" style=\"padding-bottom:12px; display: block;\" rel=\"noopener\">",
+         "selector": "body.t-body > div#tildacopy > div.t-tildalabel-free__main > a",
+         "path": "1,HTML,1,BODY,4,DIV,0,DIV,0,A",
+         "boundingRect": {
+          "bottom": 8007,
+          "width": 340,
+          "top": 7950,
+          "height": 58,
+          "right": 376,
+          "left": 36
+         },
+         "type": "node",
+         "explanation": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+       }
+      ],
+      "debugData": {
+       "impact": "serious",
+       "type": "debugdata",
+       "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag244",
+        "wcag412",
+        "section508",
+        "section508.22.a",
+        "TTv5",
+        "TT6.a",
+        "EN-301-549",
+        "EN-9.2.4.4",
+        "EN-9.4.1.2",
+        "ACT",
+        "RGAAv4",
+        "RGAA-6.2.1"
+       ]
+      }
+     }
+    },
+    "button-name": {
+     "id": "button-name",
+     "title": "Buttons have an accessible name",
+     "description": "When a button doesn't have an accessible name, screen readers announce it as \"button\", making it unusable for users who rely on screen readers. [Learn how to make buttons more accessible](https://dequeuniversity.com/rules/axe/4.13/button-name).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "label": {
+     "id": "label",
+     "title": "Form elements have associated labels",
+     "description": "Labels ensure that form controls are announced properly by assistive technologies, like screen readers. [Learn more about form element labels](https://dequeuniversity.com/rules/axe/4.13/label).",
+     "score": null,
+     "scoreDisplayMode": "notApplicable"
+    },
+    "final-screenshot": {
+     "id": "final-screenshot",
+     "title": "Final Screenshot",
+     "description": "The last screenshot captured of the pageload.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "timing": 3335,
+      "timestamp": 493439690405,
+      "type": "screenshot",
+      "data": "***снимок не хранится в записи (ТЗ, 5.9) — вместо base64 заглушка***"
+     }
+    },
+    "image-aspect-ratio": {
+     "id": "image-aspect-ratio",
+     "title": "Displays images with correct aspect ratio",
+     "description": "Image display dimensions should match natural aspect ratio. [Learn more about image aspect ratio](https://developer.chrome.com/docs/lighthouse/best-practices/image-aspect-ratio/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "label": "URL",
+        "valueType": "url",
+        "key": "url"
+       },
+       {
+        "key": "displayedAspectRatio",
+        "label": "Aspect Ratio (Displayed)",
+        "valueType": "text"
+       },
+       {
+        "key": "actualAspectRatio",
+        "valueType": "text",
+        "label": "Aspect Ratio (Actual)"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "image-size-responsive": {
+     "id": "image-size-responsive",
+     "title": "Serves images with appropriate resolution",
+     "description": "Image natural dimensions should be proportional to the display size and the pixel ratio to maximize image clarity. [Learn how to provide responsive images](https://web.dev/articles/serve-responsive-images).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": "displayedSize",
+        "label": "Displayed size",
+        "valueType": "text"
+       },
+       {
+        "key": "actualSize",
+        "valueType": "text",
+        "label": "Actual size"
+       },
+       {
+        "label": "Expected size",
+        "key": "expectedSize",
+        "valueType": "text"
+       }
+      ]
+     }
+    }
+   },
+   "categories": {
+    "accessibility": {
+     "score": 0.75
+    },
+    "seo": {
+     "score": 0.92
+    }
+   }
+  }
+ }
+}

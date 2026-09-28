@@ -47,12 +47,12 @@
      "details": {
       "items": [
        {
-        "newEngineResultDiffered": false,
         "newEngineResult": {
-         "cumulativeLayoutShift": 0,
-         "cumulativeLayoutShiftMainFrame": 0
+         "cumulativeLayoutShiftMainFrame": 0,
+         "cumulativeLayoutShift": 0
         },
-        "cumulativeLayoutShiftMainFrame": 0
+        "cumulativeLayoutShiftMainFrame": 0,
+        "newEngineResultDiffered": false
        }
       ],
       "type": "debugdata"
@@ -64,10 +64,10 @@
      "id": "speed-index",
      "title": "Speed Index",
      "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
-     "score": 1,
+     "score": 0.99,
      "scoreDisplayMode": "numeric",
-     "displayValue": "1.1 s",
-     "numericValue": 1051,
+     "displayValue": "2.3 s",
+     "numericValue": 2279.3159679384225,
      "numericUnit": "millisecond"
     },
     "server-response-time": {
@@ -82,19 +82,19 @@
       "FCP": 0
      },
      "details": {
-      "type": "opportunity",
+      "overallSavingsMs": 0,
       "items": [
        {
-        "responseTime": 1,
+        "responseTime": 3,
         "url": "https://jw-dev.pro/"
        }
       ],
-      "overallSavingsMs": 0,
+      "type": "opportunity",
       "headings": [
        {
-        "valueType": "url",
         "key": "url",
-        "label": "URL"
+        "label": "URL",
+        "valueType": "url"
        },
        {
         "valueType": "timespanMs",
@@ -103,7 +103,7 @@
        }
       ]
      },
-     "numericValue": 1,
+     "numericValue": 3,
      "numericUnit": "millisecond"
     },
     "image-delivery-insight": {
@@ -112,112 +112,112 @@
      "description": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
      "score": 0.5,
      "scoreDisplayMode": "metricSavings",
-     "displayValue": "Est savings of 116 KiB",
+     "displayValue": "Est savings of 64 KiB",
      "metricSavings": {
       "LCP": 0,
       "FCP": 0
      },
      "details": {
-      "debugData": {
-       "type": "debugdata",
-       "wastedBytes": 118906
-      },
-      "type": "table",
+      "headings": [
+       {
+        "key": "node",
+        "valueType": "node"
+       },
+       {
+        "valueType": "url",
+        "subItemsHeading": {
+         "key": "reason",
+         "valueType": "text"
+        },
+        "key": "url",
+        "label": "URL"
+       },
+       {
+        "key": "totalBytes",
+        "valueType": "bytes",
+        "label": "Resource Size"
+       },
+       {
+        "key": "wastedBytes",
+        "label": "Est Savings",
+        "valueType": "bytes",
+        "subItemsHeading": {
+         "valueType": "bytes",
+         "key": "wastedBytes"
+        }
+       }
+      ],
       "items": [
        {
         "node": {
-         "nodeLabel": "Знак бота — стрелка загрузки в кольце, которое заполняется, и подпись «ссылка →…",
-         "type": "node",
          "path": "1,HTML,1,BODY,4,MAIN,2,SECTION,0,DIV,1,DIV,2,ARTICLE,0,PICTURE,1,IMG",
-         "lhId": "page-2-IMG",
+         "nodeLabel": "Знак бота — стрелка загрузки в кольце, которое заполняется, и подпись «ссылка →…",
+         "selector": "div.grid3 > article.card > picture.motion-safe > img.case-cover",
+         "snippet": "<img src=\"https://jw-dev.pro/_astro/00-oblozhka.noMEYvQA_UEVK4.webp\" srcset=\"/_astro/00-oblozhka.noMEYvQA_2qNF7o.webp 320w, /_astro/00-oblozhka.noMEYvQ…\" alt=\"Знак бота — стрелка загрузки в кольце, которое заполняется, и подпись «ссы…\" sizes=\"(max-width: 617px) calc(100vw - 44px), (max-width: 911px) calc(50vw - 29px…\" loading=\"lazy\" decoding=\"async\" width=\"640\" height=\"400\" class=\"case-cover\">",
+         "type": "node",
          "boundingRect": {
-          "top": 3373,
           "width": 366,
           "left": 23,
           "bottom": 3602,
           "right": 389,
+          "top": 3373,
           "height": 229
          },
-         "selector": "div.grid3 > article.card > picture.motion-safe > img.case-cover",
-         "snippet": "<img src=\"https://jw-dev.pro/_astro/00-oblozhka.CU0uyZTT_vHsa5.webp\" srcset=\"/_astro/00-oblozhka.CU0uyZTT_21Qbwp.webp 320w, /_astro/00-oblozhka.CU0uyZT…\" alt=\"Знак бота — стрелка загрузки в кольце, которое заполняется, и подпись «ссы…\" sizes=\"(max-width: 617px) calc(100vw - 44px), (max-width: 911px) calc(50vw - 29px…\" loading=\"lazy\" decoding=\"async\" width=\"640\" height=\"400\" class=\"case-cover\">"
+         "lhId": "page-2-IMG"
         },
-        "totalBytes": 112220,
+        "totalBytes": 58844,
+        "url": "https://jw-dev.pro/_astro/00-oblozhka.noMEYvQA_UEVK4.webp",
+        "wastedBytes": 44890,
         "subItems": {
-         "type": "subitems",
          "items": [
           {
            "reason": "Increasing the image compression factor could improve this image's download size.",
-           "wastedBytes": 77811
+           "wastedBytes": 24435
           },
           {
-           "wastedBytes": 66712,
+           "wastedBytes": 34981,
            "reason": "This image file is larger than it needs to be (576x358) for its displayed dimensions (366x229). Use responsive images to reduce the image download size."
           }
-         ]
-        },
-        "url": "https://jw-dev.pro/_astro/00-oblozhka.CU0uyZTT_vHsa5.webp",
-        "wastedBytes": 98266
+         ],
+         "type": "subitems"
+        }
        },
        {
         "node": {
-         "boundingRect": {
-          "bottom": 2473,
-          "right": 389,
-          "left": 23,
-          "width": 366,
-          "top": 2245,
-          "height": 229
-         },
          "lhId": "page-3-IMG",
+         "type": "node",
          "snippet": "<img src=\"https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp\" srcset=\"/_astro/01-glavnaya-ekran-crop.D0XudM_K_ZjPiOe.webp 320w, /_astro/01-glavn…\" alt=\"Главная нового сайта\" sizes=\"(max-width: 617px) calc(100vw - 44px), (max-width: 911px) calc(50vw - 29px…\" loading=\"lazy\" decoding=\"async\" width=\"640\" height=\"400\" class=\"case-cover\">",
          "path": "1,HTML,1,BODY,4,MAIN,2,SECTION,0,DIV,1,DIV,0,ARTICLE,0,IMG",
-         "type": "node",
+         "selector": "div.wrap > div.grid3 > article.card > img.case-cover",
          "nodeLabel": "Главная нового сайта",
-         "selector": "div.wrap > div.grid3 > article.card > img.case-cover"
+         "boundingRect": {
+          "right": 389,
+          "left": 23,
+          "height": 229,
+          "width": 366,
+          "top": 2245,
+          "bottom": 2473
+         }
         },
+        "wastedBytes": 20640,
         "url": "https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp",
-        "totalBytes": 24168,
         "subItems": {
-         "type": "subitems",
          "items": [
           {
            "wastedBytes": 20640,
            "reason": "This image file is larger than it needs to be (960x597) for its displayed dimensions (366x229). Use responsive images to reduce the image download size."
           }
-         ]
+         ],
+         "type": "subitems"
         },
-        "wastedBytes": 20640
+        "totalBytes": 24168
        }
       ],
-      "headings": [
-       {
-        "valueType": "node",
-        "key": "node"
-       },
-       {
-        "label": "URL",
-        "subItemsHeading": {
-         "valueType": "text",
-         "key": "reason"
-        },
-        "key": "url",
-        "valueType": "url"
-       },
-       {
-        "label": "Resource Size",
-        "key": "totalBytes",
-        "valueType": "bytes"
-       },
-       {
-        "key": "wastedBytes",
-        "subItemsHeading": {
-         "key": "wastedBytes",
-         "valueType": "bytes"
-        },
-        "label": "Est Savings",
-        "valueType": "bytes"
-       }
-      ]
+      "type": "table",
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 65530
+      }
      }
     },
     "lcp-discovery-insight": {
@@ -233,34 +233,34 @@
      "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
      "score": 0,
      "scoreDisplayMode": "metricSavings",
-     "displayValue": "Est savings of 550 ms",
+     "displayValue": "Est savings of 520 ms",
      "metricSavings": {
-      "LCP": 550,
-      "FCP": 550
+      "LCP": 500,
+      "FCP": 500
      },
      "details": {
-      "items": [
-       {
-        "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
-        "wastedMs": 151,
-        "totalBytes": 7267
-       }
-      ],
       "headings": [
        {
-        "key": "url",
+        "label": "URL",
         "valueType": "url",
-        "label": "URL"
+        "key": "url"
        },
        {
         "valueType": "bytes",
-        "key": "totalBytes",
-        "label": "Transfer Size"
+        "label": "Transfer Size",
+        "key": "totalBytes"
        },
        {
-        "label": "Duration",
         "valueType": "timespanMs",
-        "key": "wastedMs"
+        "key": "wastedMs",
+        "label": "Duration"
+       }
+      ],
+      "items": [
+       {
+        "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
+        "totalBytes": 7267,
+        "wastedMs": 151
        }
       ],
       "type": "table"
@@ -277,10 +277,7 @@
       "FCP": 0
      },
      "details": {
-      "type": "opportunity",
-      "headings": [],
-      "overallSavingsBytes": 0,
-      "items": [],
+      "overallSavingsMs": 0,
       "debugData": {
        "type": "debugdata",
        "metricSavings": {
@@ -288,10 +285,13 @@
         "FCP": 0
        }
       },
+      "type": "opportunity",
+      "items": [],
+      "headings": [],
       "sortedBy": [
        "wastedBytes"
       ],
-      "overallSavingsMs": 0
+      "overallSavingsBytes": 0
      },
      "numericValue": 0,
      "numericUnit": "millisecond"
@@ -307,35 +307,35 @@
       "FCP": 0
      },
      "details": {
+      "type": "table",
+      "items": [],
+      "debugData": {
+       "wastedBytes": 0,
+       "type": "debugdata"
+      },
       "headings": [
        {
+        "valueType": "url",
         "key": "url",
+        "label": "URL",
         "subItemsHeading": {
          "key": "location",
          "valueType": "source-location"
-        },
-        "valueType": "url",
-        "label": "URL"
-       },
-       {
-        "key": null,
-        "valueType": "code",
-        "subItemsHeading": {
-         "key": "signal"
         }
        },
        {
-        "label": "Wasted bytes",
+        "subItemsHeading": {
+         "key": "signal"
+        },
+        "valueType": "code",
+        "key": null
+       },
+       {
+        "valueType": "bytes",
         "key": "wastedBytes",
-        "valueType": "bytes"
+        "label": "Wasted bytes"
        }
-      ],
-      "debugData": {
-       "type": "debugdata",
-       "wastedBytes": 0
-      },
-      "items": [],
-      "type": "table"
+      ]
      }
     },
     "duplicated-javascript-insight": {
@@ -351,30 +351,30 @@
      "details": {
       "items": [],
       "type": "table",
-      "debugData": {
-       "wastedBytes": 0,
-       "type": "debugdata"
-      },
       "headings": [
        {
-        "subItemsHeading": {
-         "key": "url",
-         "valueType": "url"
-        },
-        "label": "Source",
         "valueType": "code",
+        "label": "Source",
+        "subItemsHeading": {
+         "valueType": "url",
+         "key": "url"
+        },
         "key": "source"
        },
        {
-        "label": "Duplicated bytes",
         "valueType": "bytes",
+        "label": "Duplicated bytes",
+        "key": "wastedBytes",
+        "granularity": 10,
         "subItemsHeading": {
          "key": "sourceTransferBytes"
-        },
-        "key": "wastedBytes",
-        "granularity": 10
+        }
        }
-      ]
+      ],
+      "debugData": {
+       "type": "debugdata",
+       "wastedBytes": 0
+      }
      }
     },
     "document-latency-insight": {
@@ -388,28 +388,28 @@
       "FCP": 0
      },
      "details": {
-      "debugData": {
-       "uncompressedResponseBytes": 0,
-       "serverResponseTime": 1,
-       "redirectDuration": 0,
-       "wastedBytes": 0,
-       "type": "debugdata"
-      },
+      "type": "checklist",
       "items": {
-       "noRedirects": {
-        "value": true,
-        "label": "Avoids redirects"
-       },
-       "serverResponseIsFast": {
-        "label": "Server responds quickly (observed 1 ms)",
-        "value": true
-       },
        "usesCompression": {
         "value": true,
         "label": "Applies text compression"
+       },
+       "noRedirects": {
+        "label": "Avoids redirects",
+        "value": true
+       },
+       "serverResponseIsFast": {
+        "label": "Server responds quickly (observed 3 ms)",
+        "value": true
        }
       },
-      "type": "checklist"
+      "debugData": {
+       "wastedBytes": 0,
+       "uncompressedResponseBytes": 0,
+       "serverResponseTime": 3,
+       "redirectDuration": 0,
+       "type": "debugdata"
+      }
      }
     },
     "third-parties-insight": {
@@ -419,36 +419,36 @@
      "score": 1,
      "scoreDisplayMode": "numeric",
      "details": {
+      "items": [],
       "headings": [
        {
+        "label": "3rd party",
         "valueType": "text",
         "key": "entity",
         "subItemsHeading": {
          "valueType": "url",
          "key": "url"
-        },
-        "label": "3rd party"
+        }
        },
        {
-        "valueType": "bytes",
-        "granularity": 1,
-        "key": "transferSize",
         "subItemsHeading": {
          "key": "transferSize"
         },
+        "valueType": "bytes",
+        "granularity": 1,
+        "key": "transferSize",
         "label": "Transfer size"
        },
        {
         "granularity": 1,
-        "key": "mainThreadTime",
-        "label": "Main thread time",
         "valueType": "ms",
         "subItemsHeading": {
          "key": "mainThreadTime"
-        }
+        },
+        "key": "mainThreadTime",
+        "label": "Main thread time"
        }
       ],
-      "items": [],
       "type": "table"
      }
     },
@@ -467,17 +467,17 @@
         "node": {
          "selector": "head > meta",
          "type": "node",
-         "path": "1,HTML,0,HEAD,1,META",
-         "nodeLabel": "head > meta",
-         "snippet": "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">",
          "lhId": "page-4-META",
+         "nodeLabel": "head > meta",
+         "path": "1,HTML,0,HEAD,1,META",
+         "snippet": "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">",
          "boundingRect": {
-          "height": 0,
-          "width": 0,
-          "right": 0,
           "top": 0,
           "left": 0,
-          "bottom": 0
+          "height": 0,
+          "width": 0,
+          "bottom": 0,
+          "right": 0
          }
         }
        }
@@ -498,19 +498,19 @@
      "score": 1,
      "scoreDisplayMode": "binary",
      "details": {
-      "items": [],
       "headings": [
        {
         "key": "node",
         "valueType": "node",
-        "label": "Failing Elements",
         "subItemsHeading": {
-         "key": "relatedNode",
-         "valueType": "node"
-        }
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements"
        }
       ],
-      "type": "table"
+      "type": "table",
+      "items": []
      }
     },
     "meta-viewport": {
@@ -520,19 +520,19 @@
      "score": 1,
      "scoreDisplayMode": "binary",
      "details": {
-      "items": [],
       "headings": [
        {
-        "subItemsHeading": {
-         "key": "relatedNode",
-         "valueType": "node"
-        },
         "label": "Failing Elements",
         "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
         "key": "node"
        }
       ],
-      "type": "table"
+      "type": "table",
+      "items": []
      }
     },
     "is-on-https": {
@@ -545,14 +545,14 @@
       "type": "table",
       "headings": [
        {
+        "valueType": "url",
         "label": "Insecure URL",
-        "key": "url",
-        "valueType": "url"
+        "key": "url"
        },
        {
-        "label": "Request Resolution",
         "key": "resolution",
-        "valueType": "text"
+        "valueType": "text",
+        "label": "Request Resolution"
        }
       ],
       "items": []
@@ -564,68 +564,68 @@
      "description": "Large network payloads cost users real money and are highly correlated with long load times. [Learn how to reduce payload sizes](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/).",
      "score": 1,
      "scoreDisplayMode": "metricSavings",
-     "displayValue": "Total size was 260 KiB",
+     "displayValue": "Total size was 208 KiB",
      "details": {
       "type": "table",
-      "headings": [
-       {
-        "valueType": "url",
-        "label": "URL",
-        "key": "url"
-       },
-       {
-        "valueType": "bytes",
-        "key": "totalBytes",
-        "label": "Transfer Size"
-       }
-      ],
       "sortedBy": [
        "totalBytes"
       ],
       "items": [
        {
-        "totalBytes": 112686,
-        "url": "https://jw-dev.pro/_astro/00-oblozhka.CU0uyZTT_vHsa5.webp"
+        "totalBytes": 59308,
+        "url": "https://jw-dev.pro/_astro/00-oblozhka.noMEYvQA_UEVK4.webp"
        },
        {
-        "totalBytes": 24632,
-        "url": "https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp"
+        "url": "https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp",
+        "totalBytes": 24632
        },
        {
-        "totalBytes": 19272,
-        "url": "https://jw-dev.pro/fonts/Inter-500.7a9b933e.woff2"
+        "url": "https://jw-dev.pro/fonts/Inter-500.7a9b933e.woff2",
+        "totalBytes": 19272
        },
        {
-        "totalBytes": 18924,
-        "url": "https://jw-dev.pro/fonts/Inter-400.6d756961.woff2"
+        "url": "https://jw-dev.pro/fonts/Inter-400.6d756961.woff2",
+        "totalBytes": 18924
        },
        {
-        "url": "https://jw-dev.pro/_astro/01-kviz-vopros.D4x-_HrL_1UKo5O.webp",
-        "totalBytes": 15676
+        "totalBytes": 15676,
+        "url": "https://jw-dev.pro/_astro/01-kviz-vopros.D4x-_HrL_1UKo5O.webp"
        },
        {
         "totalBytes": 14068,
         "url": "https://jw-dev.pro/fonts/JetBrainsMono-400.439311fa.woff2"
        },
        {
-        "totalBytes": 13812,
-        "url": "https://jw-dev.pro/fonts/Geologica-500.810d3ecd.woff2"
+        "url": "https://jw-dev.pro/fonts/Geologica-500.810d3ecd.woff2",
+        "totalBytes": 13812
        },
        {
-        "url": "https://jw-dev.pro/",
-        "totalBytes": 11994
+        "totalBytes": 11998,
+        "url": "https://jw-dev.pro/"
        },
        {
         "totalBytes": 10163,
         "url": "https://jw-dev.pro/_astro/01-utrenniy-daydzhest.B_tKax1R_5NNHD.webp"
        },
        {
-        "totalBytes": 8271,
-        "url": "https://jw-dev.pro/_astro/03-oblozhki.D-qGeZ0c_Z2X5mr.webp"
+        "url": "https://jw-dev.pro/_astro/03-oblozhki.D-qGeZ0c_Z2X5mr.webp",
+        "totalBytes": 8271
+       }
+      ],
+      "headings": [
+       {
+        "valueType": "url",
+        "key": "url",
+        "label": "URL"
+       },
+       {
+        "key": "totalBytes",
+        "valueType": "bytes",
+        "label": "Transfer Size"
        }
       ]
      },
-     "numericValue": 266308,
+     "numericValue": 212934,
      "numericUnit": "byte"
     },
     "resource-summary": {
@@ -635,68 +635,67 @@
      "score": 1,
      "scoreDisplayMode": "informative",
      "details": {
-      "type": "table",
       "items": [
        {
         "requestCount": 13,
-        "transferSize": 266308,
-        "resourceType": "total",
-        "label": "Total"
+        "label": "Total",
+        "transferSize": 212934,
+        "resourceType": "total"
        },
        {
-        "label": "Image",
-        "transferSize": 177737,
+        "transferSize": 124359,
         "resourceType": "image",
+        "label": "Image",
         "requestCount": 6
        },
        {
-        "transferSize": 69310,
-        "resourceType": "font",
         "requestCount": 5,
-        "label": "Font"
+        "label": "Font",
+        "resourceType": "font",
+        "transferSize": 69310
        },
        {
-        "transferSize": 11994,
+        "label": "Document",
         "resourceType": "document",
-        "requestCount": 1,
-        "label": "Document"
+        "transferSize": 11998,
+        "requestCount": 1
        },
        {
-        "transferSize": 7267,
+        "label": "Stylesheet",
+        "requestCount": 1,
         "resourceType": "stylesheet",
-        "requestCount": 1,
-        "label": "Stylesheet"
+        "transferSize": 7267
        },
        {
-        "requestCount": 0,
-        "resourceType": "media",
         "transferSize": 0,
+        "resourceType": "media",
+        "requestCount": 0,
         "label": "Media"
        },
        {
-        "requestCount": 0,
         "label": "Script",
+        "requestCount": 0,
         "transferSize": 0,
         "resourceType": "script"
        },
        {
-        "label": "Other",
         "requestCount": 0,
-        "transferSize": 0,
-        "resourceType": "other"
+        "label": "Other",
+        "resourceType": "other",
+        "transferSize": 0
        },
        {
-        "requestCount": 0,
-        "resourceType": "third-party",
+        "label": "Third-party",
         "transferSize": 0,
-        "label": "Third-party"
+        "resourceType": "third-party",
+        "requestCount": 0
        }
       ],
       "headings": [
        {
-        "key": "label",
+        "label": "Resource Type",
         "valueType": "text",
-        "label": "Resource Type"
+        "key": "label"
        },
        {
         "label": "Requests",
@@ -704,11 +703,12 @@
         "valueType": "numeric"
        },
        {
-        "valueType": "bytes",
         "label": "Transfer Size",
-        "key": "transferSize"
+        "key": "transferSize",
+        "valueType": "bytes"
        }
-      ]
+      ],
+      "type": "table"
      }
     },
     "network-requests": {
@@ -718,363 +718,49 @@
      "score": 1,
      "scoreDisplayMode": "informative",
      "details": {
-      "items": [
-       {
-        "resourceSize": 41415,
-        "networkRequestTime": 1.1040000915527344,
-        "mimeType": "text/html",
-        "protocol": "h2",
-        "experimentalFromMainFrame": true,
-        "transferSize": 11994,
-        "finished": true,
-        "statusCode": 200,
-        "sessionTargetType": "page",
-        "rendererStartTime": 0,
-        "cache": "none",
-        "entity": "jw-dev.pro",
-        "resourceType": "Document",
-        "url": "https://jw-dev.pro/",
-        "networkEndTime": 53.85599899291992,
-        "priority": "VeryHigh"
-       },
-       {
-        "resourceSize": 18460,
-        "protocol": "h2",
-        "mimeType": "font/woff2",
-        "experimentalFromMainFrame": true,
-        "url": "https://jw-dev.pro/fonts/Inter-400.6d756961.woff2",
-        "rendererStartTime": 71.86399936676025,
-        "sessionTargetType": "page",
-        "statusCode": 200,
-        "cache": "none",
-        "networkRequestTime": 72.76099872589111,
-        "networkEndTime": 161.32399940490723,
-        "entity": "jw-dev.pro",
-        "priority": "High",
-        "transferSize": 18924,
-        "isLinkPreload": true,
-        "finished": true,
-        "resourceType": "Font"
-       },
-       {
-        "statusCode": 200,
-        "sessionTargetType": "page",
-        "isLinkPreload": true,
-        "finished": true,
-        "rendererStartTime": 72.24399948120117,
-        "networkEndTime": 120.97699928283691,
-        "networkRequestTime": 72.85599994659424,
-        "priority": "High",
-        "resourceSize": 13348,
-        "cache": "none",
-        "url": "https://jw-dev.pro/fonts/Geologica-500.810d3ecd.woff2",
-        "resourceType": "Font",
-        "entity": "jw-dev.pro",
-        "experimentalFromMainFrame": true,
-        "protocol": "h2",
-        "mimeType": "font/woff2",
-        "transferSize": 13812
-       },
-       {
-        "transferSize": 14068,
-        "networkRequestTime": 72.9429988861084,
-        "finished": true,
-        "entity": "jw-dev.pro",
-        "resourceType": "Font",
-        "priority": "High",
-        "isLinkPreload": true,
-        "cache": "none",
-        "statusCode": 200,
-        "sessionTargetType": "page",
-        "experimentalFromMainFrame": true,
-        "resourceSize": 13604,
-        "rendererStartTime": 72.37499904632568,
-        "networkEndTime": 161.74499988555908,
-        "url": "https://jw-dev.pro/fonts/JetBrainsMono-400.439311fa.woff2",
-        "mimeType": "font/woff2",
-        "protocol": "h2"
-       },
-       {
-        "resourceSize": 26856,
-        "sessionTargetType": "page",
-        "entity": "jw-dev.pro",
-        "finished": true,
-        "rendererStartTime": 72.50199890136719,
-        "priority": "VeryHigh",
-        "cache": "none",
-        "networkEndTime": 120.47999954223633,
-        "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
-        "experimentalFromMainFrame": true,
-        "transferSize": 7267,
-        "networkRequestTime": 73.01200008392334,
-        "statusCode": 200,
-        "resourceType": "Stylesheet",
-        "protocol": "h2",
-        "mimeType": "text/css"
-       },
-       {
-        "protocol": "h2",
-        "mimeType": "image/webp",
-        "networkRequestTime": 73.10399913787842,
-        "cache": "none",
-        "sessionTargetType": "page",
-        "rendererStartTime": 72.63199996948242,
-        "resourceSize": 5846,
-        "resourceType": "Image",
-        "statusCode": 200,
-        "experimentalFromMainFrame": true,
-        "networkEndTime": 121.32299995422363,
-        "priority": "Medium",
-        "finished": true,
-        "transferSize": 6309,
-        "entity": "jw-dev.pro",
-        "url": "https://jw-dev.pro/_astro/02-novyy-sayt-pervyy-ekran.CGONkWzd_1SKwBe.webp"
-       },
-       {
-        "resourceType": "Image",
-        "protocol": "h2",
-        "mimeType": "image/webp",
-        "transferSize": 10163,
-        "statusCode": 200,
-        "finished": true,
-        "networkEndTime": 122.32699966430664,
-        "rendererStartTime": 72.77899932861328,
-        "entity": "jw-dev.pro",
-        "sessionTargetType": "page",
-        "cache": "none",
-        "experimentalFromMainFrame": true,
-        "priority": "Medium",
-        "resourceSize": 9700,
-        "networkRequestTime": 73.73999977111816,
-        "url": "https://jw-dev.pro/_astro/01-utrenniy-daydzhest.B_tKax1R_5NNHD.webp"
-       },
-       {
-        "networkRequestTime": 76.38199996948242,
-        "url": "https://jw-dev.pro/_astro/03-oblozhki.D-qGeZ0c_Z2X5mr.webp",
-        "networkEndTime": 202.80399990081787,
-        "priority": "High",
-        "rendererStartTime": 72.8769998550415,
-        "finished": true,
-        "entity": "jw-dev.pro",
-        "sessionTargetType": "page",
-        "statusCode": 200,
-        "resourceSize": 7808,
-        "mimeType": "image/webp",
-        "protocol": "h2",
-        "resourceType": "Image",
-        "experimentalFromMainFrame": true,
-        "transferSize": 8271,
-        "cache": "none"
-       },
-       {
-        "networkRequestTime": 170.717999458313,
-        "finished": true,
-        "experimentalFromMainFrame": true,
-        "networkEndTime": 170.8090000152588,
-        "priority": "Low",
-        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0…",
-        "cache": "memory",
-        "statusCode": 200,
-        "resourceSize": 135,
-        "resourceType": "Image",
-        "transferSize": 0,
-        "rendererStartTime": 170.717999458313,
-        "sessionTargetType": "page",
-        "protocol": "data",
-        "mimeType": "image/svg+xml"
-       },
-       {
-        "resourceSize": 18808,
-        "networkEndTime": 226.8759994506836,
-        "priority": "VeryHigh",
-        "url": "https://jw-dev.pro/fonts/Inter-500.7a9b933e.woff2",
-        "finished": true,
-        "statusCode": 200,
-        "mimeType": "font/woff2",
-        "protocol": "h2",
-        "sessionTargetType": "page",
-        "cache": "none",
-        "transferSize": 19272,
-        "rendererStartTime": 179.51199913024902,
-        "experimentalFromMainFrame": true,
-        "resourceType": "Font",
-        "entity": "jw-dev.pro",
-        "networkRequestTime": 180.03600025177002
-       },
-       {
-        "statusCode": 200,
-        "networkEndTime": 225.04299926757812,
-        "cache": "none",
-        "rendererStartTime": 180.3519992828369,
-        "url": "https://jw-dev.pro/fonts/JetBrainsMono-500-logo.05e62ea5.woff2",
-        "sessionTargetType": "page",
-        "resourceSize": 2772,
-        "mimeType": "font/woff2",
-        "protocol": "h2",
-        "entity": "jw-dev.pro",
-        "transferSize": 3234,
-        "experimentalFromMainFrame": true,
-        "networkRequestTime": 180.8769998550415,
-        "finished": true,
-        "resourceType": "Font",
-        "priority": "VeryHigh"
-       },
-       {
-        "transferSize": 24632,
-        "url": "https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp",
-        "networkEndTime": 318.4709997177124,
-        "mimeType": "image/webp",
-        "protocol": "h2",
-        "networkRequestTime": 228.8109998703003,
-        "entity": "jw-dev.pro",
-        "resourceType": "Image",
-        "cache": "none",
-        "priority": "Low",
-        "resourceSize": 24168,
-        "sessionTargetType": "page",
-        "experimentalFromMainFrame": true,
-        "statusCode": 200,
-        "finished": true,
-        "rendererStartTime": 228.0649995803833
-       },
-       {
-        "experimentalFromMainFrame": true,
-        "rendererStartTime": 228.20800018310547,
-        "cache": "none",
-        "mimeType": "image/webp",
-        "protocol": "h2",
-        "transferSize": 15676,
-        "sessionTargetType": "page",
-        "resourceType": "Image",
-        "statusCode": 200,
-        "url": "https://jw-dev.pro/_astro/01-kviz-vopros.D4x-_HrL_1UKo5O.webp",
-        "resourceSize": 15212,
-        "priority": "Low",
-        "entity": "jw-dev.pro",
-        "finished": true,
-        "networkEndTime": 367.4169988632202,
-        "networkRequestTime": 229.61599922180176
-       },
-       {
-        "transferSize": 112686,
-        "entity": "jw-dev.pro",
-        "resourceType": "Image",
-        "statusCode": 200,
-        "mimeType": "image/webp",
-        "protocol": "h2",
-        "sessionTargetType": "page",
-        "experimentalFromMainFrame": true,
-        "rendererStartTime": 228.30699920654297,
-        "networkRequestTime": 231.63499927520752,
-        "cache": "none",
-        "finished": true,
-        "resourceSize": 112220,
-        "url": "https://jw-dev.pro/_astro/00-oblozhka.CU0uyZTT_vHsa5.webp",
-        "priority": "Low",
-        "networkEndTime": 325.01399993896484
-       }
-      ],
-      "headings": [
-       {
-        "key": "url",
-        "valueType": "url",
-        "label": "URL"
-       },
-       {
-        "key": "protocol",
-        "valueType": "text",
-        "label": "Protocol"
-       },
-       {
-        "valueType": "ms",
-        "label": "Network Request Time",
-        "key": "networkRequestTime",
-        "granularity": 1
-       },
-       {
-        "label": "Network End Time",
-        "granularity": 1,
-        "valueType": "ms",
-        "key": "networkEndTime"
-       },
-       {
-        "displayUnit": "kb",
-        "label": "Transfer Size",
-        "key": "transferSize",
-        "granularity": 1,
-        "valueType": "bytes"
-       },
-       {
-        "granularity": 1,
-        "label": "Resource Size",
-        "key": "resourceSize",
-        "valueType": "bytes",
-        "displayUnit": "kb"
-       },
-       {
-        "label": "Status Code",
-        "valueType": "text",
-        "key": "statusCode"
-       },
-       {
-        "key": "mimeType",
-        "label": "MIME Type",
-        "valueType": "text"
-       },
-       {
-        "label": "Resource Type",
-        "valueType": "text",
-        "key": "resourceType"
-       }
-      ],
       "debugData": {
-       "type": "debugdata",
        "initiators": [
         {
-         "type": "parser",
          "url": "https://jw-dev.pro/",
+         "type": "parser",
          "columnNumber": 268,
          "lineNumber": 0
         },
         {
+         "type": "parser",
          "lineNumber": 0,
          "url": "https://jw-dev.pro/",
-         "columnNumber": 371,
-         "type": "parser"
+         "columnNumber": 371
         },
         {
          "type": "parser",
-         "columnNumber": 478,
+         "url": "https://jw-dev.pro/",
          "lineNumber": 0,
+         "columnNumber": 478
+        },
+        {
+         "type": "parser",
+         "lineNumber": 0,
+         "columnNumber": 534,
          "url": "https://jw-dev.pro/"
         },
         {
-         "columnNumber": 534,
-         "lineNumber": 0,
-         "url": "https://jw-dev.pro/",
-         "type": "parser"
-        },
-        {
+         "lineNumber": 2,
          "columnNumber": 5889,
          "url": "https://jw-dev.pro/",
-         "type": "parser",
-         "lineNumber": 2
-        },
-        {
-         "columnNumber": 6498,
-         "url": "https://jw-dev.pro/",
-         "lineNumber": 2,
          "type": "parser"
         },
         {
          "url": "https://jw-dev.pro/",
+         "type": "parser",
          "lineNumber": 2,
+         "columnNumber": 6498
+        },
+        {
          "columnNumber": 7074,
-         "type": "parser"
-        },
-        {
          "type": "parser",
-         "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css"
+         "lineNumber": 2,
+         "url": "https://jw-dev.pro/"
         },
         {
          "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
@@ -1085,28 +771,663 @@
          "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css"
         },
         {
-         "type": "parser",
-         "lineNumber": 2,
-         "url": "https://jw-dev.pro/",
-         "columnNumber": 29129
-        },
-        {
-         "type": "parser",
-         "url": "https://jw-dev.pro/",
-         "lineNumber": 2,
-         "columnNumber": 29129
-        },
-        {
-         "lineNumber": 2,
-         "url": "https://jw-dev.pro/",
-         "columnNumber": 29129,
+         "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
          "type": "parser"
         }
        ],
-       "networkStartTimeTs": 4965594276770
+       "networkStartTimeTs": 539133209764.00006,
+       "type": "debugdata"
       },
+      "headings": [
+       {
+        "label": "URL",
+        "key": "url",
+        "valueType": "url"
+       },
+       {
+        "label": "Protocol",
+        "key": "protocol",
+        "valueType": "text"
+       },
+       {
+        "valueType": "ms",
+        "key": "networkRequestTime",
+        "granularity": 1,
+        "label": "Network Request Time"
+       },
+       {
+        "key": "networkEndTime",
+        "label": "Network End Time",
+        "valueType": "ms",
+        "granularity": 1
+       },
+       {
+        "granularity": 1,
+        "valueType": "bytes",
+        "label": "Transfer Size",
+        "key": "transferSize",
+        "displayUnit": "kb"
+       },
+       {
+        "key": "resourceSize",
+        "displayUnit": "kb",
+        "label": "Resource Size",
+        "granularity": 1,
+        "valueType": "bytes"
+       },
+       {
+        "label": "Status Code",
+        "valueType": "text",
+        "key": "statusCode"
+       },
+       {
+        "label": "MIME Type",
+        "key": "mimeType",
+        "valueType": "text"
+       },
+       {
+        "label": "Resource Type",
+        "valueType": "text",
+        "key": "resourceType"
+       }
+      ],
+      "type": "table",
+      "items": [
+       {
+        "statusCode": 200,
+        "sessionTargetType": "page",
+        "protocol": "h2",
+        "priority": "VeryHigh",
+        "entity": "jw-dev.pro",
+        "rendererStartTime": 0,
+        "url": "https://jw-dev.pro/",
+        "cache": "none",
+        "transferSize": 11998,
+        "networkRequestTime": 2.666999936103821,
+        "mimeType": "text/html",
+        "networkEndTime": 54.75699996948242,
+        "finished": true,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 41415,
+        "resourceType": "Document"
+       },
+       {
+        "priority": "High",
+        "isLinkPreload": true,
+        "networkRequestTime": 72.8549998998642,
+        "experimentalFromMainFrame": true,
+        "transferSize": 18924,
+        "protocol": "h2",
+        "finished": true,
+        "rendererStartTime": 71.2940000295639,
+        "networkEndTime": 165.57599997520447,
+        "cache": "none",
+        "entity": "jw-dev.pro",
+        "resourceType": "Font",
+        "sessionTargetType": "page",
+        "mimeType": "font/woff2",
+        "resourceSize": 18460,
+        "statusCode": 200,
+        "url": "https://jw-dev.pro/fonts/Inter-400.6d756961.woff2"
+       },
+       {
+        "protocol": "h2",
+        "transferSize": 13812,
+        "url": "https://jw-dev.pro/fonts/Geologica-500.810d3ecd.woff2",
+        "priority": "High",
+        "networkRequestTime": 73.01699995994568,
+        "rendererStartTime": 71.86799991130829,
+        "mimeType": "font/woff2",
+        "experimentalFromMainFrame": true,
+        "resourceType": "Font",
+        "resourceSize": 13348,
+        "cache": "none",
+        "isLinkPreload": true,
+        "statusCode": 200,
+        "networkEndTime": 124.05199992656708,
+        "entity": "jw-dev.pro",
+        "sessionTargetType": "page",
+        "finished": true
+       },
+       {
+        "url": "https://jw-dev.pro/fonts/JetBrainsMono-400.439311fa.woff2",
+        "protocol": "h2",
+        "sessionTargetType": "page",
+        "networkEndTime": 125.75999999046326,
+        "resourceType": "Font",
+        "statusCode": 200,
+        "rendererStartTime": 72.03899991512299,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 13604,
+        "isLinkPreload": true,
+        "networkRequestTime": 73.15299999713898,
+        "priority": "High",
+        "mimeType": "font/woff2",
+        "cache": "none",
+        "finished": true,
+        "transferSize": 14068,
+        "entity": "jw-dev.pro"
+       },
+       {
+        "transferSize": 7267,
+        "protocol": "h2",
+        "statusCode": 200,
+        "entity": "jw-dev.pro",
+        "networkRequestTime": 73.2759999036789,
+        "priority": "VeryHigh",
+        "resourceType": "Stylesheet",
+        "sessionTargetType": "page",
+        "resourceSize": 26856,
+        "experimentalFromMainFrame": true,
+        "mimeType": "text/css",
+        "finished": true,
+        "cache": "none",
+        "rendererStartTime": 72.21999990940094,
+        "url": "https://jw-dev.pro/_astro/form.CKzf8lQf.css",
+        "networkEndTime": 169.31399989128113
+       },
+       {
+        "mimeType": "image/webp",
+        "statusCode": 200,
+        "networkEndTime": 164.37999999523163,
+        "entity": "jw-dev.pro",
+        "resourceType": "Image",
+        "finished": true,
+        "networkRequestTime": 73.43299996852875,
+        "resourceSize": 5846,
+        "protocol": "h2",
+        "cache": "none",
+        "sessionTargetType": "page",
+        "rendererStartTime": 72.39799988269806,
+        "experimentalFromMainFrame": true,
+        "transferSize": 6309,
+        "priority": "Medium",
+        "url": "https://jw-dev.pro/_astro/02-novyy-sayt-pervyy-ekran.CGONkWzd_1SKwBe.webp"
+       },
+       {
+        "finished": true,
+        "mimeType": "image/webp",
+        "transferSize": 10163,
+        "statusCode": 200,
+        "priority": "Medium",
+        "networkRequestTime": 73.72200000286102,
+        "rendererStartTime": 72.58199989795685,
+        "entity": "jw-dev.pro",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "networkEndTime": 124.71599996089935,
+        "url": "https://jw-dev.pro/_astro/01-utrenniy-daydzhest.B_tKax1R_5NNHD.webp",
+        "resourceSize": 9700,
+        "protocol": "h2",
+        "resourceType": "Image"
+       },
+       {
+        "mimeType": "image/webp",
+        "entity": "jw-dev.pro",
+        "transferSize": 8271,
+        "networkEndTime": 164.84899985790253,
+        "cache": "none",
+        "url": "https://jw-dev.pro/_astro/03-oblozhki.D-qGeZ0c_Z2X5mr.webp",
+        "finished": true,
+        "networkRequestTime": 78.36099994182587,
+        "protocol": "h2",
+        "rendererStartTime": 72.75099992752075,
+        "resourceType": "Image",
+        "resourceSize": 7808,
+        "experimentalFromMainFrame": true,
+        "priority": "Medium",
+        "sessionTargetType": "page",
+        "statusCode": 200
+       },
+       {
+        "finished": true,
+        "resourceSize": 135,
+        "rendererStartTime": 179.4869999885559,
+        "resourceType": "Image",
+        "statusCode": 200,
+        "networkEndTime": 179.65699994564056,
+        "sessionTargetType": "page",
+        "mimeType": "image/svg+xml",
+        "networkRequestTime": 179.4869999885559,
+        "experimentalFromMainFrame": true,
+        "transferSize": 0,
+        "priority": "Low",
+        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0…",
+        "cache": "memory",
+        "protocol": "data"
+       },
+       {
+        "sessionTargetType": "page",
+        "entity": "jw-dev.pro",
+        "priority": "VeryHigh",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "transferSize": 19272,
+        "protocol": "h2",
+        "rendererStartTime": 193.25499987602234,
+        "statusCode": 200,
+        "networkEndTime": 243.65299999713898,
+        "networkRequestTime": 196.8679999113083,
+        "finished": true,
+        "mimeType": "font/woff2",
+        "resourceType": "Font",
+        "resourceSize": 18808,
+        "url": "https://jw-dev.pro/fonts/Inter-500.7a9b933e.woff2"
+       },
+       {
+        "experimentalFromMainFrame": true,
+        "sessionTargetType": "page",
+        "mimeType": "font/woff2",
+        "transferSize": 3234,
+        "finished": true,
+        "entity": "jw-dev.pro",
+        "rendererStartTime": 194.95199990272522,
+        "cache": "none",
+        "url": "https://jw-dev.pro/fonts/JetBrainsMono-500-logo.05e62ea5.woff2",
+        "networkEndTime": 244.32799994945526,
+        "resourceSize": 2772,
+        "protocol": "h2",
+        "networkRequestTime": 196.97699999809265,
+        "resourceType": "Font",
+        "priority": "VeryHigh",
+        "statusCode": 200
+       },
+       {
+        "rendererStartTime": 293.32099986076355,
+        "networkRequestTime": 295.70099997520447,
+        "protocol": "h2",
+        "resourceSize": 24168,
+        "resourceType": "Image",
+        "entity": "jw-dev.pro",
+        "priority": "Low",
+        "experimentalFromMainFrame": true,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "mimeType": "image/webp",
+        "networkEndTime": 343.95699989795685,
+        "statusCode": 200,
+        "url": "https://jw-dev.pro/_astro/01-glavnaya-ekran-crop.D0XudM_K_Z1LSx3s.webp",
+        "transferSize": 24632,
+        "finished": true
+       },
+       {
+        "mimeType": "image/webp",
+        "entity": "jw-dev.pro",
+        "transferSize": 15676,
+        "networkRequestTime": 296.75,
+        "rendererStartTime": 293.5260000228882,
+        "cache": "none",
+        "sessionTargetType": "page",
+        "url": "https://jw-dev.pro/_astro/01-kviz-vopros.D4x-_HrL_1UKo5O.webp",
+        "finished": true,
+        "resourceSize": 15212,
+        "protocol": "h2",
+        "resourceType": "Image",
+        "networkEndTime": 344.41299986839294,
+        "statusCode": 200,
+        "priority": "Low",
+        "experimentalFromMainFrame": true
+       },
+       {
+        "sessionTargetType": "page",
+        "transferSize": 59308,
+        "networkEndTime": 388.2849999666214,
+        "protocol": "h2",
+        "priority": "Low",
+        "url": "https://jw-dev.pro/_astro/00-oblozhka.noMEYvQA_UEVK4.webp",
+        "rendererStartTime": 293.65199995040894,
+        "cache": "none",
+        "resourceType": "Image",
+        "mimeType": "image/webp",
+        "entity": "jw-dev.pro",
+        "networkRequestTime": 296.8420000076294,
+        "experimentalFromMainFrame": true,
+        "resourceSize": 58844,
+        "statusCode": 200,
+        "finished": true
+       }
+      ]
+     }
+    },
+    "is-crawlable": {
+     "id": "is-crawlable",
+     "title": "Page is blocked from indexing",
+     "description": "Search engines are unable to include your pages in search results if they don't have permission to crawl them. [Learn more about crawler directives](https://developer.chrome.com/docs/lighthouse/seo/is-crawlable/).",
+     "score": 0,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [
+       {
+        "source": {
+         "nodeLabel": "head > meta",
+         "path": "1,HTML,0,HEAD,10,META",
+         "snippet": "<meta name=\"robots\" content=\"noindex\" />",
+         "lhId": "1-87-META",
+         "type": "node",
+         "selector": "head > meta",
+         "boundingRect": {
+          "width": 0,
+          "left": 0,
+          "right": 0,
+          "height": 0,
+          "top": 0,
+          "bottom": 0
+         }
+        }
+       }
+      ],
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "code",
+        "label": "Blocking Directive Source",
+        "key": "source"
+       }
+      ]
+     },
+     "warnings": []
+    },
+    "robots-txt": {
+     "id": "robots-txt",
+     "title": "robots.txt is valid",
+     "description": "If your robots.txt file is malformed, crawlers may not be able to understand how you want your website to be crawled or indexed. [Learn more about robots.txt](https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "key": "index",
+        "valueType": "text",
+        "label": "Line #"
+       },
+       {
+        "key": "line",
+        "valueType": "code",
+        "label": "Content"
+       },
+       {
+        "key": "message",
+        "label": "Error",
+        "valueType": "code"
+       }
+      ],
+      "type": "table",
+      "items": []
+     }
+    },
+    "document-title": {
+     "id": "document-title",
+     "title": "Document has a `<title>` element",
+     "description": "The title gives screen reader users an overview of the page, and search engine users rely on it heavily to determine if a page is relevant to their search. [Learn more about document titles](https://dequeuniversity.com/rules/axe/4.13/document-title).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "valueType": "node",
+        "key": "node"
+       }
+      ],
+      "items": [],
       "type": "table"
      }
+    },
+    "meta-description": {
+     "id": "meta-description",
+     "title": "Document has a meta description",
+     "description": "Meta descriptions may be included in search results to concisely summarize page content. [Learn more about the meta description](https://developer.chrome.com/docs/lighthouse/seo/meta-description/).",
+     "score": 1,
+     "scoreDisplayMode": "binary"
+    },
+    "color-contrast": {
+     "id": "color-contrast",
+     "title": "Background and foreground colors have a sufficient contrast ratio",
+     "description": "Low-contrast text is difficult or impossible for many users to read. [Learn how to provide sufficient color contrast](https://dequeuniversity.com/rules/axe/4.13/color-contrast).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "label": "Failing Elements",
+        "key": "node"
+       }
+      ],
+      "items": [],
+      "type": "table"
+     }
+    },
+    "image-alt": {
+     "id": "image-alt",
+     "title": "Image elements have `[alt]` attributes",
+     "description": "Informative elements should aim for short, descriptive alternate text. Decorative elements can be ignored with an empty alt attribute. [Learn more about the `alt` attribute](https://dequeuniversity.com/rules/axe/4.13/image-alt).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "label": "Failing Elements",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "key": "node"
+       }
+      ]
+     }
+    },
+    "html-has-lang": {
+     "id": "html-has-lang",
+     "title": "`<html>` element has a `[lang]` attribute",
+     "description": "If a page doesn't specify a `lang` attribute, a screen reader assumes that the page is in the default language that the user chose when setting up the screen reader. If the page isn't actually in the default language, then the screen reader might not announce the page's text correctly. [Learn more about the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-has-lang).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node",
+        "subItemsHeading": {
+         "key": "relatedNode",
+         "valueType": "node"
+        },
+        "label": "Failing Elements"
+       }
+      ],
+      "type": "table"
+     }
+    },
+    "html-lang-valid": {
+     "id": "html-lang-valid",
+     "title": "`<html>` element has a valid value for its `[lang]` attribute",
+     "description": "Specifying a valid [BCP 47 language](https://www.w3.org/International/questions/qa-choosing-language-tags#question) helps screen readers announce text properly. [Learn how to use the `lang` attribute](https://dequeuniversity.com/rules/axe/4.13/html-lang-valid).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "valueType": "node",
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "label": "Failing Elements",
+        "key": "node"
+       }
+      ],
+      "items": []
+     }
+    },
+    "link-name": {
+     "id": "link-name",
+     "title": "Links have a discernible name",
+     "description": "Link text (and alternate text for images, when used as links) that is discernible, unique, and focusable improves the navigation experience for screen reader users. [Learn how to make links accessible](https://dequeuniversity.com/rules/axe/4.13/link-name).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "valueType": "node",
+        "label": "Failing Elements"
+       }
+      ],
+      "items": []
+     }
+    },
+    "button-name": {
+     "id": "button-name",
+     "title": "Buttons have an accessible name",
+     "description": "When a button doesn't have an accessible name, screen readers announce it as \"button\", making it unusable for users who rely on screen readers. [Learn how to make buttons more accessible](https://dequeuniversity.com/rules/axe/4.13/button-name).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "key": "node",
+        "valueType": "node",
+        "label": "Failing Elements"
+       }
+      ],
+      "items": []
+     }
+    },
+    "label": {
+     "id": "label",
+     "title": "Form elements have associated labels",
+     "description": "Labels ensure that form controls are announced properly by assistive technologies, like screen readers. [Learn more about form element labels](https://dequeuniversity.com/rules/axe/4.13/label).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "type": "table",
+      "headings": [
+       {
+        "subItemsHeading": {
+         "valueType": "node",
+         "key": "relatedNode"
+        },
+        "valueType": "node",
+        "key": "node",
+        "label": "Failing Elements"
+       }
+      ]
+     }
+    },
+    "final-screenshot": {
+     "id": "final-screenshot",
+     "title": "Final Screenshot",
+     "description": "The last screenshot captured of the pageload.",
+     "score": 1,
+     "scoreDisplayMode": "informative",
+     "details": {
+      "timing": 3625,
+      "data": "***снимок не хранится в записи (ТЗ, 5.9) — вместо base64 заглушка***",
+      "timestamp": 539136834278,
+      "type": "screenshot"
+     }
+    },
+    "image-aspect-ratio": {
+     "id": "image-aspect-ratio",
+     "title": "Displays images with correct aspect ratio",
+     "description": "Image display dimensions should match natural aspect ratio. [Learn more about image aspect ratio](https://developer.chrome.com/docs/lighthouse/best-practices/image-aspect-ratio/).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "type": "table",
+      "items": [],
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "key": "displayedAspectRatio",
+        "label": "Aspect Ratio (Displayed)",
+        "valueType": "text"
+       },
+       {
+        "label": "Aspect Ratio (Actual)",
+        "valueType": "text",
+        "key": "actualAspectRatio"
+       }
+      ]
+     }
+    },
+    "image-size-responsive": {
+     "id": "image-size-responsive",
+     "title": "Serves images with appropriate resolution",
+     "description": "Image natural dimensions should be proportional to the display size and the pixel ratio to maximize image clarity. [Learn how to provide responsive images](https://web.dev/articles/serve-responsive-images).",
+     "score": 1,
+     "scoreDisplayMode": "binary",
+     "details": {
+      "items": [],
+      "headings": [
+       {
+        "valueType": "node",
+        "key": "node"
+       },
+       {
+        "key": "url",
+        "label": "URL",
+        "valueType": "url"
+       },
+       {
+        "label": "Displayed size",
+        "valueType": "text",
+        "key": "displayedSize"
+       },
+       {
+        "key": "actualSize",
+        "valueType": "text",
+        "label": "Actual size"
+       },
+       {
+        "key": "expectedSize",
+        "label": "Expected size",
+        "valueType": "text"
+       }
+      ],
+      "type": "table"
+     }
+    }
+   },
+   "categories": {
+    "accessibility": {
+     "score": 1
+    },
+    "seo": {
+     "score": 0.69
     }
    }
   }
