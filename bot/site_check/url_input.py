@@ -116,7 +116,24 @@ def to_ascii_host(host: str) -> str | None:
         return None
 
 
+def own_request_target(url: str) -> Target | Rejection:
+    """Адрес шага своей загрузки (ТЗ, С4, С7): те же правила П3/С1, что у ввода человека, но без списка соцсетей —
+    картинка превью на CDN соцсети законна. Схема обязательна: относительный адрес сюда не попадает."""
+    if not SCHEME_PREFIX.match(url):
+        return Rejection(BAD_ADDRESS)
+    parts = _split(url)
+    return Rejection(BAD_ADDRESS) if parts is None else _checked_target(parts, scheme_given=True)
+
+
 def _target(parts: SplitResult, scheme_given: bool) -> Target | Rejection:
+    checked = _checked_target(parts, scheme_given)
+    if isinstance(checked, Rejection):
+        return checked
+    platform = _platform(checked.host, checked.path)
+    return Rejection(SOCIAL, platform) if platform else checked
+
+
+def _checked_target(parts: SplitResult, scheme_given: bool) -> Target | Rejection:
     host = (parts.hostname or "").rstrip(".")
     if _is_ip_literal(host):  # idna отказывает на ::1 и подобных — ловим их до кодирования
         return Rejection(BAD_ADDRESS)
@@ -127,15 +144,10 @@ def _target(parts: SplitResult, scheme_given: bool) -> Target | Rejection:
         display_host = idna.decode(ascii_host)
     except idna.IDNAError:
         return Rejection(NOT_A_LINK)
-    # UTS46 приводит похожие на цифры и буквы юникод-символы (полноширинные, кружком, математические,
-    # «。») к ASCII — проверяем адрес и зону ещё раз, уже на итоговом хосте, иначе они проходят мимо П3
+    # UTS46 приводит похожие на цифры и буквы юникод-символы к ASCII — проверяем адрес и зону ещё раз
     if _is_ip_literal(ascii_host) or "." not in ascii_host or ascii_host.rsplit(".", 1)[-1] in SERVICE_ZONES:
         return Rejection(BAD_ADDRESS)
-    path = parts.path or ROOT_PATH
-    platform = _platform(ascii_host, path)
-    if platform:
-        return Rejection(SOCIAL, platform)
-    return Target(parts.scheme.lower(), scheme_given, ascii_host, display_host, path, parts.query)
+    return Target(parts.scheme.lower(), scheme_given, ascii_host, display_host, parts.path or ROOT_PATH, parts.query)
 
 
 def _is_ip_literal(host: str) -> bool:

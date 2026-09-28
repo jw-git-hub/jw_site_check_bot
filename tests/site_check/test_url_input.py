@@ -1,6 +1,7 @@
 import pytest
 
-from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK, SOCIAL, Rejection, Target, parse_input, to_ascii_host
+from bot.site_check.url_input import (BAD_ADDRESS, NOT_A_LINK, SOCIAL, Rejection, Target, own_request_target,
+                                      parse_input, to_ascii_host)
 
 
 def target(text: str, entity_urls: list[str] | None = None) -> Target:
@@ -137,3 +138,18 @@ def test_to_ascii_host_normalises_unicode_and_case(host, ascii_host):
 
 def test_to_ascii_host_returns_none_for_a_host_idna_refuses():
     assert to_ascii_host("-a.test") is None
+
+
+# --- Адрес шага своей загрузки (ТЗ, С4, С7): те же правила П3/С1, но без списка соцсетей ---
+
+@pytest.mark.parametrize("url", ["https://shop.example/ru/?page=2", "https://vk.com/images/og.png",
+                                 "http://xn--e1afmkfd.xn--p1ai/"])
+def test_own_request_target_accepts_ordinary_and_social_hosts(url):
+    assert isinstance(own_request_target(url), Target)
+
+
+@pytest.mark.parametrize("url", ["/img/og.png", "//cdn.example/og.png", "cdn.example/og.png", "http://127.0.0.1/",
+                                 "http://[::1]/", "http://10.0.0.1:8080/", "http://user:pass@shop.example/",
+                                 "ftp://shop.example/file", "http://router.lan/", "http://printer/"])
+def test_own_request_target_refuses_what_input_refuses(url):
+    assert isinstance(own_request_target(url), Rejection)
