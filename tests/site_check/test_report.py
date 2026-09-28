@@ -463,3 +463,26 @@ def test_search_lines_in_english():
     text = rich_text(report("en", facts, security()))
     assert ("Google search — poor\n> search engines are forbidden to read the page — the robots.txt file says so\n"
             "> it's missing from search or shown without a description") in text
+
+
+def test_owner_sees_search_preview_and_readability_rows():
+    facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META),
+                readability_facts=readability(contrast=AuditState.FAILED, examples=("НАШИ ЦЕНЫ",)))
+    facts = replace(facts, post=replace(facts.post, category_scores=(("seo", 69), ("accessibility", 100))))
+    text = rich_text(post_numbers(TEXTS, "ru", facts, security(), MEASURED_AT, preview()))
+    assert 'Индексация | закрыта: <meta name="robots" content="noindex" />' in text
+    assert "robots.txt | в порядке" in text
+    assert "Заголовок (4 знака) | Сайт" in text
+    assert "Своя загрузка страницы | 200, head 6 КБ, 0,4 секунды" in text
+    assert "Превью: картинка | og.jpg, image/jpeg, 69 КБ" in text
+    assert "Бледный текст, мест | 1" in text
+    assert "Язык страницы | ru" in text
+    assert "Lighthouse: SEO / доступность | 69 / 100" in text
+
+
+def test_owner_sees_why_the_new_blocks_are_missing():
+    stub = rich_text(post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT,
+                                  preview(failure=FetchFailure.STATUS, status=403)))
+    assert "Своя загрузка страницы | ответ 403 — не страница" in stub
+    assert "Своя загрузка страницы | не запускалась или упала" in rich_text(
+        post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT))

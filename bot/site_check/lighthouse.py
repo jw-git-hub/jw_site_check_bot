@@ -24,6 +24,8 @@ IMAGE_REQUEST_TYPE = "Image"
 IMAGE_SUMMARY_TYPE = "image"
 TOTAL_SUMMARY_TYPE = "total"
 SUMMARY_TYPES = ("total", "image", "script", "font", "stylesheet")
+CATEGORY_NAMES = ("seo", "accessibility")  # оценки категорий для «Подробных замеров» (ТЗ, 7.5)
+PERCENT = 100
 IMAGE_SAVINGS = ("image-delivery-insight", "lcp-discovery-insight")
 SCRIPT_SAVINGS = ("render-blocking-insight", "unused-javascript", "legacy-javascript-insight",
                   "duplicated-javascript-insight")
@@ -77,6 +79,7 @@ class PostNumbers:
     bytes_by_type: tuple[tuple[str, int], ...]
     heaviest_files: tuple[FileWeight, ...]
     third_parties: tuple[tuple[str, int], ...]
+    category_scores: tuple[tuple[str, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -130,7 +133,7 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
         mobile=_mobile(audits),
         images=_images(audits, savings),
         insecure_urls=tuple(strip_params(url) for item in audit_items(audits, "is-on-https") if (url := _url(item))),
-        post=_post(audits, savings),
+        post=_post(audits, savings, result.get("categories")),
         missing_audits=tuple(name for name in AUDIT_IDS if name not in audits),
         requested_url=strip_params(str(result.get("requestedUrl") or "")),
         search=parse_search(audits),
@@ -222,7 +225,7 @@ def _summary_bytes(audits: dict[str, Any]) -> dict[str, int]:
             for item in audit_items(audits, "resource-summary")}
 
 
-def _post(audits: dict[str, Any], savings: _Savings) -> PostNumbers:
+def _post(audits: dict[str, Any], savings: _Savings, categories: Any) -> PostNumbers:
     summary = _summary_bytes(audits)
     total = [item for item in audit_items(audits, "resource-summary") if item.get("resourceType") == TOTAL_SUMMARY_TYPE]
     return PostNumbers(
@@ -230,7 +233,20 @@ def _post(audits: dict[str, Any], savings: _Savings) -> PostNumbers:
         bytes_by_type=tuple((kind, summary[kind]) for kind in SUMMARY_TYPES if kind in summary),
         heaviest_files=_heaviest(audit_items(audits, "network-requests"), savings, HEAVIEST_FILES),
         third_parties=_third_parties(audits),
+        category_scores=_category_scores(categories),
     )
+
+
+def _category_scores(categories: Any) -> tuple[tuple[str, int], ...]:
+    if not isinstance(categories, dict):
+        return ()
+    scores = []
+    for name in CATEGORY_NAMES:
+        entry = categories.get(name)
+        score = entry.get("score") if isinstance(entry, dict) else None
+        if is_number(score):
+            scores.append((name, round(score * PERCENT)))
+    return tuple(scores)
 
 
 def _third_parties(audits: dict[str, Any]) -> tuple[tuple[str, int], ...]:

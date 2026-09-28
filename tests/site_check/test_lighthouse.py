@@ -272,3 +272,9 @@ def test_recorded_answers_parse_completely(path):
     assert facts.lighthouse_version.startswith("13")
     assert facts.speed.lcp_ms is not None
     assert not facts.missing_audits
+
+
+def test_category_scores_are_read_as_percent():
+    result = {**lighthouse(), "categories": {"seo": {"score": 0.69}, "accessibility": {"score": 1}}}
+    assert parse_lighthouse(result).post.category_scores == (("seo", 69), ("accessibility", 100))
+    assert parse_lighthouse({**lighthouse(), "categories": "junk"}).post.category_scores == ()

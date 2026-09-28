@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from bot.core.clock import Clock, from_iso, to_iso
 from bot.site_check.findings import Block
-from bot.site_check.lighthouse import strip_params
+from bot.site_check.lighthouse import PageFacts, strip_params
+from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pipeline import CheckResult
 from bot.site_check.url_input import Target
 from bot.site_check.verdict import SummaryKind
@@ -27,7 +28,8 @@ INTERRUPTED = "interrupted"
 RECENT_LIMIT = 5
 SUMMARY_CODES = {SummaryKind.ALL_GOOD: "ok", SummaryKind.GOOD_WITH_UNKNOWN: "ok", SummaryKind.ONLY_FIX: "fix",
                  SummaryKind.HAS_BAD: "bad", SummaryKind.CERT_BLOCKS: "bad"}
-GRADE_COLUMNS = ("grade_speed", "grade_mobile", "grade_security", "grade_images")
+GRADE_COLUMNS = ("grade_speed", "grade_mobile", "grade_security", "grade_images", "grade_search", "grade_preview",
+                 "grade_readability")
 
 # Статусы — только параметрами запроса, литералов вроде 'queued' в SQL не остаётся.
 INSERT_CHECK = """
@@ -36,8 +38,8 @@ VALUES (:user_id, :source, :domain, :url, :status, :error_code, :chat_id, :messa
 MARK_RUNNING = "UPDATE checks SET status = :status, started_at = :now WHERE id = :id"
 FINISH_DONE = """
 UPDATE checks SET status = :status, final_url = :final_url, grade_speed = :speed, grade_mobile = :mobile,
-  grade_security = :security, grade_images = :images, summary = :summary, metrics_json = :metrics, charged = 1,
-  finished_at = :now
+  grade_security = :security, grade_images = :images, grade_search = :search, grade_preview = :preview,
+  grade_readability = :readability, summary = :summary, metrics_json = :metrics, charged = 1, finished_at = :now
 WHERE id = :id"""
 FINISH_FAILED = """
 UPDATE checks SET status = :status, error_code = :code, charged = :charged, finished_at = :now WHERE id = :id"""
@@ -50,8 +52,8 @@ INTERRUPT = """
 UPDATE checks SET status = :interrupted, error_code = :interrupted, charged = 0, finished_at = :now
 WHERE status IN (:queued, :running)"""
 RECENT_FOR_DOMAIN = """
-SELECT created_at, source, status, error_code, grade_speed, grade_mobile, grade_security, grade_images, summary,
-  metrics_json
+SELECT created_at, source, status, error_code, grade_speed, grade_mobile, grade_security, grade_images,
+  grade_search, grade_preview, grade_readability, summary, metrics_json
 FROM checks WHERE domain = :domain ORDER BY created_at DESC, id DESC LIMIT :limit"""
 STATS_BY_SOURCE = """
 SELECT source, COUNT(*) AS checks, COUNT(DISTINCT CASE WHEN status = :done THEN user_id END) AS reported_users,
@@ -111,10 +113,28 @@ def metrics_summary(result: CheckResult) -> dict[str, Any]:
         summary |= {"lighthouse": page.lighthouse_version, "lcp_ms": page.speed.lcp_ms,
                     "page_bytes": page.images.page_bytes, "image_bytes": page.images.image_bytes,
                     "heaviest": [[item.name, item.bytes] for item in page.images.heaviest]}
+        summary |= _new_blocks_numbers(page, result.preview)
     certs = [facts.cert for facts in reversed(result.security.tls) if facts.cert]
     if certs:
         summary["cert_until"] = certs[0].not_after.date().isoformat()
     return summary
+
+
+def _new_blocks_numbers(page: PageFacts, preview: PagePreview | None) -> dict[str, Any]:
+    """Поиск, превью и удобство чтения — коротко и без текстов сайта (ТЗ, 11: до 4 КБ)."""
+    numbers: dict[str, Any] = {}
+    if page.search:
+        source = page.search.block_source
+        numbers["search"] = {"crawlable": page.search.crawlable.value, "source": source.value if source else None}
+    if preview:
+        numbers["preview"] = {"fetch": preview.failure.value if preview.failure else "ok",
+                              "image": preview.image.state.value if preview.image else None,
+                              "title": bool(preview.head and preview.head.preview_title)}
+    if page.readability:
+        facts = page.readability
+        numbers["readability"] = {"contrast": facts.contrast_count, "alt_missing": facts.alt_missing_count,
+                                  "lang": facts.lang.value}
+    return numbers
 
 
 class ChecksRepo:

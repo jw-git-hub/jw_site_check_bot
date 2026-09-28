@@ -49,7 +49,7 @@ def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest)
     blocks += _unknown_sections(texts, lang, request.verdict)
     blocks += _fixes_section(texts, lang, request.verdict)
     if request.is_admin and request.page:
-        blocks.append(post_numbers(texts, lang, request.page, request.security, request.measured_at))
+        blocks.append(post_numbers(texts, lang, request.page, request.security, request.measured_at, request.preview))
     message = rich.message([*blocks, rich.divider(), rich.footer()])
     return message, _report_keyboard(texts, lang, brand, request.domain)
 

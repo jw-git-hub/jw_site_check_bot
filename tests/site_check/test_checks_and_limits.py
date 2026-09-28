@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 import pytest
@@ -5,12 +6,12 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from bot.core.users import Users
-from bot.site_check.checks import DONE, FAILED, INTERRUPTED, QUEUED, ChecksRepo, NewCheck
+from bot.site_check.checks import DONE, FAILED, INTERRUPTED, QUEUED, ChecksRepo, NewCheck, metrics_summary
 from bot.site_check.limits import LIMIT_GLOBAL, LIMIT_USER, Limits
 from bot.site_check.pipeline import CheckResult
 from bot.site_check.url_input import parse_input
 from bot.site_check.verdict import judge
-from tests.builders import TODAY, page, security
+from tests.builders import TODAY, page, preview, readability, search, security
 from tests.fakes import ADMIN_ID, FakeClock
 
 USER = 77
@@ -50,7 +51,7 @@ async def test_done_check_keeps_grades_summary_and_numbers(repo):
     await repo.finish_done(check_id, good_result())
     recent = (await repo.recent_for_domain("site.org"))[0]
     assert (recent.status, recent.summary, recent.source) == (DONE, "ok", "channel")
-    assert recent.grades == ("good", "good", "good", "good")
+    assert recent.grades == ("good",) * 4 + ("unknown",) * 3
     assert recent.metrics["final_url"] == "https://www.site.org/"
     assert recent.metrics["cert_until"] == "2026-12-08"
     assert recent.metrics["lcp_ms"] == 1400
@@ -147,3 +148,23 @@ async def test_create_rejects_check_for_unknown_user(repo):
     Вызываем репозиторий напрямую (не через best_effort), иначе ошибку тест бы не увидел."""
     with pytest.raises(IntegrityError):
         await repo.create(NewCheck(UNKNOWN_USER_ID, "channel", parse_input("site.org", []), QUEUED))
+
+
+def new_blocks_result() -> CheckResult:
+    facts = page(search_facts=search(), readability_facts=readability())
+    shown = preview()
+    return CheckResult("https://site.org/", facts, security(), judge(facts, security(), TODAY, shown), shown)
+
+
+async def test_done_check_keeps_new_blocks_in_grades_and_numbers(repo):
+    check_id = await repo.create(NewCheck(USER, "channel", parse_input("site.org", []), QUEUED))
+    await repo.finish_done(check_id, new_blocks_result())
+    recent = (await repo.recent_for_domain("site.org"))[0]
+    assert recent.grades == ("good",) * 7
+    assert recent.metrics["search"] == {"crawlable": "passed", "source": None}
+    assert recent.metrics["preview"] == {"fetch": "ok", "image": "ok", "title": True}
+    assert recent.metrics["readability"] == {"contrast": 0, "alt_missing": 0, "lang": "passed"}
+
+
+def test_metrics_stay_under_four_kilobytes():
+    assert len(json.dumps(metrics_summary(new_blocks_result()), ensure_ascii=False).encode()) < 4096

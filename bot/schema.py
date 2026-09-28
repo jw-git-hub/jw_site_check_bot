@@ -35,4 +35,9 @@ MIGRATIONS = (
         "CREATE INDEX checks_by_domain ON checks(domain, created_at)",
         "CREATE INDEX checks_by_status ON checks(status)",
     ),
+    (   # версия 1.1: оценки трёх новых блоков (ТЗ, 11); только добавляет — откат кода её не ломает
+        "ALTER TABLE checks ADD COLUMN grade_search TEXT",
+        "ALTER TABLE checks ADD COLUMN grade_preview TEXT",
+        "ALTER TABLE checks ADD COLUMN grade_readability TEXT",
+    ),
 )
