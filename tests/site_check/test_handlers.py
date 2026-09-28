@@ -24,7 +24,7 @@ from bot.site_check.probe import PRIVATE_ADDRESS, SERVICE_DOWN, UNREACHABLE_DNS
 from bot.site_check.queue import CheckQueue
 from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK
 from bot.site_check.verdict import judge
-from tests.builders import TODAY, page, security
+from tests.builders import TODAY, head, page, preview, security
 from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, fake_bot, make_callback, rich_text
 
 USER = 77
@@ -103,6 +103,16 @@ async def test_link_gets_status_then_report_in_the_same_message(world):
     # Правка «Проверяю…» в отчёт ставит клавиатуру отчёта (задача 23a).
     assert keyboard["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
     assert await rows(world.db, "SELECT status, charged FROM checks") == [("done", 1)]
+
+
+async def test_report_shows_the_preview_block_from_the_check_result(world):
+    shown = preview(head(og_title="Кафе «Парижская»"))
+    world.pipeline.outcomes["example.com"] = CheckResult("https://example.com/", page(), security(),
+                                                         judge(page(), security(), TODAY, shown), shown)
+    await world.intake.handle_text(link("example.com"))
+    await settle(world)
+    assert ("Ссылка в мессенджерах — хорошо\n> для превью заданы картинка и название «Кафе «Парижская»»"
+            in rich_text(world.messenger.edited[-1][2]))
 
 
 async def test_not_a_link_is_explained_and_recorded_without_charge(world):

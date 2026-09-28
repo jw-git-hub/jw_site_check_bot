@@ -137,6 +137,11 @@ def test_final_url_loses_parameters():
     assert facts.final_url == "https://s.test/"
 
 
+def test_measured_url_keeps_parameters_for_own_fetch_only():
+    facts = parse_lighthouse(lighthouse(final_url="https://site.test/ru/?page=2"))
+    assert (facts.measured_url, facts.final_url) == ("https://site.test/ru/?page=2", "https://site.test/ru/")
+
+
 def test_image_savings_match_by_exact_url_first():
     # У одной и той же картинки бывает несколько вариантов с разными параметрами
     # (Next.js ?w=, Shopify ?width=) — экономия каждого не должна перетирать соседнюю.

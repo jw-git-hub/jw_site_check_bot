@@ -1,3 +1,4 @@
+import inspect
 import subprocess
 import sys
 from pathlib import Path
@@ -7,6 +8,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.methods import SetMyCommands
 from aiogram.types import Chat, Message, Update
 
+from bot import app
 from bot.__main__ import EXIT_CONFIG
 from bot.app import (_error_recipient, _throttle_notice_sender, build_dispatcher, close_interrupted, closed_answer,
                      on_unexpected_error, setup_commands_best_effort, throttle_notice)
@@ -139,3 +141,11 @@ async def test_menu_setup_failure_is_logged_not_raised():
     error = TelegramBadRequest(method=SetMyCommands(commands=[]), message="boom")
     bot = fake_bot({"setMyCommands": error})
     await setup_commands_best_effort(bot, admin_id=1)  # не должно бросить TelegramBadRequest
+
+
+def test_site_fetches_go_through_their_own_guarded_session():
+    """С14: своя загрузка страницы — отдельной защищённой сессией, не общей `http` (PageSpeed, адрес дома)."""
+    source = inspect.getsource(app)
+    assert "sites = guarded_session(guard)" in source
+    assert "PreviewLoader(AiohttpSender(sites))" in source
+    assert "await parts.sites.close()" in source

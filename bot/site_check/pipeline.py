@@ -2,12 +2,14 @@
 import asyncio
 from dataclasses import dataclass
 from datetime import date
+from typing import Protocol
 from urllib.parse import urlsplit
 
 from loguru import logger
 
 from bot.core.clock import Clock
 from bot.site_check.lighthouse import AuditState, PageFacts, parse_lighthouse
+from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
                                       classify)
 from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes,
@@ -19,6 +21,7 @@ from bot.site_check.verdict import TLS_INVALID, SecurityFacts, Verdict, judge
 CHECK_DEADLINE_SECONDS = 120  # ТЗ, Л4: одна проверка целиком
 PROBE_TIMEOUT_SECONDS = 10    # ТЗ, Л4: до замера
 AFTER_TIMEOUT_SECONDS = 15    # ТЗ, Л4: после замера
+PREVIEW_BUDGET_SECONDS = 12   # ТЗ, Л4, С5: своя загрузка страницы — 12 секунд внутри 15 после замера
 CERT_BLOCKS = "cert_blocks"
 UNREACHABLE = "unreachable"
 # Разбор ответа Lighthouse — узкий набор исключений на неожиданную структуру, не Exception целиком.
@@ -28,12 +31,17 @@ PARSE_ERRORS = (AttributeError, TypeError, ValueError)
 UNTRUSTED_TLS_OUTCOMES = TLS_INVALID | frozenset({TlsOutcome.OTHER})
 
 
+class PreviewSource(Protocol):
+    async def load(self, url: str) -> PagePreview: ...
+
+
 @dataclass(frozen=True)
 class CheckResult:
     final_url: str
     page: PageFacts | None
     security: SecurityFacts
     verdict: Verdict
+    preview: PagePreview | None = None
 
 
 class CheckFailed(Exception):
@@ -52,10 +60,12 @@ class CheckFailed(Exception):
 
 
 class Pipeline:
-    def __init__(self, probes: SiteProbes, pagespeed: PageSpeedClient, clock: Clock):
+    def __init__(self, probes: SiteProbes, pagespeed: PageSpeedClient, clock: Clock,
+                previews: PreviewSource | None = None):
         self._probes = probes
         self._pagespeed = pagespeed
         self._clock = clock
+        self._previews = previews
 
     async def run(self, target: Target) -> CheckResult:
         deadline = self._clock.monotonic() + CHECK_DEADLINE_SECONDS
@@ -70,8 +80,23 @@ class Pipeline:
             raise CheckFailed(SERVICE_DOWN, reached_measurement=True, reason=error.reason) from None
         page = self._parse(result)
         self._require_measurement(page)
-        security = await self._after(target, before, page)
-        return CheckResult(page.final_url or before.url, page, security, judge(page, security, self._today()))
+        # После замера защита и своя загрузка страницы идут параллельно, у каждой свой срок (ТЗ, Л4).
+        security, preview = await asyncio.gather(self._after(target, before, page), self._preview(page))
+        verdict = judge(page, security, self._today(), preview)
+        return CheckResult(page.final_url or before.url, page, security, verdict, preview)
+
+    async def _preview(self, page: PageFacts) -> PagePreview | None:
+        """Своя загрузка (ТЗ, 5.6–5.7). Не дождались или упала — новые блоки просто не показаны (ТЗ, 6.1)."""
+        if self._previews is None:
+            return None
+        try:
+            return await asyncio.wait_for(self._previews.load(page.measured_url or page.final_url),
+                                          PREVIEW_BUDGET_SECONDS)
+        except TimeoutError:
+            return None
+        except Exception:  # noqa: BLE001 — сбой своей загрузки не должен отнимать отчёт и защиту
+            logger.exception("своя загрузка страницы упала")
+            return None
 
     def _today(self) -> date:
         # Contract: Clock.now() уже гарантированно в UTC (bot/core/clock.py) — своей конвертации не нужно.

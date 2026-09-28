@@ -93,6 +93,8 @@ class PageFacts:
     requested_url: str = ""
     search: SearchFacts | None = None
     readability: ReadabilityFacts | None = None
+    # Что мерил Lighthouse, с параметрами — только для своей загрузки страницы; не хранится и не пишется в журнал.
+    measured_url: str = ""
 
 
 @dataclass(frozen=True)
@@ -133,6 +135,7 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
         requested_url=strip_params(str(result.get("requestedUrl") or "")),
         search=parse_search(audits),
         readability=parse_readability(audits),
+        measured_url=str(result.get("finalDisplayedUrl") or result.get("requestedUrl") or ""),
     )
 
 

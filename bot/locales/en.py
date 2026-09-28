@@ -190,6 +190,17 @@ TEXTS = {
                              "itself",
     "search_canonical_foreign": "the code names another site as the main address — {host}",
     "search_canonical_foreign_effect": "Google may show that site in search instead of this page",
+    "preview_good": "the preview has an image and a title set: \"{title}\"",
+    "preview_good_no_description": "the preview has an image and a title set: \"{title}\", without a description",
+    "preview_no_image": "no preview image is set — in Telegram the link will arrive without a picture",
+    "preview_image_broken": "the preview image doesn't open (error {status}) — in Telegram the link will arrive "
+                            "without a picture",
+    "preview_image_broken_plain": "the preview image doesn't open — in Telegram the link will arrive without a "
+                                  "picture",
+    "preview_image_svg": "the preview image is an SVG — Telegram doesn't show those",
+    "preview_image_relative": "the preview image address is incomplete — Telegram doesn't show it",
+    "preview_no_title": "no preview title is set — the site's address will show instead",
+    "preview_title_quote": "title in the preview: \"{title}\"",
     "readability_good_contrast": "the text stands out well against the background",
     "readability_good_alt": "the images have alt text",
     "readability_low_contrast": "in places the text is hard to see against the background — for example, "

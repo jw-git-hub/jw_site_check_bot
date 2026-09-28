@@ -196,6 +196,17 @@ TEXTS = {
     "search_no_description": "описания для поиска нет — Google сам выберет кусок текста со страницы",
     "search_canonical_foreign": "основным адресом в коде указан другой сайт — {host}",
     "search_canonical_foreign_effect": "Google может показывать в поиске его, а не эту страницу",
+    # отчёт: ссылка в мессенджерах
+    "preview_good": "для превью заданы картинка и название «{title}»",
+    "preview_good_no_description": "для превью заданы картинка и название «{title}», без описания",
+    "preview_no_image": "для превью не задана картинка — в Telegram ссылка придёт без картинки",
+    "preview_image_broken": "картинка для превью не открывается (ошибка {status}) — в Telegram ссылка придёт без "
+                            "картинки",
+    "preview_image_broken_plain": "картинка для превью не открывается — в Telegram ссылка придёт без картинки",
+    "preview_image_svg": "картинка для превью — в формате SVG, Telegram её не показывает",
+    "preview_image_relative": "адрес картинки для превью указан не полностью — Telegram её не показывает",
+    "preview_no_title": "название для превью не задано — вместо него покажется адрес сайта",
+    "preview_title_quote": "название в превью: «{title}»",
     # отчёт: удобство чтения
     "readability_good_contrast": "текст хорошо виден на фоне",
     "readability_good_alt": "у картинок есть подписи",

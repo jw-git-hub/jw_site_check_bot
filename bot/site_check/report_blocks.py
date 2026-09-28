@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from bot.core.i18n import Lang, Texts
 from bot.site_check.audits import ELLIPSIS, AuditState
 from bot.site_check.findings import BlockVerdict, Finding, FindingItem, Grade
+from bot.site_check.head_tags import HeadTags
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.readability_block import ReadabilityFacts
 from bot.site_check.thresholds import QUOTE_MAX_CHARS
@@ -59,6 +60,40 @@ def _title_line(texts: Texts, lang: Lang, title: str | None) -> str:
     if title:
         return texts.get(lang, "search_title_quote", title=quote(title))
     return texts.get(lang, "search_title_and_description")
+
+
+PREVIEW_LINES = {Finding.NO_PREVIEW_IMAGE: "preview_no_image", Finding.PREVIEW_IMAGE_SVG: "preview_image_svg",
+                 Finding.PREVIEW_IMAGE_RELATIVE: "preview_image_relative", Finding.NO_PREVIEW_TITLE: "preview_no_title"}
+IMAGE_FINDING_KEYS = frozenset({Finding.NO_PREVIEW_IMAGE, Finding.PREVIEW_IMAGE_BROKEN, Finding.PREVIEW_IMAGE_SVG,
+                            Finding.PREVIEW_IMAGE_RELATIVE})
+
+
+def preview_lines(texts: Texts, lang: Lang, request: "ReportRequest", verdict: BlockVerdict) -> list[str]:
+    """Факты на сайте, а не обещание, как придёт ссылка (ТЗ, 5.7)."""
+    head = request.preview.head
+    if verdict.grade is Grade.GOOD:
+        return _preview_good(texts, lang, head)
+    lines = []
+    for item in verdict.findings:
+        lines.append(_preview_finding(texts, lang, item))
+        if item.finding in IMAGE_FINDING_KEYS and head.preview_title:
+            lines.append(texts.get(lang, "preview_title_quote", title=quote(head.preview_title)))
+    return lines
+
+
+def _preview_good(texts: Texts, lang: Lang, head: HeadTags) -> list[str]:
+    """Утверждаем «заданы картинка и название» только если они правда есть в head (дочитанном не до конца — тоже)."""
+    if not (head.preview_image and head.preview_title):
+        return []
+    key = "preview_good" if head.preview_description else "preview_good_no_description"
+    return [texts.get(lang, key, title=quote(head.preview_title))]
+
+
+def _preview_finding(texts: Texts, lang: Lang, item: FindingItem) -> str:
+    if item.finding is Finding.PREVIEW_IMAGE_BROKEN:
+        return (texts.get(lang, "preview_image_broken", status=item.detail) if item.detail
+                else texts.get(lang, "preview_image_broken_plain"))
+    return texts.get(lang, PREVIEW_LINES[item.finding])
 
 
 def readability_lines(texts: Texts, lang: Lang, request: "ReportRequest", verdict: BlockVerdict) -> list[str]:

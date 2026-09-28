@@ -6,13 +6,14 @@ import pytest
 from bot.site_check import pipeline as pipeline_module
 from bot.site_check import probe as probe_module
 from bot.site_check.net_guard import AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
+from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pagespeed import MEASURE_FAILED, LighthouseFailure, PageSpeedUnavailable
 from bot.site_check.pipeline import AFTER_TIMEOUT_SECONDS, CHECK_DEADLINE_SECONDS, CheckFailed, Pipeline
 from bot.site_check.probe import GuardedProbes, ProbeRejected, probe
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import Target
 from bot.site_check.verdict import Block, Finding, Grade, SummaryKind, UnknownReason
-from tests.builders import audit, cert, lighthouse
+from tests.builders import audit, cert, lighthouse, preview
 from tests.fakes import FakeClock
 
 PUBLIC_ADDRESS = "93.184.215.14"
@@ -558,3 +559,48 @@ async def test_pipeline_never_connects_to_a_private_address_behind_pagespeeds_fi
     await Pipeline(GuardedProbes(guard), pagespeed, FakeClock()).run(target())
     assert PUBLIC_ADDRESS in opened  # проверенный публичный адрес соединение всё же пробует (иначе тест не о том)
     assert opened == [PUBLIC_ADDRESS] * len(opened)  # и больше никакого другого адреса
+
+
+class FakePreviews:
+    def __init__(self, result: PagePreview | None = None, delay: float = 0.0, error: Exception | None = None):
+        self.result, self.delay, self.error, self.urls = result, delay, error, []
+
+    async def load(self, url: str) -> PagePreview:
+        self.urls.append(url)
+        await asyncio.sleep(self.delay)
+        if self.error:
+            raise self.error
+        return self.result
+
+
+async def test_preview_loads_the_measured_page_with_its_parameters():
+    previews = FakePreviews(preview())
+    pagespeed = FakePageSpeed(lighthouse(final_url="https://site.test/ru/?page=2", **PAGE_AUDITS))
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), pagespeed, FakeClock(), previews).run(target())
+    assert previews.urls == ["https://site.test/ru/?page=2"]
+    assert result.preview is previews.result
+    assert result.verdict.blocks[Block.PREVIEW].grade is Grade.GOOD
+
+
+async def test_hanging_preview_keeps_security_results(monkeypatch):
+    monkeypatch.setattr(pipeline_module, "PREVIEW_BUDGET_SECONDS", 0.01)
+    previews = FakePreviews(preview(), delay=5)
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), FakePageSpeed(PAGE), FakeClock(),
+                            previews).run(target())
+    assert result.preview is None and result.security.tls == (OK_TLS,)
+    assert result.verdict.blocks[Block.PREVIEW].grade is Grade.UNKNOWN
+
+
+async def test_crashing_preview_loader_does_not_break_the_check():
+    previews = FakePreviews(error=RuntimeError("неожиданное"))
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), FakePageSpeed(PAGE), FakeClock(),
+                            previews).run(target())
+    assert result.preview is None and result.security.tls == (OK_TLS,)
+
+
+async def test_certificate_blocking_does_not_load_the_page():
+    expired = TlsFacts("site.test", TlsOutcome.EXPIRED, cert(days_left=-10))
+    pagespeed = FakePageSpeed(error=LighthouseFailure("CHROME_INTERSTITIAL_ERROR", None))
+    previews = FakePreviews(preview())
+    result = await Pipeline(FakeProbes(tls={"site.test": expired}), pagespeed, FakeClock(), previews).run(target())
+    assert (previews.urls, result.preview) == ([], None)

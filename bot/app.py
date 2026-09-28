@@ -33,6 +33,7 @@ from bot.site_check.handlers import CheckRunner, Intake
 from bot.site_check.limits import Limits
 from bot.site_check.net_guard import AddressGuard, fetch_home_ip, system_resolver
 from bot.site_check.notifier import DAY, Notifier
+from bot.site_check.page_fetch import AiohttpSender, PreviewLoader, guarded_session
 from bot.site_check.pagespeed import PageSpeedClient
 from bot.site_check.pipeline import Pipeline
 from bot.site_check.probe import GuardedProbes
@@ -53,6 +54,7 @@ class Parts:
     dispatcher: Dispatcher
     engine: AsyncEngine
     http: aiohttp.ClientSession
+    sites: aiohttp.ClientSession  # свои запросы к сайтам — только через защиту адресов (ТЗ, С14)
     repo: ChecksRepo
     messenger: Messenger
     guard: AddressGuard
@@ -72,16 +74,18 @@ async def build(settings: Settings, clock: Clock) -> Parts:
     users, repo = Users(engine, clock), ChecksRepo(engine, clock)
     notifier = Notifier(messenger, settings.admin_id, clock, TEXTS)
     guard = AddressGuard(system_resolver)
-    queue, intake = _checking(settings, clock, users, repo, messenger, notifier, guard, http)
+    sites = guarded_session(guard)
+    queue, intake = _checking(settings, clock, users, repo, messenger, notifier, guard, http, sites)
     dispatcher = build_dispatcher(settings, users, repo, messenger, intake, clock)
-    return Parts(bot, dispatcher, engine, http, repo, messenger, guard, notifier, queue, heartbeat)
+    return Parts(bot, dispatcher, engine, http, sites, repo, messenger, guard, notifier, queue, heartbeat)
 
 
 def _checking(settings: Settings, clock: Clock, users: Users, repo: ChecksRepo, messenger: Messenger,
-              notifier: Notifier, guard: AddressGuard, http: aiohttp.ClientSession) -> tuple[CheckQueue, Intake]:
+              notifier: Notifier, guard: AddressGuard, http: aiohttp.ClientSession,
+              sites: aiohttp.ClientSession) -> tuple[CheckQueue, Intake]:
     limits = Limits(repo, clock, settings.user_daily_limit, settings.global_daily_limit, settings.admin_id)
     pagespeed = PageSpeedClient(http, settings.pagespeed_api_key.get_secret_value(), clock)
-    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock)
+    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock, PreviewLoader(AiohttpSender(sites)))
     runner = CheckRunner(pipeline, repo, limits, messenger, TEXTS, BRAND, notifier, clock)
     queue = CheckQueue(settings.check_workers, settings.queue_max, runner.run, clock)
     return queue, Intake(users, repo, limits, queue, messenger, TEXTS, BRAND, settings, notifier)
@@ -238,4 +242,5 @@ async def _shutdown(parts: Parts, background: list[asyncio.Task]) -> None:
     await asyncio.gather(*background, return_exceptions=True)
     await parts.queue.stop()
     await parts.http.close()
+    await parts.sites.close()
     await parts.engine.dispose()

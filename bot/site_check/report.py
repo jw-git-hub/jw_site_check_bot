@@ -15,7 +15,7 @@ from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, Findin
 from bot.site_check.lighthouse import ImageFacts, PageFacts
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.post_numbers import post_numbers
-from bot.site_check.report_blocks import readability_lines, search_lines
+from bot.site_check.report_blocks import preview_lines, readability_lines, search_lines
 from bot.site_check.thresholds import COMPRESS_MIN_RATIO, SERVER_ALLOWANCE_MS
 from bot.site_check.tls_check import RedirectState, TlsOutcome
 from bot.site_check.verdict import CORE_BLOCKS, REPORT_ORDER, SecurityFacts, SummaryKind, Verdict
@@ -158,7 +158,8 @@ def _lowered(name: str) -> str:
 
 def block_facts(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> list[str]:
     writers = {Block.SPEED: _speed_facts, Block.MOBILE: _mobile_facts, Block.SECURITY: _security_facts,
-               Block.IMAGES: _images_facts, Block.SEARCH: search_lines, Block.READABILITY: readability_lines}
+               Block.IMAGES: _images_facts, Block.SEARCH: search_lines, Block.PREVIEW: preview_lines,
+               Block.READABILITY: readability_lines}
     return writers[verdict.block](texts, lang, request, verdict)
 
 

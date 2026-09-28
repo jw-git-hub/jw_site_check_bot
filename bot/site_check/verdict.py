@@ -7,9 +7,10 @@ from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
-                                     UnknownReason, graded, not_checked)
+                                     UnknownReason, graded)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
 from bot.site_check.page_fetch import PagePreview
+from bot.site_check.preview_block import judge_preview
 from bot.site_check.readability_block import judge_readability
 from bot.site_check.search_block import judge_search
 from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
@@ -85,7 +86,7 @@ def judge(page: PageFacts | None, security: SecurityFacts, today: date,
         Block.SECURITY: _security_block(page, security, today),
         Block.IMAGES: _images_block(page, security),
         Block.SEARCH: judge_search(page.search if page else None, preview),
-        Block.PREVIEW: not_checked(Block.PREVIEW),  # правила — задача 31
+        Block.PREVIEW: judge_preview(preview),
         Block.READABILITY: judge_readability(page.readability if page else None),
     }
     return Verdict(blocks, _summary_kind(blocks, security), pick_troubles(blocks), pick_fixes(blocks))

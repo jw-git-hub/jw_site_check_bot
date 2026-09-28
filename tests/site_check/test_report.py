@@ -2,10 +2,13 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from urllib.parse import unquote
 
+import pytest
+
 from bot.brand import BRAND
 from bot.locales import TEXTS
 from bot.site_check.findings import Block, BlockVerdict, Finding, FindingItem, FixItem, FixKey, Grade
 from bot.site_check.lighthouse import AuditState
+from bot.site_check.page_fetch import FetchFailure, ImageState
 from bot.site_check.post_numbers import post_numbers
 from bot.site_check.report import ReportRequest, build_report, fix_text, summary_text
 from bot.site_check.search_block import BlockSource
@@ -18,9 +21,12 @@ MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
 EXAMPLE_HEAVIEST = (("slider-1.jpg", 3_355_443), ("about.png", 2_202_010), ("team.jpg", 1_887_437))
 
 # Утверждённый владельцем вид (задача 23a, живая приёмка): заголовки блоков + короткие строки «>».
-JW_DEV_PRO_RU = """[полоса ~/проверка-сайта]
+JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для малого бизнеса — jw-dev.pro"
+
+# Пример ТЗ 7.3, версия 1.1: семь блоков, на главной jw-dev.pro стоит noindex (разведка 27.09.2026).
+JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта]
 jw-dev.pro
-Сайт в порядке: открывается быстро, на телефоне удобен, защита работает.
+Есть что чинить: страница закрыта от поисковиков.
 Скорость — хорошо
 > главное на экране — через 1,4 секунды
 Телефон — хорошо
@@ -32,10 +38,28 @@ jw-dev.pro
 Картинки — хорошо
 > страница весит 260 КБ
 > самая тяжёлая — 00-oblozhka.webp, 110 КБ
+Поиск в Google — плохо
+> страница закрыта от поисковиков: в коде стоит запрет noindex
+> Google и Яндекс не покажут её в поиске
+Ссылка в мессенджерах — хорошо
+> для превью заданы картинка и название «{JW_DEV_PRO_TITLE}»
+Удобство чтения — хорошо
+> текст хорошо виден на фоне
+> у картинок есть подписи
 Что поправить в первую очередь
-Срочного нет.
+> Снять запрет noindex — иначе страницу не найти в Google и Яндексе.
 ────
 jw-dev.pro · @jw_dev_pro"""
+
+WIX_COFFEE_FRAGMENT_RU = """Поиск в Google — стоит поправить
+> заголовок для поиска: «Главная | Mysite»
+> описания для поиска нет — Google сам выберет кусок текста со страницы
+Ссылка в мессенджерах — стоит поправить
+> для превью не задана картинка — в Telegram ссылка придёт без картинки
+> название в превью: «Главная | Mysite»
+Удобство чтения — стоит поправить
+> местами текст плохо виден на фоне — например, «© 2023 «Бариста». Сайт создан на Wix.com»
+> на солнце и людям со слабым зрением его трудно прочитать"""
 
 EXAMPLE_RU = """[полоса ~/проверка-сайта]
 example.com
@@ -121,7 +145,52 @@ def report(lang, request_page, request_security, display="example.com", is_admin
 
 
 def test_jw_dev_pro_report_matches_spec():
-    assert rich_text(report("ru", page(), security(), display="jw-dev.pro")) == JW_DEV_PRO_RU
+    facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META),
+                readability_facts=readability())
+    shown = preview(head(title=JW_DEV_PRO_TITLE, og_title=JW_DEV_PRO_TITLE,
+                         og_image="https://jw-dev.pro/og/jw-dev-pro.jpg"))
+    assert rich_text(report("ru", facts, security(), display="jw-dev.pro", preview_facts=shown)) == JW_DEV_PRO_RU
+
+
+def test_wix_coffee_fragment_matches_spec():
+    facts = page(search_facts=search(description=AuditState.FAILED),
+                readability_facts=readability(contrast=AuditState.FAILED,
+                                              examples=("© 2023 «Бариста». Сайт создан на Wix.com",)))
+    shown = preview(head(title="Главная | Mysite", og_title="Главная | Mysite", description=None, og_image=None))
+    assert WIX_COFFEE_FRAGMENT_RU in rich_text(report("ru", facts, security(), preview_facts=shown))
+
+
+def test_bot_protection_stub_hides_preview_and_keeps_search_from_lighthouse():
+    facts = page(search_facts=search(description=AuditState.FAILED))
+    text = rich_text(report("ru", facts, security(), preview_facts=preview(failure=FetchFailure.STATUS, status=403)))
+    assert "Ссылка в мессенджерах" not in text and "заголовок для поиска" not in text
+    assert ("Поиск в Google — стоит поправить\n"
+            "> описания для поиска нет — Google сам выберет кусок текста со страницы") in text
+
+
+@pytest.mark.parametrize(("state", "line"), [
+    (ImageState.BROKEN, "> картинка для превью не открывается (ошибка 404) — в Telegram ссылка придёт без картинки"),
+    (ImageState.NOT_IMAGE, "> картинка для превью не открывается — в Telegram ссылка придёт без картинки"),
+    (ImageState.SVG, "> картинка для превью — в формате SVG, Telegram её не показывает"),
+    (ImageState.RELATIVE, "> адрес картинки для превью указан не полностью — Telegram её не показывает"),
+])
+def test_preview_image_lines_with_the_title_after_them(state, line):
+    shown = preview(head(og_title="Кафе"), image_state=state, image_status=404 if state is ImageState.BROKEN else 200)
+    text = rich_text(report("ru", page(), security(), preview_facts=shown))
+    assert f"Ссылка в мессенджерах — стоит поправить\n{line}\n> название в превью: «Кафе»" in text
+
+
+def test_preview_good_without_description_and_without_title():
+    no_description = preview(head(og_title="Кафе", description=None))
+    assert "> для превью заданы картинка и название «Кафе», без описания" in \
+        rich_text(report("ru", page(), security(), preview_facts=no_description))
+    untitled = rich_text(report("ru", page(), security(), preview_facts=preview(head(title=None))))
+    assert "> название для превью не задано — вместо него покажется адрес сайта" in untitled
+
+
+def test_preview_lines_in_english():
+    text = rich_text(report("en", page(), security(), preview_facts=preview(head(og_image=None))))
+    assert "Link in messengers — worth fixing\n> no preview image is set — in Telegram the link will arrive" in text
 
 
 def test_example_report_matches_spec_in_russian():
