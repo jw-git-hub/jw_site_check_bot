@@ -289,14 +289,29 @@ def _cert_until(security: SecurityFacts) -> date | None:
     return None
 
 
+PICTURE_FINDINGS = frozenset({Finding.IMAGES_STRETCHED, Finding.IMAGES_BLURRY})
+
+
 def _images_facts(texts: Texts, lang: Lang, request: ReportRequest, verdict: BlockVerdict) -> list[str]:
     images = request.page.images
-    if verdict.grade is not Grade.GOOD:
-        return _heavy_facts(texts, lang, images)
+    heavy = any(item.finding is Finding.HEAVY_PAGE for item in verdict.findings)
+    facts = _heavy_facts(texts, lang, images) if heavy else _light_facts(texts, lang, images)
+    return facts + [_picture_fact(texts, lang, item) for item in verdict.findings if item.finding in PICTURE_FINDINGS]
+
+
+def _light_facts(texts: Texts, lang: Lang, images: ImageFacts) -> list[str]:
     facts = [texts.get(lang, "images_weight", size=texts.size(lang, images.page_bytes))]
     if images.heaviest:
         facts.append(_heaviest_one_fact(texts, lang, images))
     return facts
+
+
+def _picture_fact(texts: Texts, lang: Lang, item: FindingItem) -> str:
+    """Одна картинка — своя фраза, иначе число со склонением (как «самая тяжёлая» и «самые тяжёлые»)."""
+    name = item.examples[0] if item.examples else ""
+    if item.count == 1:
+        return texts.get(lang, f"{item.finding}_one", name=name)
+    return texts.get(lang, f"{item.finding}_many", count=texts.count(lang, item.count or 0, "picture_nom"), name=name)
 
 
 def _heaviest_one_fact(texts: Texts, lang: Lang, images: ImageFacts) -> str:

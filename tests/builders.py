@@ -94,9 +94,10 @@ def mobile(viewport=AuditState.PASSED, snippet=VIEWPORT_OK, target=AuditState.PA
     return MobileFacts(viewport, snippet, target, zoom)
 
 
-def images(page_bytes=265_789, image_bytes=176_996, heaviest=JW_DEV_PRO_HEAVIEST, ratio=None) -> ImageFacts:
+def images(page_bytes=265_789, image_bytes=176_996, heaviest=JW_DEV_PRO_HEAVIEST, ratio=None, stretched=(),
+          blurry=()) -> ImageFacts:
     files = tuple(FileWeight(name, "Image", size, 0) for name, size in heaviest)
-    return ImageFacts(page_bytes, image_bytes, files, ratio)
+    return ImageFacts(page_bytes, image_bytes, files, ratio, tuple(stretched), tuple(blurry), 0)
 
 
 def page(speed_facts=None, mobile_facts=None, image_facts=None, final_url="https://site.test/",

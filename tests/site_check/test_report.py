@@ -203,6 +203,14 @@ def test_example_report_matches_spec_in_english():
     assert rich_text(report("en", example_page(), example_security())) == EXAMPLE_EN
 
 
+def test_picture_lines_one_and_many():
+    many = rich_text(report("ru", page(image_facts=images(blurry=("20let.png", "a.jpg", "b.jpg"))), security()))
+    one = rich_text(report("ru", page(image_facts=images(stretched=("team.jpg",))), security()))
+    assert "> 3 картинки на телефоне выглядят нечётко — например, 20let.png" in many
+    assert "> картинка растянута или сплющена — team.jpg" in one
+    assert "Картинки — стоит поправить\n> страница весит 260 КБ\n> самая тяжёлая — 00-oblozhka.webp, 110 КБ" in one
+
+
 def test_certificate_blocking_report_matches_spec():
     expired_2015 = CertInfo(datetime(2013, 4, 12, tzinfo=UTC), datetime(2015, 4, 12, tzinfo=UTC), "Let's Encrypt",
                             ("expired.badssl.com",))

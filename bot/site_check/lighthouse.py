@@ -13,6 +13,7 @@ Lighthouse может прислать не то, что мы ждём (обно
 import base64
 import binascii
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -22,6 +23,7 @@ from bot.site_check.markers import find_markers
 from bot.site_check.pagespeed import AUDIT_IDS
 from bot.site_check.readability_block import ReadabilityFacts, parse_readability
 from bot.site_check.search_block import SearchFacts, parse_search
+from bot.site_check.thresholds import BLURRY_MIN_SIDE_PX
 
 IMAGE_REQUEST_TYPE = "Image"
 IMAGE_SUMMARY_TYPE = "image"
@@ -39,6 +41,7 @@ HTTP_URL_PREFIXES = ("http://", "https://")
 MIN_TRANSFER_BYTES = 1
 SCREENSHOT_MAX_BYTES = 1024 * 1024  # ТЗ, 5.9
 SCREENSHOT_PREFIXES = ("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")
+DISPLAYED_SIZE = re.compile(r"(\d+)\s*x\s*(\d+)")
 
 
 @dataclass(frozen=True)
@@ -76,6 +79,9 @@ class ImageFacts:
     image_bytes: int | None
     heaviest: tuple[FileWeight, ...]
     compress_ratio: int | None
+    stretched: tuple[str, ...] = ()          # растянутые или сплющенные картинки (image-aspect-ratio, ТЗ 5.5)
+    blurry: tuple[str, ...] = ()             # нечёткие на телефоне картинки, без мелких значков (ТЗ 5.5)
+    blurry_small_skipped: int = 0            # сколько мелких значков не в счёт
 
 
 @dataclass(frozen=True)
@@ -215,9 +221,29 @@ def _savings_by_url(audits: dict[str, Any]) -> _Savings:
 def _images(audits: dict[str, Any], savings: _Savings) -> ImageFacts:
     requests = [item for item in audit_items(audits, "network-requests") if item.get("resourceType") == IMAGE_REQUEST_TYPE]
     page_bytes = numeric_value(audits, "total-byte-weight")
+    blurry, skipped = _blurry(audits)
     return ImageFacts(page_bytes=None if page_bytes is None else int(page_bytes),
                       image_bytes=_summary_bytes(audits).get(IMAGE_SUMMARY_TYPE),
-                      heaviest=_heaviest(requests, savings, HEAVIEST_IMAGES), compress_ratio=_compress_ratio(audits))
+                      heaviest=_heaviest(requests, savings, HEAVIEST_IMAGES), compress_ratio=_compress_ratio(audits),
+                      stretched=_names(audit_items(audits, "image-aspect-ratio")), blurry=blurry,
+                      blurry_small_skipped=skipped)
+
+
+def _names(items: list[dict[str, Any]]) -> tuple[str, ...]:
+    """Имена картинок без повторов: одна картинка с разными параметрами адреса — один раз."""
+    return tuple(dict.fromkeys(name for item in items if (name := file_name(_url(item)))))
+
+
+def _blurry(audits: dict[str, Any]) -> tuple[tuple[str, ...], int]:
+    items = audit_items(audits, "image-size-responsive")
+    big = [item for item in items if _min_displayed_side(item) >= BLURRY_MIN_SIDE_PX]
+    return _names(big), len(items) - len(big)
+
+
+def _min_displayed_side(item: dict[str, Any]) -> int:
+    """Размер на экране из displayedSize («381 x 259»); нет его — 0: не считаем (ложную тревогу не показываем)."""
+    found = DISPLAYED_SIZE.search(str(item.get("displayedSize", "")))
+    return min(int(found.group(1)), int(found.group(2))) if found else 0
 
 
 def _heaviest(requests: list[dict[str, Any]], savings: _Savings, limit: int) -> tuple[FileWeight, ...]:

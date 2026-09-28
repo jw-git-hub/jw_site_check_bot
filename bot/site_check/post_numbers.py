@@ -58,7 +58,14 @@ def _weight_rows(texts: Texts, lang: Lang, page: PageFacts) -> list[list[str]]:
     rows = [[texts.get(lang, f"post_bytes_{kind}"), texts.size(lang, size)] for kind, size in page.post.bytes_by_type]
     if page.post.requests is not None:
         rows.append([texts.get(lang, "post_requests"), str(page.post.requests)])
-    return rows
+    return rows + _picture_rows(texts, lang, page)
+
+
+def _picture_rows(texts: Texts, lang: Lang, page: PageFacts) -> list[list[str]]:
+    images = page.images
+    return [[texts.get(lang, "post_stretched"), str(len(images.stretched))],
+            [texts.get(lang, "post_blurry"), texts.get(lang, "post_blurry_value", count=len(images.blurry),
+                                                        small=images.blurry_small_skipped)]]
 
 
 def _file_row(texts: Texts, lang: Lang, item: FileWeight) -> list[str]:

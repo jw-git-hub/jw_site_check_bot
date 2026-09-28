@@ -162,6 +162,31 @@ def test_image_savings_match_by_exact_url_first():
     assert pairs == {(90_000, 80_000), (40_000, 5_000)}
 
 
+def responsive_item(url: str, displayed: str) -> dict:
+    return {"url": url, "displayedSize": displayed, "actualSize": displayed, "expectedSize": "999 x 999"}
+
+
+def test_blurry_pictures_skip_logos_and_small_icons():
+    failed = audit(score=0, mode="binary", items=[
+        responsive_item("https://a.example/images/20let.png", "381 x 259"),
+        responsive_item("https://a.example/images/logo-mobile.png", "233 x 62"),
+        responsive_item("https://a.example/images/20let.png?v=2", "381 x 259"),
+        responsive_item("https://a.example/logo.png", "100 x 100")])
+    facts = parse_lighthouse(lighthouse(image_size_responsive=failed)).images
+    assert (facts.blurry, facts.blurry_small_skipped) == (("20let.png",), 2)
+
+
+def test_stretched_pictures_by_name():
+    failed = audit(score=0, mode="binary", items=[{"url": "https://a.example/team.jpg", "displayedAspectRatio": "2:1",
+                                                  "actualAspectRatio": "1:1"}])
+    assert parse_lighthouse(lighthouse(image_aspect_ratio=failed)).images.stretched == ("team.jpg",)
+
+
+def test_recorded_joomla_has_three_blurry_pictures():
+    facts = parse_lighthouse(recorded_lighthouse("joomla_tires")).images
+    assert facts.blurry[0] == "20let.png" and len(facts.blurry) == 3
+
+
 def _corrupt_details_list(result: dict) -> dict:
     result["audits"]["viewport-insight"]["details"] = ["oops"]
     return result

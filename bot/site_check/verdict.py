@@ -10,7 +10,7 @@ from bot.site_check.contacts_block import judge_contacts
 from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
                                      UnknownReason, graded)
-from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
+from bot.site_check.lighthouse import AuditState, ImageFacts, PageFacts, SpeedFacts
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.preview_block import judge_preview
 from bot.site_check.readability_block import judge_readability
@@ -80,6 +80,7 @@ FIX_KEYS = {
     Finding.NO_CONTACTS: FixKey.ADD_CONTACTS, Finding.PHONE_NOT_LINK: FixKey.LINK_PHONE,
     Finding.CALL_WITHOUT_CODE: FixKey.FULL_CALL_NUMBER, Finding.NO_PRIVACY_POLICY: FixKey.ADD_POLICY_LINK,
     Finding.NO_ANALYTICS: FixKey.ADD_COUNTER, Finding.DOMAIN_EXPIRING: FixKey.RENEW_DOMAIN,
+    Finding.IMAGES_STRETCHED: FixKey.FIX_PROPORTIONS, Finding.IMAGES_BLURRY: FixKey.UPLOAD_LARGER,
 }
 SLOW_FIX_KEYS = {Cause.IMAGES: FixKey.COMPRESS_IMAGES, Cause.SCRIPTS: FixKey.TRIM_SCRIPTS,
                  Cause.SERVER: FixKey.FIX_SERVER, Cause.UNKNOWN: FixKey.FIND_SLOWDOWN}
@@ -249,13 +250,25 @@ def _unique(findings: list[FindingItem]) -> list[FindingItem]:
 
 
 def _images_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdict:
+    """Оценка — худшая из находок: вес, растянутые, нечёткие (ТЗ, 5.5)."""
     if page is None or page.images.page_bytes is None:
         return _unknown(Block.IMAGES, security)
-    size = page.images.page_bytes
+    return graded(Block.IMAGES, [*_weight_findings(page.images.page_bytes), *_picture_findings(page.images)])
+
+
+def _weight_findings(size: int) -> list[FindingItem]:
     if size <= thresholds.PAGE_GOOD_BYTES:
-        return BlockVerdict(Block.IMAGES, Grade.GOOD)
+        return []
     grade = Grade.FIX if size <= thresholds.PAGE_FIX_BYTES else Grade.BAD
-    return graded(Block.IMAGES, [FindingItem(Finding.HEAVY_PAGE, grade)])
+    return [FindingItem(Finding.HEAVY_PAGE, grade)]
+
+
+def _picture_findings(images: ImageFacts) -> list[FindingItem]:
+    found = []
+    for finding, names in ((Finding.IMAGES_STRETCHED, images.stretched), (Finding.IMAGES_BLURRY, images.blurry)):
+        if names:
+            found.append(FindingItem(finding, Grade.FIX, count=len(names), examples=names[:thresholds.IMAGE_EXAMPLES]))
+    return found
 
 
 def _summary_kind(blocks: dict[Block, BlockVerdict], security: SecurityFacts) -> SummaryKind:

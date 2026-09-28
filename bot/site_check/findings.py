@@ -73,6 +73,8 @@ class Finding(StrEnum):
     NO_PRIVACY_POLICY = "no_privacy_policy"
     NO_ANALYTICS = "no_analytics"
     DOMAIN_EXPIRING = "domain_expiring"
+    IMAGES_STRETCHED = "images_stretched"
+    IMAGES_BLURRY = "images_blurry"
 
 
 FINDING_ORDER = tuple(Finding)
@@ -122,6 +124,8 @@ class FixKey(StrEnum):
     ADD_POLICY_LINK = "fix_add_policy_link"
     ADD_COUNTER = "fix_add_counter"
     RENEW_DOMAIN = "fix_renew_domain"
+    FIX_PROPORTIONS = "fix_proportions"
+    UPLOAD_LARGER = "fix_upload_larger"
 
 
 @dataclass(frozen=True)

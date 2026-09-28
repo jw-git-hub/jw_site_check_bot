@@ -204,6 +204,19 @@ def test_page_weight(size, grade):
     assert judge(page(image_facts=images(page_bytes=size)), security(), TODAY).blocks[Block.IMAGES].grade is grade
 
 
+def test_light_page_with_blurry_pictures_is_worth_fixing():
+    verdict = judge(page(image_facts=images(blurry=("20let.png",))), security(), TODAY)
+    block = verdict.blocks[Block.IMAGES]
+    assert (block.grade, [item.finding for item in block.findings]) == (Grade.FIX, [Finding.IMAGES_BLURRY])
+    assert verdict.fixes[0].key is FixKey.UPLOAD_LARGER
+
+
+def test_heavy_and_stretched_pictures_keep_heavy_as_the_main_finding():
+    heavy = images(page_bytes=4_961_882, stretched=("team.jpg",))
+    block = judge(page(image_facts=heavy), security(), TODAY).blocks[Block.IMAGES]
+    assert [item.finding for item in block.findings] == [Finding.HEAVY_PAGE, Finding.IMAGES_STRETCHED]
+
+
 def test_fixes_are_at_most_three_most_important_first():
     busy = page(speed(lcp=6000, script=2000), mobile(viewport=AuditState.FAILED, snippet=None, zoom=AuditState.FAILED),
                 images(page_bytes=8 * MB))
