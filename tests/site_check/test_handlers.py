@@ -24,7 +24,7 @@ from bot.site_check.probe import PRIVATE_ADDRESS, SERVICE_DOWN, UNREACHABLE_DNS
 from bot.site_check.queue import CheckQueue
 from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK
 from bot.site_check.verdict import judge
-from tests.builders import TODAY, head, page, preview, security
+from tests.builders import TODAY, head, page, preview, security, speed
 from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, fake_bot, make_callback, rich_text
 
 USER = 77
@@ -103,6 +103,20 @@ async def test_link_gets_status_then_report_in_the_same_message(world):
     # Правка «Проверяю…» в отчёт ставит клавиатуру отчёта (задача 23a).
     assert keyboard["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
     assert await rows(world.db, "SELECT status, charged FROM checks") == [("done", 1)]
+
+
+async def test_second_check_of_the_same_address_says_what_changed(world):
+    await world.intake.handle_text(link("example.com"))
+    await settle(world)
+    async with world.db.begin() as connection:
+        await connection.execute(text("UPDATE checks SET created_at = '2026-09-25T11:00:00+00:00'"))
+    slow = page(speed(lcp=7000))
+    world.pipeline.outcomes["example.com"] = CheckResult("https://example.com/", slow, security(),
+                                                         judge(slow, security(), TODAY))
+    await world.intake.handle_text(link("example.com"))
+    await settle(world)
+    assert "С прошлой проверки (25 сентября 2026): главное на экране — 1,4 секунды → 7 секунд" in \
+        rich_text(world.messenger.edited[-1][2])
 
 
 async def test_report_shows_the_preview_block_from_the_check_result(world):

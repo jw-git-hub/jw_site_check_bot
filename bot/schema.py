@@ -40,4 +40,7 @@ MIGRATIONS = (
         "ALTER TABLE checks ADD COLUMN grade_preview TEXT",
         "ALTER TABLE checks ADD COLUMN grade_readability TEXT",
     ),
+    (   # версия 1.2: оценка блока «Заявки и контакты» (ТЗ, 11); только добавляет
+        "ALTER TABLE checks ADD COLUMN grade_contacts TEXT",
+    ),
 )

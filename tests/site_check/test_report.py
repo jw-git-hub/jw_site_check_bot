@@ -6,6 +6,7 @@ import pytest
 
 from bot.brand import BRAND
 from bot.locales import TEXTS
+from bot.site_check.comparison import Comparison
 from bot.site_check.domain_expiry import RDAP, DomainPaid
 from bot.site_check.findings import Block, BlockVerdict, Finding, FindingItem, FixItem, FixKey, Grade
 from bot.site_check.lighthouse import AuditState
@@ -25,10 +26,12 @@ EXAMPLE_HEAVIEST = (("slider-1.jpg", 3_355_443), ("about.png", 2_202_010), ("tea
 # Утверждённый владельцем вид (задача 23a, живая приёмка): заголовки блоков + короткие строки «>».
 JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для малого бизнеса — jw-dev.pro"
 
-# Пример ТЗ 7.3, версия 1.1: семь блоков, на главной jw-dev.pro стоит noindex (разведка 27.09.2026).
+# Пример ТЗ 7.3, версия 1.2: восемь блоков, снимок и срок домена, на главной jw-dev.pro стоит noindex
+# и нет счётчика посещений (разведка 27.09.2026).
 JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта]
 jw-dev.pro
-Есть что чинить: страница закрыта от поисковиков.
+[снимок первого экрана]
+Есть что чинить: страница закрыта от поисковиков, и нет счётчика посещений.
 Скорость — хорошо
 > главное на экране — через 1,4 секунды
 Телефон — хорошо
@@ -37,9 +40,13 @@ jw-dev.pro
 Защита — хорошо
 > сертификат действует до 8 декабря 2026
 > адрес без https переводит на защищённый
+> домен оплачен до 25 августа 2027
 Картинки — хорошо
 > страница весит 260 КБ
 > самая тяжёлая — 00-oblozhka.webp, 110 КБ
+Заявки и контакты — стоит поправить
+> связаться можно: в Telegram, по почте, через форму заявки
+> счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли
 Поиск в Google — плохо
 > страница закрыта от поисковиков: в коде стоит запрет noindex
 > Google и Яндекс не покажут её в поиске
@@ -50,6 +57,54 @@ jw-dev.pro
 > у картинок есть подписи
 Что поправить в первую очередь
 > Снять запрет noindex — иначе страницу не найти в Google и Яндексе.
+> Поставить счётчик посещений — станет видно, сколько людей заходит и откуда.
+────
+jw-dev.pro · @jw_dev_pro"""
+
+AVTOSPASATEL_TITLE = ('Шиномонтаж в Кирове - "АвтоСпасатель". Услуги шиномонтажа, автопомощи в Кирове. '
+                      "Ремонт шин и дисков")
+AVTOSPASATEL_OG = ("Шиномонтаж в Кирове - АвтоСпасатель. Услуги шиномонтажа, автопомощи в Кирове. Ремонт шин и дисков. "
+                   "Автомойка")
+AVTOSPASATEL_HEAVIEST = (("road1.png", 116_155), ("gruzovoy-shinomontazh-1.jpg", 94_509), ("datchiki1.jpg", 76_554))
+
+# Пример ТЗ 7.3, версия 1.2: живые данные avtospasatel43.ru, восемь блоков.
+AVTOSPASATEL_RU = """[полоса ~/проверка-сайта]
+avtospasatel43.ru
+[снимок первого экрана]
+Есть что чинить: с телефона открывается медленно, и страница тяжеловата.
+Скорость — плохо
+> главное на экране — через 14 секунд
+> больше всего времени уходит на тяжёлые картинки
+Телефон — хорошо
+> мобильная версия есть
+> кнопки стоят свободно
+Защита — хорошо
+> сертификат действует до 8 декабря 2026
+> адрес без https переводит на защищённый
+> домен оплачен до 16 июня 2027
+Картинки — стоит поправить
+> страница весит 4,7 МБ, из них 1,5 МБ — картинки
+> самые тяжёлые: road1.png — 113 КБ, gruzovoy-shinomontazh-1.jpg — 92 КБ, datchiki1.jpg — 75 КБ
+> картинки можно ужать примерно в 2 раза почти без потери качества
+> 3 картинки на телефоне выглядят нечётко — например, 20let.png
+Заявки и контакты — стоит поправить
+> связаться можно: звонком в одно касание
+> по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться
+> посещения считают Яндекс Метрика и Top.Mail.ru
+Поиск в Google — хорошо
+> страница открыта для поисковиков
+> заголовок для поиска: «Шиномонтаж в Кирове - "АвтоСпасатель". Услуги шиномонтажа, автопомощи…»
+Ссылка в мессенджерах — хорошо
+> для превью заданы картинка и название «Шиномонтаж в Кирове - АвтоСпасатель. Услуги шиномонтажа, автопомощи в…»
+Удобство чтения — стоит поправить
+> местами текст плохо виден на фоне — например, «Политикой обработки персональных данных и файлов Cookie»
+> на солнце и людям со слабым зрением его трудно прочитать
+> у 9 картинок нет подписи — например, 20let.png, avtomoyka-open-340x210.jpg
+> Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там
+Что поправить в первую очередь
+> Ужать картинки — страница станет легче и быстрее откроется с телефона.
+> Загрузить картинки крупнее — на телефоне они станут чёткими.
+> Указать в кнопке звонка номер с кодом города — тогда с мобильного дозвонятся.
 ────
 jw-dev.pro · @jw_dev_pro"""
 
@@ -146,12 +201,46 @@ def report(lang, request_page, request_security, display="example.com", is_admin
     return build(lang, request_page, request_security, display, is_admin, preview_facts)[0]
 
 
-def test_jw_dev_pro_report_matches_spec():
+def test_comparison_paragraph_goes_right_after_the_summary():
+    found = Comparison(date(2026, 9, 12), (4200, 2100), (12 * MB, 3_250_586),
+                       ((Block.SPEED, Grade.BAD, Grade.GOOD),))
+    verdict = judge(page(), security(), TODAY)
+    request = ReportRequest("site.test", "site.test", verdict, page(), security(), False, MEASURED_AT, None, found)
+    lines = rich_text(build_report(TEXTS, "ru", BRAND, request)[0]).splitlines()
+    assert lines[3] == ("С прошлой проверки (12 сентября 2026): главное на экране — 4,2 секунды → 2,1 секунды, "
+                        "страница — 12 МБ → 3,1 МБ; скорость — плохо → хорошо.")
+
+
+def jw_dev_pro_request_parts():
     facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META),
-                readability_facts=readability())
+                readability_facts=readability(), screenshot=TINY_JPEG)
     shown = preview(head(title=JW_DEV_PRO_TITLE, og_title=JW_DEV_PRO_TITLE,
-                         og_image="https://jw-dev.pro/og/jw-dev-pro.jpg"))
-    assert rich_text(report("ru", facts, security(), display="jw-dev.pro", preview_facts=shown)) == JW_DEV_PRO_RU
+                         og_image="https://jw-dev.pro/og/jw-dev-pro.jpg"),
+                    contact_facts=contacts(call_links=0, telegram=True, email=True, forms=1, markers=frozenset()))
+    return facts, security(domain=DomainPaid("jw-dev.pro", date(2027, 8, 25), RDAP)), shown
+
+
+def test_jw_dev_pro_report_matches_spec():
+    facts, security_facts, shown = jw_dev_pro_request_parts()
+    text = rich_text(report("ru", facts, security_facts, display="jw-dev.pro", preview_facts=shown))
+    assert text == JW_DEV_PRO_RU
+
+
+def test_avtospasatel_report_matches_spec():
+    heavy = images(page_bytes=4_961_882, image_bytes=1_590_607, heaviest=AVTOSPASATEL_HEAVIEST, ratio=2,
+                   blurry=("20let.png", "15-podpiska-340x210.jpg", "avtomoyka-open-340x210.jpg"))
+    facts = page(speed(lcp=13_631, image=2050, script=684, tbt=534), image_facts=heavy, search_facts=search(),
+                readability_facts=readability(contrast=AuditState.FAILED,
+                                              examples=("Политикой обработки персональных данных и файлов Cookie",),
+                                              alt=AuditState.FAILED,
+                                              alt_names=("20let.png", "avtomoyka-open-340x210.jpg"), alt_count=9),
+                screenshot=TINY_JPEG)
+    shown = preview(head(title=AVTOSPASATEL_TITLE, og_title=AVTOSPASATEL_OG,
+                         og_image="https://avtospasatel43.ru/images/500x500-blue-logo.jpg"),
+                    contact_facts=contacts(short=("43-43-48",), markers=frozenset({"metrika", "top_mail"})))
+    paid = security(domain=DomainPaid("avtospasatel43.ru", date(2027, 6, 16), "whois"))
+    text = rich_text(report("ru", facts, paid, display="avtospasatel43.ru", preview_facts=shown))
+    assert text == AVTOSPASATEL_RU
 
 
 def test_wix_coffee_fragment_matches_spec():

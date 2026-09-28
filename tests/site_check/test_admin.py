@@ -102,11 +102,11 @@ def test_admin_reuses_simple_message_and_report_constants_instead_of_redeclaring
     assert re.search(r"(?m)^ITEMS_JOIN\s*=", source) is None
 
 
-async def test_site_shows_seven_grades_in_one_row(db):
+async def test_site_shows_eight_grades_in_one_row(db):
     messenger = FakeMessenger()
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
                   repo=await fill(db), messenger=messenger, texts=TEXTS)
     text = messenger.last()
-    assert "Скорость · телефон · защита · картинки · поиск · ссылка · чтение" in text
+    assert "Скорость · телефон · защита · картинки · контакты · поиск · ссылка · чтение" in text
     assert ("хорошо · хорошо · хорошо · хорошо · не удалось проверить · не удалось проверить · "
-            "не удалось проверить") in text
+            "не удалось проверить · не удалось проверить") in text

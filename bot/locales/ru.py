@@ -57,6 +57,11 @@ TEXTS = {
     "summary_has_bad": "Есть что чинить: {troubles}.",
     "summary_only_fix": "В целом в порядке, но {troubles}.",
     "summary_cert_blocks": "Браузер не пускает на сайт: {reason}.",
+    # отчёт: сравнение с прошлой проверкой (версия 1.2, ТЗ, 5.12)
+    "compare_line": "С прошлой проверки ({date}): {changes}.",
+    "compare_lcp": "главное на экране — {before} → {after}",
+    "compare_weight": "страница — {before} → {after}",
+    "compare_grade": "{block} — {before} → {after}",
     "unknown_name_speed": "скорость",
     "unknown_name_mobile": "мобильную версию",
     "unknown_name_security": "защиту",
@@ -409,6 +414,6 @@ TEXTS = {
     "site_when": "Когда (UTC+7)",
     "site_source": "Метка",
     "site_result": "Итог",
-    "site_grades": "Скорость · телефон · защита · картинки · поиск · ссылка · чтение",
+    "site_grades": "Скорость · телефон · защита · картинки · контакты · поиск · ссылка · чтение",
     "site_numbers": "LCP · вес",
 }

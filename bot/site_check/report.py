@@ -12,6 +12,7 @@ from aiogram.types import BufferedInputFile
 from bot.core import rich
 from bot.core.commands import Brand
 from bot.core.i18n import Lang, Texts
+from bot.site_check.comparison import Comparison
 from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
                                      UnknownReason)
 from bot.site_check.lighthouse import ImageFacts, PageFacts
@@ -31,6 +32,7 @@ UNKNOWN_NAMES_JOIN = ", "
 AGAIN_CALLBACK = "again"
 SENTENCE_GAP = " "
 ITEMS_JOIN = ", "
+PARTS_JOIN = "; "
 
 
 @dataclass(frozen=True)
@@ -43,11 +45,13 @@ class ReportRequest:
     is_admin: bool
     measured_at: datetime
     preview: PagePreview | None = None  # своя загрузка страницы (ТЗ, 5.6–5.7); None — не было или не удалась
+    comparison: Comparison | None = None  # заметные изменения с прошлой проверки (ТЗ, 5.12, версия 1.2)
 
 
 def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest) -> tuple[dict, dict]:
     blocks = [rich.header(lang), rich.heading(request.display, TITLE_SIZE), *_screenshot(request.page),
-              rich.paragraph(summary_text(texts, lang, request.verdict))]
+              rich.paragraph(summary_text(texts, lang, request.verdict)),
+              *([rich.paragraph(comparison_text(texts, lang, request.comparison))] if request.comparison else [])]
     blocks += _graded_sections(texts, lang, request)
     blocks += _unknown_sections(texts, lang, request.verdict)
     blocks += _fixes_section(texts, lang, request.verdict)
@@ -112,6 +116,22 @@ def _unknown_names(texts: Texts, lang: Lang, verdict: Verdict) -> str:
     if len(names) == 1:
         return names[0]
     return ITEMS_JOIN.join(names[:-1]) + texts.get(lang, "and_last") + names[-1]
+
+
+def comparison_text(texts: Texts, lang: Lang, comparison: Comparison) -> str:
+    """Абзац под итогом — только числа и оценки, которые заметно изменились (ТЗ, 5.12)."""
+    numbers = []
+    if comparison.lcp_ms:
+        before, after = (texts.seconds(lang, value) for value in comparison.lcp_ms)
+        numbers.append(texts.get(lang, "compare_lcp", before=before, after=after))
+    if comparison.page_bytes:
+        before, after = (texts.size(lang, value) for value in comparison.page_bytes)
+        numbers.append(texts.get(lang, "compare_weight", before=before, after=after))
+    grades = [texts.get(lang, "compare_grade", block=_lowered(texts.get(lang, f"block_{block}")),
+                        before=texts.get(lang, f"grade_{old}"), after=texts.get(lang, f"grade_{new}"))
+              for block, old, new in comparison.grades]
+    changes = PARTS_JOIN.join(part for part in (ITEMS_JOIN.join(numbers), ITEMS_JOIN.join(grades)) if part)
+    return texts.get(lang, "compare_line", date=texts.date(lang, comparison.day), changes=changes)
 
 
 def _graded_sections(texts: Texts, lang: Lang, request: ReportRequest) -> list[dict]:

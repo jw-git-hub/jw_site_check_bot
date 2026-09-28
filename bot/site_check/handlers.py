@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import TypeVar
 
 from aiogram import F, Router
@@ -18,8 +19,9 @@ from bot.core.messenger import DeliveryFailed, Messenger, edit_or_send
 from bot.core.stats import best_effort
 from bot.core.users import User, Users
 from bot.settings import Settings
-from bot.site_check import replies
+from bot.site_check import replies, thresholds
 from bot.site_check.checks import FAILED, QUEUED, ChecksRepo, NewCheck
+from bot.site_check.comparison import Comparison, compare
 from bot.site_check.limits import LIMIT_GLOBAL, LIMIT_USER, Limits
 from bot.site_check.notifier import DAY, ONCE, SIX_HOURS, Notifier
 from bot.site_check.pagespeed import MEASURE_FAILED
@@ -237,8 +239,9 @@ class CheckRunner:
             return None
 
     async def _finish_done(self, job: CheckJob, result: CheckResult) -> None:
+        comparison = await self._comparison(job, result)
         request = ReportRequest(job.target.display, job.target.display_host, result.verdict, result.page,
-                                result.security, job.is_admin, self._clock.now(), result.preview)
+                                result.security, job.is_admin, self._clock.now(), result.preview, comparison)
         built = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
         if built is None:
             # Сбой сборки отчёта (ТЗ Л9) — наша сторона, а не сайта, замер не в счёт.
@@ -250,6 +253,16 @@ class CheckRunner:
         if job.check_id:
             await best_effort(self._repo.finish_done(job.check_id, result), "итог проверки", None)
         await self._notify_missing_audits(result)
+
+    async def _comparison(self, job: CheckJob, result: CheckResult) -> Comparison | None:
+        """Прошлая проверка того же адреса (ТЗ, 5.12): тем же человеком; владельцу бота — любым."""
+        now = self._clock.now()
+        since = now - timedelta(days=thresholds.COMPARE_MAX_DAYS)
+        until = now - timedelta(minutes=thresholds.COMPARE_MIN_MINUTES)
+        user_id = None if job.is_admin else job.user_id
+        previous = await best_effort(self._repo.previous_done(job.target.stored_url, user_id, since, until),
+                                     "прошлая проверка", None)
+        return compare(previous, result) if previous else None
 
     async def _finish_failed(self, job: CheckJob, failure: CheckFailed) -> None:
         message = self._safe_message(lambda: replies.failure(self._texts, job.lang, failure.code,

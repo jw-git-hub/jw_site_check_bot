@@ -56,6 +56,11 @@ TEXTS = {
     "summary_has_bad": "Needs fixing: {troubles}.",
     "summary_only_fix": "Mostly fine, but {troubles}.",
     "summary_cert_blocks": "The browser won't let visitors in: {reason}.",
+    # report: comparison with the previous check (version 1.2, spec 5.12)
+    "compare_line": "Since the last check ({date}): {changes}.",
+    "compare_lcp": "main content — {before} → {after}",
+    "compare_weight": "page — {before} → {after}",
+    "compare_grade": "{block} — {before} → {after}",
     "unknown_name_speed": "speed",
     "unknown_name_mobile": "the mobile version",
     "unknown_name_security": "security",
@@ -397,6 +402,6 @@ TEXTS = {
     "site_when": "When (UTC+7)",
     "site_source": "Label",
     "site_result": "Result",
-    "site_grades": "Speed · phone · security · images · search · link · reading",
+    "site_grades": "Speed · phone · security · images · contacts · search · link · reading",
     "site_numbers": "LCP · weight",
 }

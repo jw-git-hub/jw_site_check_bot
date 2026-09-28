@@ -17,8 +17,9 @@ from bot.site_check.findings import Block
 from bot.site_check.lighthouse import PageFacts, strip_params
 from bot.site_check.page_fetch import PagePreview
 from bot.site_check.pipeline import CheckResult
+from bot.site_check.thresholds import RULES_VERSION
 from bot.site_check.url_input import Target
-from bot.site_check.verdict import SummaryKind
+from bot.site_check.verdict import SecurityFacts, SummaryKind
 
 QUEUED = "queued"
 RUNNING = "running"
@@ -28,8 +29,8 @@ INTERRUPTED = "interrupted"
 RECENT_LIMIT = 5
 SUMMARY_CODES = {SummaryKind.ALL_GOOD: "ok", SummaryKind.GOOD_WITH_UNKNOWN: "ok", SummaryKind.ONLY_FIX: "fix",
                  SummaryKind.HAS_BAD: "bad", SummaryKind.CERT_BLOCKS: "bad"}
-GRADE_COLUMNS = ("grade_speed", "grade_mobile", "grade_security", "grade_images", "grade_search", "grade_preview",
-                 "grade_readability")
+GRADE_COLUMNS = ("grade_speed", "grade_mobile", "grade_security", "grade_images", "grade_contacts", "grade_search",
+                 "grade_preview", "grade_readability")
 
 # Статусы — только параметрами запроса, литералов вроде 'queued' в SQL не остаётся.
 INSERT_CHECK = """
@@ -38,8 +39,9 @@ VALUES (:user_id, :source, :domain, :url, :status, :error_code, :chat_id, :messa
 MARK_RUNNING = "UPDATE checks SET status = :status, started_at = :now WHERE id = :id"
 FINISH_DONE = """
 UPDATE checks SET status = :status, final_url = :final_url, grade_speed = :speed, grade_mobile = :mobile,
-  grade_security = :security, grade_images = :images, grade_search = :search, grade_preview = :preview,
-  grade_readability = :readability, summary = :summary, metrics_json = :metrics, charged = 1, finished_at = :now
+  grade_security = :security, grade_images = :images, grade_contacts = :contacts, grade_search = :search,
+  grade_preview = :preview, grade_readability = :readability, summary = :summary, metrics_json = :metrics,
+  charged = 1, finished_at = :now
 WHERE id = :id"""
 FINISH_FAILED = """
 UPDATE checks SET status = :status, error_code = :code, charged = :charged, finished_at = :now WHERE id = :id"""
@@ -53,8 +55,15 @@ UPDATE checks SET status = :interrupted, error_code = :interrupted, charged = 0,
 WHERE status IN (:queued, :running)"""
 RECENT_FOR_DOMAIN = """
 SELECT created_at, source, status, error_code, grade_speed, grade_mobile, grade_security, grade_images,
-  grade_search, grade_preview, grade_readability, summary, metrics_json
+  grade_contacts, grade_search, grade_preview, grade_readability, summary, metrics_json
 FROM checks WHERE domain = :domain ORDER BY created_at DESC, id DESC LIMIT :limit"""
+PREVIOUS_DONE = """
+SELECT created_at, source, status, error_code, grade_speed, grade_mobile, grade_security, grade_images,
+  grade_contacts, grade_search, grade_preview, grade_readability, summary, metrics_json
+FROM checks
+WHERE url = :url AND status = :done AND created_at >= :since AND created_at <= :until
+  AND (:user_id IS NULL OR user_id = :user_id)
+ORDER BY created_at DESC, id DESC LIMIT 1"""
 STATS_BY_SOURCE = """
 SELECT source, COUNT(*) AS checks, COUNT(DISTINCT CASE WHEN status = :done THEN user_id END) AS reported_users,
   SUM(CASE WHEN error_code IS NOT NULL THEN 1 ELSE 0 END) AS refusals
@@ -107,13 +116,14 @@ class LabelStats:
 
 def metrics_summary(result: CheckResult) -> dict[str, Any]:
     """Ключевые цифры для /site и «Цифр для поста» — до 4 КБ, адреса без параметров."""
-    summary: dict[str, Any] = {"final_url": strip_params(result.final_url)}
+    summary: dict[str, Any] = {"rules": RULES_VERSION, "final_url": strip_params(result.final_url)}
     page = result.page
     if page:
         summary |= {"lighthouse": page.lighthouse_version, "lcp_ms": page.speed.lcp_ms,
                     "page_bytes": page.images.page_bytes, "image_bytes": page.images.image_bytes,
                     "heaviest": [[item.name, item.bytes] for item in page.images.heaviest]}
         summary |= _new_blocks_numbers(page, result.preview)
+        summary |= _contacts_domain_images(page, result.security, result.preview)
     certs = [facts.cert for facts in reversed(result.security.tls) if facts.cert]
     if certs:
         summary["cert_until"] = certs[0].not_after.date().isoformat()
@@ -134,6 +144,19 @@ def _new_blocks_numbers(page: PageFacts, preview: PagePreview | None) -> dict[st
         facts = page.readability
         numbers["readability"] = {"contrast": facts.contrast_count, "alt_missing": facts.alt_missing_count,
                                   "lang": facts.lang.value}
+    return numbers
+
+
+def _contacts_domain_images(page: PageFacts, security: SecurityFacts, preview: PagePreview | None) -> dict[str, Any]:
+    """Версия 1.2 (ТЗ, 11): контакты — числа и названия сервисов, без телефонов и почты; срок домена; картинки."""
+    numbers: dict[str, Any] = {"images": {"stretched": len(page.images.stretched), "blurry": len(page.images.blurry)}}
+    if security.domain:
+        numbers["domain_until"] = security.domain.until.isoformat()
+    if preview and preview.contacts:
+        facts = preview.contacts
+        numbers["contacts"] = {"calls": facts.call_links, "short": len(facts.short_call_links),
+                               "text_phones": facts.text_phones, "forms": facts.personal_forms,
+                               "policy": facts.policy_link, "services": sorted(facts.markers)}
     return numbers
 
 
@@ -192,6 +215,14 @@ class ChecksRepo:
         async with self._engine.connect() as connection:
             rows = (await connection.execute(text(RECENT_FOR_DOMAIN), {"domain": domain, "limit": RECENT_LIMIT})).all()
         return [_domain_check(row) for row in rows]
+
+    async def previous_done(self, url: str, user_id: int | None, since: datetime,
+                            until: datetime) -> DomainCheck | None:
+        """Прошлая проверка того же адреса (ТЗ, 5.12): user_id=None — любым человеком (владельцу бота)."""
+        params = {"url": url, "done": DONE, "since": to_iso(since), "until": to_iso(until), "user_id": user_id}
+        async with self._engine.connect() as connection:
+            row = (await connection.execute(text(PREVIOUS_DONE), params)).first()
+        return _domain_check(row) if row else None
 
     async def stats(self, since: datetime) -> tuple[list[LabelStats], list[tuple[str, int]]]:
         params = {"since": to_iso(since)}

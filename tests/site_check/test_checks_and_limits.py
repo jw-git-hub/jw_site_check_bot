@@ -51,10 +51,11 @@ async def test_done_check_keeps_grades_summary_and_numbers(repo):
     await repo.finish_done(check_id, good_result())
     recent = (await repo.recent_for_domain("site.org"))[0]
     assert (recent.status, recent.summary, recent.source) == (DONE, "ok", "channel")
-    assert recent.grades == ("good",) * 4 + ("unknown",) * 3
+    assert recent.grades == ("good",) * 4 + ("unknown",) * 4
     assert recent.metrics["final_url"] == "https://www.site.org/"
     assert recent.metrics["cert_until"] == "2026-12-08"
     assert recent.metrics["lcp_ms"] == 1400
+    assert recent.metrics["rules"] == "1.2"
 
 
 async def test_charged_checks_are_counted_per_user_and_in_total(repo):
@@ -160,7 +161,7 @@ async def test_done_check_keeps_new_blocks_in_grades_and_numbers(repo):
     check_id = await repo.create(NewCheck(USER, "channel", parse_input("site.org", []), QUEUED))
     await repo.finish_done(check_id, new_blocks_result())
     recent = (await repo.recent_for_domain("site.org"))[0]
-    assert recent.grades == ("good",) * 7
+    assert recent.grades == ("good",) * 4 + ("unknown",) + ("good",) * 3
     assert recent.metrics["search"] == {"crawlable": "passed", "source": None}
     assert recent.metrics["preview"] == {"fetch": "ok", "image": "ok", "title": True}
     assert recent.metrics["readability"] == {"contrast": 0, "alt_missing": 0, "lang": "passed"}
@@ -168,3 +169,18 @@ async def test_done_check_keeps_new_blocks_in_grades_and_numbers(repo):
 
 def test_metrics_stay_under_four_kilobytes():
     assert len(json.dumps(metrics_summary(new_blocks_result()), ensure_ascii=False).encode()) < 4096
+
+
+async def test_previous_done_is_own_and_older_than_ten_minutes(repo):
+    clock = FakeClock()
+    own = await repo.create(NewCheck(USER, "channel", parse_input("site.org", []), QUEUED))
+    await repo.finish_done(own, good_result())
+    other = await repo.create(NewCheck(78, "fb", parse_input("site.org", []), QUEUED))
+    await repo.finish_done(other, good_result())
+    now = clock.now()
+    later, window = now + timedelta(minutes=30), now - timedelta(days=180)
+    url = parse_input("site.org", []).stored_url
+    assert (await repo.previous_done(url, USER, window, later)).source == "channel"
+    assert (await repo.previous_done(url, None, window, later)).source == "fb"
+    assert await repo.previous_done(url, USER, window, now - timedelta(minutes=10)) is None
+    assert await repo.previous_done("https://other.org/", None, window, later) is None

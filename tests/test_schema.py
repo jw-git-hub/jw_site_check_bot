@@ -20,7 +20,17 @@ async def test_version_one_database_gets_new_grade_columns_and_keeps_rows(tmp_pa
         count = (await connection.execute(text("SELECT COUNT(*) FROM checks"))).scalar_one()
     await engine.dispose()
     assert NEW_GRADES <= columns and count == 1
-    assert list((tmp_path / "backups").glob("pre-v2-*.db"))
+    assert list((tmp_path / "backups").glob("pre-v3-*.db"))
+
+
+async def test_version_two_database_gets_the_contacts_grade(tmp_path):
+    engine = create_engine(tmp_path / "data")
+    await migrate(engine, MIGRATIONS[:2], tmp_path / "backups", "t")
+    await migrate(engine, MIGRATIONS, tmp_path / "backups", "t")
+    async with engine.connect() as connection:
+        columns = {row[1] for row in await connection.execute(text("PRAGMA table_info(checks)"))}
+    await engine.dispose()
+    assert "grade_contacts" in columns and list((tmp_path / "backups").glob("pre-v3-*.db"))
 
 
 def test_migrations_only_add():
