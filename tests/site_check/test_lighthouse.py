@@ -1,11 +1,13 @@
+import base64
 import json
 from pathlib import Path
 
 import pytest
 
+import bot.site_check.lighthouse as lighthouse_module
 from bot.site_check.lighthouse import AuditState, PageFacts, audit_state, file_name, parse_lighthouse, strip_params
 from bot.site_check.pagespeed import AUDIT_IDS
-from tests.builders import RECORDED_FAILURES, audit, lighthouse
+from tests.builders import RECORDED_FAILURES, TINY_JPEG, audit, lighthouse, recorded_lighthouse
 
 FIXTURES = sorted((Path(__file__).parents[1] / "fixtures" / "pagespeed").glob("*.json"))
 PAGE_FIXTURES = [path for path in FIXTURES if path.stem not in RECORDED_FAILURES]
@@ -278,3 +280,30 @@ def test_category_scores_are_read_as_percent():
     result = {**lighthouse(), "categories": {"seo": {"score": 0.69}, "accessibility": {"score": 1}}}
     assert parse_lighthouse(result).post.category_scores == (("seo", 69), ("accessibility", 100))
     assert parse_lighthouse({**lighthouse(), "categories": "junk"}).post.category_scores == ()
+
+
+def screenshot_audit(data) -> dict:
+    return {"score": None, "scoreDisplayMode": "informative", "details": {"type": "screenshot", "data": data}}
+
+
+def test_screenshot_is_decoded_from_its_data_address():
+    encoded = "data:image/jpeg;base64," + base64.b64encode(TINY_JPEG).decode()
+    assert parse_lighthouse(lighthouse(final_screenshot=screenshot_audit(encoded))).screenshot == TINY_JPEG
+
+
+@pytest.mark.parametrize("data", ["https://cdn.example/shot.jpg", "data:image/gif;base64,R0lGODlh",
+                                  "data:image/jpeg;base64,!!не base64!!", 42, None])
+def test_strange_screenshot_is_dropped(data):
+    assert parse_lighthouse(lighthouse(final_screenshot=screenshot_audit(data))).screenshot is None
+
+
+def test_too_big_screenshot_is_dropped(monkeypatch):
+    monkeypatch.setattr(lighthouse_module, "SCREENSHOT_MAX_BYTES", 8)
+    encoded = "data:image/jpeg;base64," + base64.b64encode(TINY_JPEG).decode()
+    assert parse_lighthouse(lighthouse(final_screenshot=screenshot_audit(encoded))).screenshot is None
+
+
+def test_recorded_screenshot_placeholder_is_dropped():
+    """Записи (scripts/record_fixtures.py) хранят снимок без base64 — короткой заглушкой (ТЗ, 5.9): разбор
+    должен счесть её «странным снимком» и не хранить, а не притвориться настоящей картинкой."""
+    assert parse_lighthouse(recorded_lighthouse("jw_dev_pro")).screenshot is None

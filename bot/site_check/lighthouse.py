@@ -10,8 +10,10 @@ requested_url (уточнение владельца к ТЗ, 7.5): бот не 
 Lighthouse может прислать не то, что мы ждём (обновление API, обрезанный ответ): неизвестный вход даёт известный
 исход — None/0/пусто/«неизвестно», а не падение разбора (правило владельца, ТЗ 5.1 про переименование проверок).
 """
+import base64
+import binascii
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from bot.site_check.audits import (AuditState, as_number, audit_entry, audit_items, audit_state, file_name,
@@ -34,6 +36,8 @@ HEAVIEST_IMAGES = 3
 HEAVIEST_FILES = 10
 HTTP_URL_PREFIXES = ("http://", "https://")
 MIN_TRANSFER_BYTES = 1
+SCREENSHOT_MAX_BYTES = 1024 * 1024  # ТЗ, 5.9
+SCREENSHOT_PREFIXES = ("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")
 
 
 @dataclass(frozen=True)
@@ -98,6 +102,8 @@ class PageFacts:
     readability: ReadabilityFacts | None = None
     # Что мерил Lighthouse, с параметрами — только для своей загрузки страницы; не хранится и не пишется в журнал.
     measured_url: str = ""
+    # Снимок первого экрана (ТЗ, 5.9); не хранится (5.1: «скриншоты не храним») — не в repr, не в базе, не в /site.
+    screenshot: bytes | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -122,6 +128,19 @@ def _url(item: dict[str, Any], key: str = "url") -> str:
     return value if isinstance(value, str) else ""
 
 
+def parse_screenshot(audits: dict[str, Any]) -> bytes | None:
+    """Снимок первого экрана (ТЗ, 5.9): data: с JPEG, PNG или WebP в base64, не больше SCREENSHOT_MAX_BYTES."""
+    details = audit_entry(audits, "final-screenshot").get("details")
+    raw = details.get("data") if isinstance(details, dict) else None
+    if not isinstance(raw, str) or not raw.startswith(SCREENSHOT_PREFIXES):
+        return None
+    try:
+        image = base64.b64decode(raw.split(",", 1)[1], validate=True)
+    except (binascii.Error, ValueError):
+        return None
+    return image if 0 < len(image) <= SCREENSHOT_MAX_BYTES else None
+
+
 def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
     raw_audits = result.get("audits")
     audits = raw_audits if isinstance(raw_audits, dict) else {}
@@ -139,6 +158,7 @@ def parse_lighthouse(result: dict[str, Any]) -> PageFacts:
         search=parse_search(audits),
         readability=parse_readability(audits),
         measured_url=str(result.get("finalDisplayedUrl") or result.get("requestedUrl") or ""),
+        screenshot=parse_screenshot(audits),
     )
 
 

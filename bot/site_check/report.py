@@ -7,6 +7,8 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
+from aiogram.types import BufferedInputFile
+
 from bot.core import rich
 from bot.core.commands import Brand
 from bot.core.i18n import Lang, Texts
@@ -22,6 +24,7 @@ from bot.site_check.verdict import CORE_BLOCKS, REPORT_ORDER, SecurityFacts, Sum
 
 TITLE_SIZE = 1
 SECTION_SIZE = 2
+SCREENSHOT_FILE_NAME = "screen.jpg"
 FIX_MARKER = "> "
 FACTS_JOIN = "\n"
 UNKNOWN_NAMES_JOIN = ", "
@@ -43,7 +46,7 @@ class ReportRequest:
 
 
 def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest) -> tuple[dict, dict]:
-    blocks = [rich.header(lang), rich.heading(request.display, TITLE_SIZE),
+    blocks = [rich.header(lang), rich.heading(request.display, TITLE_SIZE), *_screenshot(request.page),
               rich.paragraph(summary_text(texts, lang, request.verdict))]
     blocks += _graded_sections(texts, lang, request)
     blocks += _unknown_sections(texts, lang, request.verdict)
@@ -52,6 +55,13 @@ def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest)
         blocks.append(post_numbers(texts, lang, request.page, request.security, request.measured_at, request.preview))
     message = rich.message([*blocks, rich.divider(), rich.footer()])
     return message, _report_keyboard(texts, lang, brand, request.domain)
+
+
+def _screenshot(page: PageFacts | None) -> list[dict]:
+    """Снимок первого экрана сразу под доменом (ТЗ, 5.9, 7.1); нет снимка — нет блока."""
+    if page is None or page.screenshot is None:
+        return []
+    return [rich.photo(BufferedInputFile(page.screenshot, SCREENSHOT_FILE_NAME))]
 
 
 def _report_keyboard(texts: Texts, lang: Lang, brand: Brand, domain: str) -> dict:

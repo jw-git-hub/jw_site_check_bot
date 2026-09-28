@@ -1,10 +1,11 @@
 import json
 
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
-from aiogram.types import Chat, FSInputFile, Message, PhotoSize, RichBlockPhoto, RichMessage
+from aiogram.types import BufferedInputFile, Chat, FSInputFile, Message, PhotoSize, RichBlockPhoto, RichMessage
 
 import pytest
 
+from bot.core import rich
 from bot.core.banner import BANNER_FILES
 from bot.core.messenger import (EMPTY_KEYBOARD, AiogramMessenger, DeliveryFailed, EditRichDict, MessageGone,
                                 SendRichDict, edit_or_send)
@@ -188,3 +189,10 @@ async def test_edit_substitutes_the_banner_and_remembers_its_file_id_too():
     await messenger.edit(1, 5, BANNER_MESSAGE)
     second_media = bot.session.calls[1].rich_message["blocks"][0]["photo"]["media"]
     assert second_media == "file456"
+
+
+def test_file_inside_rich_message_goes_as_an_attachment():
+    bot, files = fake_bot(), {}
+    shot = BufferedInputFile(b"\xff\xd8\xff\xd9", "screen.jpg")
+    dumped = bot.session.prepare_value({"blocks": [rich.photo(shot)]}, bot=bot, files=files)
+    assert list(files.values()) == [shot] and "attach://" in dumped

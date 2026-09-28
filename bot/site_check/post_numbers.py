@@ -39,6 +39,7 @@ def post_numbers(texts: Texts, lang: Lang, page: PageFacts, security: SecurityFa
     rows += _preview_rows(texts, lang, preview)
     rows += _readability_rows(texts, lang, page.readability, preview)
     rows += _category_rows(texts, lang, page.post.category_scores)
+    rows.append(_screenshot_row(texts, lang, page))
     rows += _meta_rows(texts, lang, page, security, measured_at)
     return rich.details(texts.get(lang, "post_numbers_title"), [rich.table(rows)])
 
@@ -160,6 +161,11 @@ def _category_rows(texts: Texts, lang: Lang, scores: tuple[tuple[str, int], ...]
     values = dict(scores)
     shown = CATEGORY_JOIN.join(str(values.get(name, NO_VALUE)) for name in CATEGORY_NAMES)
     return [[texts.get(lang, "post_categories"), shown]]
+
+
+def _screenshot_row(texts: Texts, lang: Lang, page: PageFacts) -> list[str]:
+    value = texts.size(lang, len(page.screenshot)) if page.screenshot else texts.get(lang, "post_screenshot_none")
+    return [texts.get(lang, "post_screenshot"), value]
 
 
 def _meta_rows(texts: Texts, lang: Lang, page: PageFacts, security: SecurityFacts,

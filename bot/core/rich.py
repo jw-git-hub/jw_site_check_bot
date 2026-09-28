@@ -45,9 +45,14 @@ def divider() -> Block:
     return {"type": "divider"}
 
 
+def photo(media: Any) -> Block:
+    """Блок-картинка: media — метка полосы, file_id или файл aiogram (уходит через attach://, ТЗ 5.9)."""
+    return {"type": "photo", "photo": {"type": "photo", "media": media}}
+
+
 def header(lang: str) -> Block:
     """Первый блок сообщения — полоса-картинка на языке сообщения (задача 23b, ТЗ 7.1)."""
-    return {"type": "photo", "photo": {"type": "photo", "media": BANNER_MEDIA_PREFIX + lang}}
+    return photo(BANNER_MEDIA_PREFIX + lang)
 
 
 def footer() -> Block:

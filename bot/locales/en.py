@@ -278,6 +278,8 @@ TEXTS = {
     "post_lang": "Page language",
     "post_lang_missing": "not set",
     "post_categories": "Lighthouse: SEO / accessibility",
+    "post_screenshot": "First screen snapshot",
+    "post_screenshot_none": "not in the answer",
     "checking": "Checking {site}…",
     "queued": "There are {sites} ahead of yours — about {minutes} min. The report will appear in this message.",
     "queued_one": "There is 1 site ahead of yours — about {minutes} min. The report will appear in this message.",

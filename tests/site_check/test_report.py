@@ -14,7 +14,8 @@ from bot.site_check.report import ReportRequest, build_report, fix_text, summary
 from bot.site_check.search_block import BlockSource
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.verdict import SecurityFacts, SummaryKind, Verdict, judge
-from tests.builders import MB, TODAY, cert, head, images, mobile, page, preview, readability, security, search, speed
+from tests.builders import (MB, TINY_JPEG, TODAY, cert, head, images, mobile, page, preview, readability, security,
+                            search, speed)
 from tests.fakes import rich_text
 
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
@@ -226,6 +227,22 @@ def test_owner_gets_numbers_for_post_and_others_do_not():
     assert "Главное на экране (LCP) | 1,4 секунды" in owner
     assert "Замер (UTC+7) | 25.09.2026 12:30" in owner
     assert "Подробные замеры — видите только вы" not in rich_text(report("ru", page(), security()))
+
+
+def test_screenshot_goes_right_under_the_domain():
+    message = report("ru", page(screenshot=TINY_JPEG), security(), display="jw-dev.pro")
+    assert rich_text(message).splitlines()[:3] == ["[полоса ~/проверка-сайта]", "jw-dev.pro", "[снимок первого экрана]"]
+    assert message["blocks"][2]["photo"]["media"].filename == "screen.jpg"
+
+
+def test_no_screenshot_no_block():
+    assert "[снимок первого экрана]" not in rich_text(report("ru", page(), security()))
+
+
+def test_owner_sees_the_screenshot_size():
+    owner = rich_text(report("ru", page(screenshot=TINY_JPEG), security(), is_admin=True))
+    assert "Снимок первого экрана | 1 КБ" in owner
+    assert "Снимок первого экрана | нет в ответе" in rich_text(report("ru", page(), security(), is_admin=True))
 
 
 def test_unknown_security_is_named_in_summary():

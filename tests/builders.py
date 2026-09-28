@@ -14,6 +14,7 @@ from bot.site_check.verdict import SecurityFacts
 
 TODAY = date(2026, 9, 25)
 MB = 1024 * 1024
+TINY_JPEG = b"\xff\xd8\xff\xe0" + bytes(16) + b"\xff\xd9"
 VIEWPORT_OK = '<meta name="viewport" content="width=device-width,initial-scale=1">'
 NOINDEX_META = '<meta name="robots" content="noindex" />'
 JW_DEV_PRO_HEAVIEST = (("00-oblozhka.webp", 112_654),)
@@ -92,10 +93,10 @@ def images(page_bytes=265_789, image_bytes=176_996, heaviest=JW_DEV_PRO_HEAVIEST
 
 
 def page(speed_facts=None, mobile_facts=None, image_facts=None, final_url="https://site.test/",
-         readability_facts=None, search_facts=None) -> PageFacts:
+         readability_facts=None, search_facts=None, screenshot=None) -> PageFacts:
     post = PostNumbers(14, (("total", 265_789),), (), ())
     return PageFacts("13.5.0", final_url, speed_facts or speed(), mobile_facts or mobile(), image_facts or images(),
-                     (), post, (), search=search_facts, readability=readability_facts)
+                     (), post, (), search=search_facts, readability=readability_facts, screenshot=screenshot)
 
 
 def cert(days_left=74, lifetime=90) -> CertInfo:

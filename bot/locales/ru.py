@@ -286,6 +286,8 @@ TEXTS = {
     "post_lang": "Язык страницы",
     "post_lang_missing": "не указан",
     "post_categories": "Lighthouse: SEO / доступность",
+    "post_screenshot": "Снимок первого экрана",
+    "post_screenshot_none": "нет в ответе",
     # служебные сообщения
     "checking": "Проверяю {site}…",
     "queued": "Передо мной ещё {sites} — ждать примерно {minutes} мин. Отчёт появится в этом сообщении.",

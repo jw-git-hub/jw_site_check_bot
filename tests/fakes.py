@@ -19,6 +19,7 @@ DIVIDER_TEXT = "────"
 BLOCKED_TEXT = "Forbidden: bot was blocked by the user"
 # Строка полосы для сравнения с примерами ТЗ (7.3) — сама полоса картинкой, метку показываем текстом (задача 23b).
 BANNER_LINES = {"ru": "[полоса ~/проверка-сайта]", "en": "[banner ~/site-check]"}
+SCREENSHOT_LINE = "[снимок первого экрана]"
 
 
 def fake_telegram_token() -> str:
@@ -120,6 +121,8 @@ def _banner_line(block: dict[str, Any]) -> str:
     """Строка полосы для тестов (задача 23b): метка `banner:<lang>` — как ставит `rich.header`, до подстановки
     файла или file_id мессенджером (тесты собирают сообщения напрямую, а не через AiogramMessenger)."""
     media = block["photo"]["media"]
+    if not isinstance(media, str):
+        return SCREENSHOT_LINE  # снимок первого экрана — файлом (ТЗ, 5.9)
     lang = media.removeprefix(BANNER_MEDIA_PREFIX)
     return BANNER_LINES.get(lang, media)
 
