@@ -1,16 +1,19 @@
 import pytest
 
+from bot.locales import en, ru
+from bot.site_check.findings import FINDING_ORDER, BlockVerdict, FindingItem
 from bot.site_check.lighthouse import AuditState
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
-from bot.site_check.verdict import (Block, Cause, Finding, FixKey, Grade, SecurityFacts, SummaryKind, UnknownReason,
-                                    judge, main_cause)
+from bot.site_check.verdict import (BAD_PRIORITY, CORE_BLOCKS, FIX_KEYS, FIX_PRIORITY, NEW_BLOCKS, Block, Cause,
+                                    Finding, FixKey, Grade, SecurityFacts, SummaryKind, UnknownReason, judge,
+                                    main_cause, pick_fixes, pick_troubles)
 from tests.builders import MB, TODAY, cert, images, mobile, page, security, speed
 
 FIXED_WIDTH_SNIPPET = '<meta name="viewport" content="width=1024">'
 
 
 def grades(verdict) -> dict:
-    return {block: verdict.blocks[block].grade for block in Block}
+    return {block: verdict.blocks[block].grade for block in CORE_BLOCKS}
 
 
 def example_com():
@@ -206,3 +209,65 @@ def test_fixes_are_at_most_three_most_important_first():
                 images(page_bytes=8 * MB))
     verdict = judge(busy, security(outcome=TlsOutcome.EXPIRED, days_left=-1), TODAY)
     assert [fix.key for fix in verdict.fixes] == [FixKey.REPLACE_CERT, FixKey.MAKE_MOBILE, FixKey.TRIM_SCRIPTS]
+
+
+def blocks_with(*verdicts: BlockVerdict) -> dict:
+    blocks = {block: BlockVerdict(block, Grade.GOOD) for block in Block}
+    blocks.update({verdict.block: verdict for verdict in verdicts})
+    return blocks
+
+
+def bad(block: Block, finding: Finding) -> BlockVerdict:
+    return BlockVerdict(block, Grade.BAD, (FindingItem(finding, Grade.BAD),))
+
+
+def fix(block: Block, finding: Finding) -> BlockVerdict:
+    return BlockVerdict(block, Grade.FIX, (FindingItem(finding, Grade.FIX),))
+
+
+def test_new_blocks_without_data_are_unknown_and_keep_all_good():
+    verdict = judge(page(), security(), TODAY)
+    assert {block: verdict.blocks[block].grade for block in NEW_BLOCKS} == dict.fromkeys(NEW_BLOCKS, Grade.UNKNOWN)
+    assert verdict.summary is SummaryKind.ALL_GOOD
+
+
+def test_closed_from_search_is_second_after_bad_security():
+    blocks = blocks_with(bad(Block.MOBILE, Finding.NO_MOBILE), bad(Block.SEARCH, Finding.CLOSED_META),
+                         bad(Block.SECURITY, Finding.NO_HTTPS))
+    assert [item.finding for item in pick_troubles(blocks)] == [Finding.NO_HTTPS, Finding.CLOSED_META]
+    assert [item.key for item in pick_fixes(blocks)] == [FixKey.ENABLE_HTTPS, FixKey.UNBLOCK_META,
+                                                         FixKey.MAKE_MOBILE]
+
+
+def test_new_blocks_fixes_wait_behind_heavy_images():
+    blocks = blocks_with(fix(Block.READABILITY, Finding.NO_ALT), fix(Block.PREVIEW, Finding.NO_PREVIEW_IMAGE),
+                         fix(Block.SEARCH, Finding.NO_DESCRIPTION), fix(Block.IMAGES, Finding.HEAVY_PAGE))
+    assert [item.finding for item in pick_troubles(blocks)] == [Finding.HEAVY_PAGE, Finding.NO_DESCRIPTION]
+    assert [item.key for item in pick_fixes(blocks)] == [FixKey.COMPRESS_IMAGES, FixKey.ADD_DESCRIPTION,
+                                                         FixKey.ADD_PREVIEW_IMAGE]
+
+
+def test_bad_findings_go_before_fixes_of_any_block():
+    blocks = blocks_with(fix(Block.SECURITY, Finding.NO_REDIRECT), bad(Block.SEARCH, Finding.CLOSED_ROBOTS))
+    assert [item.key for item in pick_fixes(blocks)] == [FixKey.UNBLOCK_ROBOTS, FixKey.ENABLE_REDIRECT]
+
+
+def test_readability_reaches_the_summary_only_alone():
+    alone = blocks_with(fix(Block.READABILITY, Finding.LOW_CONTRAST))
+    crowded = blocks_with(fix(Block.READABILITY, Finding.LOW_CONTRAST), fix(Block.PREVIEW, Finding.NO_PREVIEW_TITLE),
+                          fix(Block.SEARCH, Finding.NO_TITLE))
+    assert [item.finding for item in pick_troubles(alone)] == [Finding.LOW_CONTRAST]
+    assert [item.finding for item in pick_troubles(crowded)] == [Finding.NO_TITLE, Finding.NO_PREVIEW_TITLE]
+
+
+def test_orders_and_fix_keys_cover_everything():
+    assert set(FIX_PRIORITY) == set(Block)
+    assert Block.PREVIEW not in BAD_PRIORITY and Block.READABILITY not in BAD_PRIORITY
+    assert set(FIX_KEYS) | {Finding.SLOW} == set(Finding)
+
+
+def test_every_new_finding_has_trouble_and_fix_words():
+    new = FINDING_ORDER[FINDING_ORDER.index(Finding.HEAVY_PAGE) + 1:]
+    for module in (ru, en):
+        assert all(f"trouble_{finding}" in module.TEXTS for finding in new)
+        assert all(key.value in module.TEXTS for key in FixKey)

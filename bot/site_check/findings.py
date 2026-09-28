@@ -22,6 +22,9 @@ class Block(StrEnum):
     MOBILE = "mobile"
     SECURITY = "security"
     IMAGES = "images"
+    SEARCH = "search"
+    PREVIEW = "preview"
+    READABILITY = "readability"
 
 
 class Cause(StrEnum):
@@ -47,6 +50,22 @@ class Finding(StrEnum):
     MIXED_CONTENT = "mixed_content"
     INCOMPLETE_CHAIN = "incomplete_chain"
     HEAVY_PAGE = "heavy_page"
+    CLOSED_META = "closed_meta"
+    CLOSED_HEADER = "closed_header"
+    CLOSED_ROBOTS = "closed_robots"
+    ROBOTS_UNREACHABLE = "robots_unreachable"
+    ROBOTS_ERRORS = "robots_errors"
+    NO_TITLE = "no_title"
+    NO_DESCRIPTION = "no_description"
+    CANONICAL_FOREIGN = "canonical_foreign"
+    NO_PREVIEW_IMAGE = "no_preview_image"
+    PREVIEW_IMAGE_BROKEN = "preview_image_broken"
+    PREVIEW_IMAGE_SVG = "preview_image_svg"
+    PREVIEW_IMAGE_RELATIVE = "preview_image_relative"
+    NO_PREVIEW_TITLE = "no_preview_title"
+    LOW_CONTRAST = "low_contrast"
+    NO_ALT = "no_alt"
+    NO_LANG = "no_lang"
 
 
 FINDING_ORDER = tuple(Finding)
@@ -74,6 +93,22 @@ class FixKey(StrEnum):
     TRIM_SCRIPTS = "fix_trim_scripts"
     FIX_SERVER = "fix_server"
     FIND_SLOWDOWN = "fix_find_slowdown"
+    UNBLOCK_META = "fix_unblock_meta"
+    UNBLOCK_HEADER = "fix_unblock_header"
+    UNBLOCK_ROBOTS = "fix_unblock_robots"
+    REPAIR_ROBOTS = "fix_repair_robots"
+    FIX_ROBOTS_ERRORS = "fix_robots_errors"
+    ADD_TITLE = "fix_add_title"
+    ADD_DESCRIPTION = "fix_add_description"
+    OWN_CANONICAL = "fix_own_canonical"
+    ADD_PREVIEW_IMAGE = "fix_add_preview_image"
+    REPLACE_PREVIEW_IMAGE = "fix_replace_preview_image"
+    RASTER_PREVIEW_IMAGE = "fix_raster_preview_image"
+    FULL_PREVIEW_IMAGE_URL = "fix_full_preview_image_url"
+    ADD_PREVIEW_TITLE = "fix_add_preview_title"
+    RAISE_CONTRAST = "fix_raise_contrast"
+    ADD_ALT = "fix_add_alt"
+    SET_LANG = "fix_set_lang"
 
 
 @dataclass(frozen=True)
@@ -85,6 +120,9 @@ class FindingItem:
     until: date | None = None
     days_left: int | None = None
     server_ms: float | None = None
+    count: int | None = None          # сколько мест или картинок (5.8), сколько ошибок в robots.txt (5.6)
+    examples: tuple[str, ...] = ()    # примеры с сайта: текст с бледным фоном, имена картинок (5.8)
+    detail: str | None = None         # код ответа (robots.txt, картинка превью), чужой хост в canonical
 
 
 @dataclass(frozen=True)
@@ -106,3 +144,8 @@ def graded(block: Block, findings: list[FindingItem]) -> BlockVerdict:
     ordered = tuple(sorted(findings, key=lambda item: FINDING_ORDER.index(item.finding)))
     grade = max((item.grade for item in ordered), key=GRADE_WEIGHT.__getitem__, default=Grade.GOOD)
     return BlockVerdict(block, grade, ordered)
+
+
+def not_checked(block: Block) -> BlockVerdict:
+    """Блок без главного источника — «неизвестно». У трёх новых блоков в отчёте не печатается (ТЗ, 6.1)."""
+    return BlockVerdict(block, Grade.UNKNOWN, unknown_reason=UnknownReason.NO_DATA)

@@ -4,11 +4,12 @@ from urllib.parse import unquote
 
 from bot.brand import BRAND
 from bot.locales import TEXTS
+from bot.site_check.findings import Block, BlockVerdict, Finding, FindingItem, FixItem, FixKey, Grade
 from bot.site_check.lighthouse import AuditState
 from bot.site_check.post_numbers import post_numbers
-from bot.site_check.report import ReportRequest, build_report
+from bot.site_check.report import ReportRequest, build_report, fix_text, summary_text
 from bot.site_check.tls_check import CertInfo, RedirectState, TlsFacts, TlsOutcome
-from bot.site_check.verdict import SecurityFacts, judge
+from bot.site_check.verdict import SecurityFacts, SummaryKind, Verdict, judge
 from tests.builders import MB, TODAY, cert, images, mobile, page, security, speed
 from tests.fakes import rich_text
 
@@ -294,3 +295,28 @@ def test_post_numbers_hides_redirect_row_when_no_real_redirect():
     assert "Переадресация" not in rich_text(post_numbers(TEXTS, "ru", same, security(), MEASURED_AT))
     empty = replace(page(), requested_url="", final_url="https://site.test/")
     assert "Переадресация" not in rich_text(post_numbers(TEXTS, "ru", empty, security(), MEASURED_AT))
+
+
+def test_all_good_mentions_search_only_when_search_was_checked():
+    verdict = judge(page(), security(), TODAY)
+    assert summary_text(TEXTS, "ru", verdict) == ("Сайт в порядке: открывается быстро, на телефоне удобен, "
+                                                  "защита работает.")
+    searched = replace(verdict, blocks={**verdict.blocks, Block.SEARCH: BlockVerdict(Block.SEARCH, Grade.GOOD)})
+    assert summary_text(TEXTS, "ru", searched) == ("Сайт в порядке: открывается быстро, на телефоне удобен, "
+                                                   "защита работает, поисковикам открыт.")
+
+
+def test_new_blocks_without_data_are_neither_printed_nor_named():
+    failed = SecurityFacts((TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),), (RedirectState.CLOSED,), ())
+    text = rich_text(report("ru", page(), failed))
+    assert "Всё, что удалось проверить, в порядке. Не удалось проверить защиту." in text
+    assert not any(name in text for name in ("Поиск в Google", "Ссылка в мессенджерах", "Удобство чтения"))
+
+
+def test_new_troubles_and_fixes_have_their_words():
+    closed = FindingItem(Finding.CLOSED_META, Grade.BAD)
+    verdict = Verdict({block: BlockVerdict(block, Grade.GOOD) for block in Block}, SummaryKind.HAS_BAD, (closed,),
+                      (FixItem(FixKey.UNBLOCK_META, closed),))
+    assert summary_text(TEXTS, "ru", verdict) == "Есть что чинить: страница закрыта от поисковиков."
+    assert fix_text(TEXTS, "ru", verdict.fixes[0]) == ("Снять запрет noindex — иначе страницу не найти в Google "
+                                                       "и Яндексе.")

@@ -6,8 +6,8 @@ from enum import StrEnum
 from urllib.parse import urlsplit
 
 from bot.site_check import thresholds
-from bot.site_check.findings import (GRADE_WEIGHT, Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey,
-                                     Grade, UnknownReason, graded)
+from bot.site_check.findings import (Block, BlockVerdict, Cause, Finding, FindingItem, FixItem, FixKey, Grade,
+                                     UnknownReason, graded, not_checked)
 from bot.site_check.lighthouse import AuditState, PageFacts, SpeedFacts
 from bot.site_check.tls_check import HTTPS_PREFIX, CertInfo, RedirectState, TlsFacts, TlsOutcome
 from bot.site_check.url_input import to_ascii_host
@@ -16,8 +16,14 @@ MAX_TROUBLES = 2
 MAX_FIXES = 3
 FIXED_WIDTH = re.compile(r"width\s*=\s*\d", re.IGNORECASE)
 
-REPORT_ORDER = (Block.SPEED, Block.MOBILE, Block.SECURITY, Block.IMAGES)
-PRIORITY_ORDER = (Block.SECURITY, Block.MOBILE, Block.SPEED, Block.IMAGES)  # ТЗ, 6.3
+CORE_BLOCKS = (Block.SPEED, Block.MOBILE, Block.SECURITY, Block.IMAGES)
+NEW_BLOCKS = (Block.SEARCH, Block.PREVIEW, Block.READABILITY)  # версия 1.1: «неизвестно» не печатается (ТЗ, 6.1)
+REPORT_ORDER = (*CORE_BLOCKS, *NEW_BLOCKS)  # ТЗ, 7.1
+# ТЗ, 6.3: сперва все «плохо», потом все «стоит поправить», у каждой группы свой порядок блоков. У ссылки
+# в мессенджерах и удобства чтения «плохо» не бывает (ТЗ, 6.1) — в первом порядке их нет.
+BAD_PRIORITY = (Block.SECURITY, Block.SEARCH, Block.MOBILE, Block.SPEED, Block.IMAGES)
+FIX_PRIORITY = (Block.SECURITY, Block.MOBILE, Block.SPEED, Block.IMAGES, Block.SEARCH, Block.PREVIEW,
+                Block.READABILITY)
 
 
 class SummaryKind(StrEnum):
@@ -54,6 +60,15 @@ FIX_KEYS = {
     Finding.INCOMPLETE_CHAIN: FixKey.FULL_CHAIN, Finding.NO_MOBILE: FixKey.MAKE_MOBILE,
     Finding.FIXED_WIDTH: FixKey.FIT_WIDTH, Finding.TAP_TARGETS: FixKey.SPACE_BUTTONS,
     Finding.NO_ZOOM: FixKey.ALLOW_ZOOM, Finding.HEAVY_PAGE: FixKey.COMPRESS_IMAGES,
+    Finding.CLOSED_META: FixKey.UNBLOCK_META, Finding.CLOSED_HEADER: FixKey.UNBLOCK_HEADER,
+    Finding.CLOSED_ROBOTS: FixKey.UNBLOCK_ROBOTS, Finding.ROBOTS_UNREACHABLE: FixKey.REPAIR_ROBOTS,
+    Finding.ROBOTS_ERRORS: FixKey.FIX_ROBOTS_ERRORS, Finding.NO_TITLE: FixKey.ADD_TITLE,
+    Finding.NO_DESCRIPTION: FixKey.ADD_DESCRIPTION, Finding.CANONICAL_FOREIGN: FixKey.OWN_CANONICAL,
+    Finding.NO_PREVIEW_IMAGE: FixKey.ADD_PREVIEW_IMAGE, Finding.PREVIEW_IMAGE_BROKEN: FixKey.REPLACE_PREVIEW_IMAGE,
+    Finding.PREVIEW_IMAGE_SVG: FixKey.RASTER_PREVIEW_IMAGE,
+    Finding.PREVIEW_IMAGE_RELATIVE: FixKey.FULL_PREVIEW_IMAGE_URL,
+    Finding.NO_PREVIEW_TITLE: FixKey.ADD_PREVIEW_TITLE, Finding.LOW_CONTRAST: FixKey.RAISE_CONTRAST,
+    Finding.NO_ALT: FixKey.ADD_ALT, Finding.NO_LANG: FixKey.SET_LANG,
 }
 SLOW_FIX_KEYS = {Cause.IMAGES: FixKey.COMPRESS_IMAGES, Cause.SCRIPTS: FixKey.TRIM_SCRIPTS,
                  Cause.SERVER: FixKey.FIX_SERVER, Cause.UNKNOWN: FixKey.FIND_SLOWDOWN}
@@ -65,8 +80,9 @@ def judge(page: PageFacts | None, security: SecurityFacts, today: date) -> Verdi
         Block.MOBILE: _mobile_block(page, security),
         Block.SECURITY: _security_block(page, security, today),
         Block.IMAGES: _images_block(page, security),
+        **{block: not_checked(block) for block in NEW_BLOCKS},  # правила — в задачах 29–31
     }
-    return Verdict(blocks, _summary_kind(blocks, security), _troubles(blocks), _fixes(blocks))
+    return Verdict(blocks, _summary_kind(blocks, security), pick_troubles(blocks), pick_fixes(blocks))
 
 
 def _unknown(block: Block, security: SecurityFacts) -> BlockVerdict:
@@ -217,32 +233,37 @@ def _images_block(page: PageFacts | None, security: SecurityFacts) -> BlockVerdi
 
 
 def _summary_kind(blocks: dict[Block, BlockVerdict], security: SecurityFacts) -> SummaryKind:
-    grades = {verdict.grade for verdict in blocks.values()}
+    """«Не удалось проверить» в итоге — только у прежних четырёх блоков (ТЗ, 6.2)."""
     if security.cert_blocks:
         return SummaryKind.CERT_BLOCKS
+    grades = {verdict.grade for verdict in blocks.values()}
     if Grade.BAD in grades:
         return SummaryKind.HAS_BAD
     if Grade.FIX in grades:
         return SummaryKind.ONLY_FIX
-    return SummaryKind.GOOD_WITH_UNKNOWN if Grade.UNKNOWN in grades else SummaryKind.ALL_GOOD
+    core_unknown = any(blocks[block].grade is Grade.UNKNOWN for block in CORE_BLOCKS)
+    return SummaryKind.GOOD_WITH_UNKNOWN if core_unknown else SummaryKind.ALL_GOOD
 
 
-def _troubles(blocks: dict[Block, BlockVerdict]) -> tuple[FindingItem, ...]:
-    """Главная находка каждого проблемного блока: сперва «плохо», внутри — по важности блоков (ТЗ, 6.3)."""
-    troubled = [blocks[block] for block in PRIORITY_ORDER if blocks[block].findings]
-    ordered = sorted(troubled, key=lambda verdict: -GRADE_WEIGHT[verdict.grade])
-    return tuple(verdict.findings[0] for verdict in ordered)[:MAX_TROUBLES]
+def pick_troubles(blocks: dict[Block, BlockVerdict]) -> tuple[FindingItem, ...]:
+    """Главная находка каждого проблемного блока: сперва «плохо», потом «стоит поправить» (ТЗ, 6.2–6.3)."""
+    bad = [blocks[block] for block in BAD_PRIORITY if blocks[block].grade is Grade.BAD]
+    fix = [blocks[block] for block in FIX_PRIORITY if blocks[block].grade is Grade.FIX]
+    return tuple(verdict.findings[0] for verdict in bad + fix)[:MAX_TROUBLES]
 
 
-def _fixes(blocks: dict[Block, BlockVerdict]) -> tuple[FixItem, ...]:
-    findings = [item for block in PRIORITY_ORDER for item in blocks[block].findings]
-    ordered = sorted(findings, key=lambda item: -GRADE_WEIGHT[item.grade])
+def pick_fixes(blocks: dict[Block, BlockVerdict]) -> tuple[FixItem, ...]:
+    ordered = _by_grade(blocks, BAD_PRIORITY, Grade.BAD) + _by_grade(blocks, FIX_PRIORITY, Grade.FIX)
     fixes: list[FixItem] = []
     for item in ordered:
         key = fix_key(item)
         if key not in {fix.key for fix in fixes}:
             fixes.append(FixItem(key, item))
     return tuple(fixes[:MAX_FIXES])
+
+
+def _by_grade(blocks: dict[Block, BlockVerdict], order: tuple[Block, ...], grade: Grade) -> list[FindingItem]:
+    return [item for block in order for item in blocks[block].findings if item.grade is grade]
 
 
 def fix_key(item: FindingItem) -> FixKey:

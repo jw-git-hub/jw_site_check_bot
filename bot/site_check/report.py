@@ -16,7 +16,7 @@ from bot.site_check.lighthouse import ImageFacts, PageFacts
 from bot.site_check.post_numbers import post_numbers
 from bot.site_check.thresholds import COMPRESS_MIN_RATIO, SERVER_ALLOWANCE_MS
 from bot.site_check.tls_check import RedirectState, TlsOutcome
-from bot.site_check.verdict import REPORT_ORDER, SecurityFacts, SummaryKind, Verdict
+from bot.site_check.verdict import CORE_BLOCKS, REPORT_ORDER, SecurityFacts, SummaryKind, Verdict
 
 TITLE_SIZE = 1
 SECTION_SIZE = 2
@@ -69,10 +69,16 @@ def summary_text(texts: Texts, lang: Lang, verdict: Verdict) -> str:
     if kind is SummaryKind.GOOD_WITH_UNKNOWN:
         return texts.get(lang, "summary_good_with_unknown", blocks=_unknown_names(texts, lang, verdict))
     if kind is SummaryKind.ALL_GOOD:
-        return texts.get(lang, "summary_all_good")
+        return texts.get(lang, _all_good_key(verdict))
     key = "summary_has_bad" if kind is SummaryKind.HAS_BAD else "summary_only_fix"
     phrases = [_trouble_phrase(texts, lang, item) for item in verdict.troubles]
     return texts.get(lang, key, troubles=texts.get(lang, "and_join").join(phrases))
+
+
+def _all_good_key(verdict: Verdict) -> str:
+    """«…поисковикам открыт» — только если поиск проверен: скрытое «неизвестно» не утверждаем (ТЗ, 6.2, раздел 1)."""
+    searched = verdict.blocks[Block.SEARCH].grade is Grade.GOOD
+    return "summary_all_good_searchable" if searched else "summary_all_good"
 
 
 def _trouble_phrase(texts: Texts, lang: Lang, item: FindingItem) -> str:
@@ -88,7 +94,7 @@ def _cert_reason(texts: Texts, lang: Lang, item: FindingItem) -> str:
 
 
 def _unknown_names(texts: Texts, lang: Lang, verdict: Verdict) -> str:
-    names = [texts.get(lang, f"unknown_name_{block}") for block in REPORT_ORDER
+    names = [texts.get(lang, f"unknown_name_{block}") for block in CORE_BLOCKS
              if verdict.blocks[block].grade is Grade.UNKNOWN]
     if len(names) == 1:
         return names[0]
@@ -115,7 +121,7 @@ def _facts_paragraph(facts: list[str]) -> dict:
 
 
 def _unknown_sections(texts: Texts, lang: Lang, verdict: Verdict) -> list[dict]:
-    unknown = [verdict.blocks[block] for block in REPORT_ORDER if verdict.blocks[block].grade is Grade.UNKNOWN]
+    unknown = [verdict.blocks[block] for block in CORE_BLOCKS if verdict.blocks[block].grade is Grade.UNKNOWN]
     blocks = []
     for group in _group_by_reason(unknown):
         blocks += _unknown_section(texts, lang, group)
