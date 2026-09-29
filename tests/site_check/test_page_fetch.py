@@ -1,6 +1,7 @@
 import asyncio
 import gzip
 import socket
+import sys
 import time
 
 import aiohttp
@@ -11,9 +12,10 @@ from aiohttp.test_utils import TestServer
 from bot.site_check import page_fetch
 from bot.site_check.head_tags import parse_head
 from bot.site_check.net_guard import AddressGuard, NoIPv4
-from bot.site_check.page_fetch import (READ_CHUNK_BYTES, AiohttpSender, Answer, FetchFailure,
-                                       GuardedResolver, ImageState, PreviewLoader, RefusedAddress, check_image,
-                                       decode_page, fetch_page, follow, guarded_session)
+from bot.site_check.page_fetch import (PARSE_WORKER_COMMAND, READ_CHUNK_BYTES, AiohttpSender, Answer,
+                                       FetchFailure, GuardedResolver, ImageState, PreviewLoader, RefusedAddress,
+                                       check_image, fetch_page, follow, guarded_session)
+from bot.site_check.page_text import decode_page
 
 PUBLIC = "93.184.215.14"
 PAGE = "https://shop.example/"
@@ -220,6 +222,18 @@ async def test_loader_keeps_the_address_without_parameters():
 async def test_loader_bot_protection_stub_gives_no_head():
     preview = await PreviewLoader(FakeSender({PAGE: Answer(status=429, content_type=HTML)})).load(PAGE)
     assert (preview.head, preview.failure, preview.status, preview.image) == (None, FetchFailure.STATUS, 429, None)
+
+
+CRASHING_PARSE_WORKER = (sys.executable, "-c", "import sys; sys.exit(1)")
+
+
+async def test_loader_hides_the_page_when_the_parser_process_fails():
+    """Задача 33: своя загрузка прошла, а разбор в отдельном процессе — нет: превью и контакты скрыты, как
+    при неудачной загрузке, а не исключение наружу."""
+    sender = FakeSender({PAGE: page_answer()})
+    preview = await PreviewLoader(sender, parse_worker_command=CRASHING_PARSE_WORKER).load(PAGE)
+    assert (preview.head, preview.contacts, preview.image) == (None, None, None)
+    assert (preview.failure, preview.status, preview.head_bytes) == (FetchFailure.PARSE, 200, 0)
 
 
 class ManualClock:

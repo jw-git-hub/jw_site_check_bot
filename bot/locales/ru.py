@@ -332,6 +332,7 @@ TEXTS = {
     "post_own_fetch_status": "ответ {status} — не страница",
     "post_own_fetch_not_html": "не HTML",
     "post_own_fetch_compressed": "ответ сжат — не читаю",
+    "post_own_fetch_parse": "ответ {status} получен, разобрать страницу не удалось",
     "post_preview_title": "Превью: название",
     "post_preview_image": "Превью: картинка",
     "post_preview_image_none": "нет",

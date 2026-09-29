@@ -8,24 +8,29 @@
 - Переходы — вручную, не больше MAX_OWN_REDIRECTS. У страницы — только 200, HTML, без сжатия, не больше
   PAGE_MAX_BYTES (в версии 1.1 — только до </head>, STOP_AT_HEAD); у картинки — только статус и заголовки.
 - Наружу ничего не падает: неудача — причина в PagePreview.failure или ImageState.UNKNOWN.
+- Разбор загруженной страницы (decode + parse_head + parse_contacts) — не здесь, а в отдельном процессе со
+  своим пределом памяти (parse_worker.py, задача 33, C1): страховка поверх сторожа html_guard, не полагаемся
+  на то, что он совпадает с html.parser на всех входах.
 """
 import asyncio
-import codecs
 import re
 import socket
+import sys
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, replace
 from enum import StrEnum
 from urllib.parse import urljoin
 
 import aiohttp
 from aiohttp.abc import AbstractResolver, ResolveResult
+from loguru import logger
 
 from bot.site_check.audits import file_name, strip_params
-from bot.site_check.head_tags import HeadTags, parse_head
+from bot.site_check.head_tags import HeadTags
 from bot.site_check.net_guard import AddressGuard
-from bot.site_check.page_contacts import ContactFacts, parse_contacts
+from bot.site_check.page_contacts import ContactFacts
+from bot.site_check.parse_ipc import BadResponse, decode_response, encode_request
 from bot.site_check.probe import GUARD_REFUSALS
 from bot.site_check.tls_check import REDIRECT_STATUSES, USER_AGENT
 from bot.site_check.url_input import Target, own_request_target
@@ -40,6 +45,10 @@ IMAGE_TIMEOUT_SECONDS = 4
 # (задача 33, M2) — иначе медленная картинка снимает уже готовые заголовок и контакты (общий wait_for в
 # pipeline.py обрывает всё сразу).
 PREVIEW_BUDGET_SECONDS = 12
+# Разбор — в отдельном процессе (задача 33, C1): срок внутри PREVIEW_BUDGET_SECONDS, картинке достаётся то, что
+# останется от общего срока (_check_preview_image), а не полный IMAGE_TIMEOUT_SECONDS.
+PARSE_TIMEOUT_SECONDS = 5
+PARSE_WORKER_COMMAND = (sys.executable, "-m", "bot.site_check.parse_worker")
 CONNECT_TIMEOUT_SECONDS = 4
 MAX_OWN_REDIRECTS = 3            # ТЗ, С4
 HTTP_OK = 200
@@ -50,17 +59,6 @@ SVG_TYPE = "image/svg+xml"
 IMAGE_TYPE_PREFIX = "image/"
 FULL_URL_PREFIXES = ("http://", "https://")
 HEAD_END = re.compile(rb"</head\s*>|<body[\s>]", re.IGNORECASE)
-META_CHARSET = re.compile(rb"""<meta[^>]+charset\s*=\s*["']?\s*([A-Za-z0-9_.:-]+)""", re.IGNORECASE)
-CHARSET_SNIFF_BYTES = 4096
-FALLBACK_CHARSET = "utf-8"
-# Белый список текстовых кодеков по их каноническому имени codecs.lookup(name).name (задача 33, C2) — не любой
-# codecs.lookup: punycode/idna/rot13/base64/zlib и подобные существуют в реестре, но текстом сайта не являются.
-ISO8859_CHARSETS = frozenset(f"iso8859-{n}" for n in range(1, 17) if n != 12)  # 8859-12 не стандартизирован
-TEXT_CODECS = frozenset({
-    "utf-8", "utf-16", "utf-32",
-    "cp1250", "cp1251", "cp1252", "cp1253", "cp1254", "cp1255", "cp1256", "cp1257", "cp1258",
-    "koi8-r", "koi8-u", "cp866", "mac-cyrillic",
-}) | ISO8859_CHARSETS
 MS_IN_SECOND = 1000
 CONTENT_TYPE_HEADER = "Content-Type"
 CONTENT_ENCODING_HEADER = "Content-Encoding"
@@ -82,6 +80,7 @@ class FetchFailure(StrEnum):
     STATUS = "status"            # ответ не 200 — например, заглушка защиты от ботов
     NOT_HTML = "not_html"
     COMPRESSED = "compressed"    # сервер сжал ответ вопреки Accept-Encoding: identity — не читаем (С5)
+    PARSE = "parse"              # разбор в отдельном процессе не удался: срок, код выхода, кривой вывод (задача 33)
 
 
 class ImageState(StrEnum):
@@ -180,41 +179,6 @@ def _page_failure(landing: Landing) -> Landing:
     return landing
 
 
-def decode_page(body: bytes, charset: str | None) -> str:
-    """Кодировка: из Content-Type, иначе из <meta charset> в начале страницы, иначе UTF-8 (ТЗ, 16).
-
-    Кодек — только из белого списка текстовых (TEXT_CODECS, задача 33, C2): codecs.lookup принимает и
-    punycode (квадратичный декодер: 2 МБ — около 15 минут синхронно), и idna/rot13/base64/zlib — не текст,
-    а сериализация другого рода. Всё вне списка и любая ошибка декодирования — как UTF-8 с заменой.
-    """
-    for name in (charset, _meta_charset(body)):
-        decoded = _try_decode(body, name)
-        if decoded is not None:
-            return decoded
-    return body.decode(FALLBACK_CHARSET, errors="replace")
-
-
-def _try_decode(body: bytes, name: str | None) -> str | None:
-    if not name or not _known_codec(name):
-        return None
-    try:
-        return body.decode(name, errors="replace")
-    except (LookupError, UnicodeError):
-        return None
-
-
-def _meta_charset(body: bytes) -> str | None:
-    found = META_CHARSET.search(body[:CHARSET_SNIFF_BYTES])
-    return found.group(1).decode("ascii") if found else None
-
-
-def _known_codec(name: str) -> bool:
-    try:
-        return codecs.lookup(name).name in TEXT_CODECS
-    except LookupError:
-        return False
-
-
 async def check_image(send: Sender, raw: str, timeout: float = IMAGE_TIMEOUT_SECONDS) -> ImageCheck:
     """Картинка превью (ТЗ, 5.7): адрес не полностью — находка без сети; иначе только статус и заголовки."""
     name = file_name(raw) or raw
@@ -245,9 +209,11 @@ class PreviewLoader:
     (страница, переходы, картинка), туда и достаточно поставить один отказ, пока адрес дома не узнан.
     """
 
-    def __init__(self, send: Sender, monotonic: Callable[[], float] = time.monotonic):
+    def __init__(self, send: Sender, monotonic: Callable[[], float] = time.monotonic,
+                parse_worker_command: Sequence[str] = PARSE_WORKER_COMMAND):
         self._send = send
         self._monotonic = monotonic
+        self._parse_worker_command = parse_worker_command
 
     async def load(self, url: str) -> PagePreview:
         started = self._monotonic()
@@ -257,7 +223,11 @@ class PreviewLoader:
             status = landing.answer.status if landing.answer else None
             return PagePreview(strip_params(landing.url), None, landing.failure, status, 0, elapsed_ms, None)
         answer = landing.answer
-        head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
+        parsed = await run_parse_worker(self._parse_worker_command, answer.charset, answer.complete, answer.body)
+        if parsed is None:
+            return PagePreview(strip_params(landing.url), None, FetchFailure.PARSE, answer.status, 0, elapsed_ms,
+                               None)
+        head, contacts = parsed
         image = await self._check_preview_image(head, started) if head.preview_image else None
         return PagePreview(strip_params(landing.url), head, None, answer.status, len(answer.body), elapsed_ms, image,
                            answer.complete, contacts)
@@ -270,12 +240,42 @@ class PreviewLoader:
         return await check_image(self._send, head.preview_image, timeout)
 
 
-def _parse_preview(body: bytes, charset: str | None, complete: bool) -> tuple[HeadTags, ContactFacts]:
-    """Decode + parse_head + parse_contacts вместе, вне цикла событий (задача 33, C1): CPU-ёмкий разбор даже
-    под защитой html_guard не должен держать опрос Telegram и вторую проверку. Раскодированный html дальше не
-    нужен (задача 33, M4) — наружу не отдаём."""
-    html = decode_page(body, charset)
-    return parse_head(html), parse_contacts(html, complete)
+async def run_parse_worker(command: Sequence[str], charset: str | None, complete: bool,
+                           body: bytes) -> tuple[HeadTags, ContactFacts] | None:
+    """Разбор страницы — в отдельном процессе со своим пределом памяти (parse_worker.py, задача 33, C1):
+    сторож html_guard закрывает известные нагрузки, но полное совпадение с html.parser на всех входах не
+    подтвердить. Страница — только через stdin, не в аргументы командной строки. Любая неудача (срок, код
+    выхода, кривой вывод) — None без исключений наружу; в журнал — одна строка без содержимого страницы."""
+    process = await asyncio.create_subprocess_exec(*command, stdin=asyncio.subprocess.PIPE,
+                                                    stdout=asyncio.subprocess.PIPE,
+                                                    stderr=asyncio.subprocess.DEVNULL)
+    output = await _parse_worker_output(process, encode_request(charset, complete, body))
+    if output is None:
+        return None
+    try:
+        return decode_response(output)
+    except BadResponse:
+        logger.warning("разбор страницы в отдельном процессе дал негодный вывод")
+        return None
+
+
+async def _parse_worker_output(process: asyncio.subprocess.Process, request: bytes) -> bytes | None:
+    """Истёк срок — kill() и wait(), процесс не ждём дольше PARSE_TIMEOUT_SECONDS; ненулевой код выхода или
+    оборванный канал — тоже неудача, без исключений наружу (задача 33)."""
+    try:
+        stdout, _ = await asyncio.wait_for(process.communicate(request), PARSE_TIMEOUT_SECONDS)
+    except TimeoutError:
+        process.kill()
+        await process.wait()
+        logger.warning("разбор страницы в отдельном процессе не уложился в срок")
+        return None
+    except OSError:
+        logger.warning("разбор страницы в отдельном процессе оборвал канал")
+        return None
+    if process.returncode:
+        logger.warning("разбор страницы в отдельном процессе завершился с кодом {}", process.returncode)
+        return None
+    return stdout
 
 
 class AiohttpSender:

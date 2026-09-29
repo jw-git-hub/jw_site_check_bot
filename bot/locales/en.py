@@ -322,6 +322,7 @@ TEXTS = {
     "post_own_fetch_status": "answer {status} — not a page",
     "post_own_fetch_not_html": "not HTML",
     "post_own_fetch_compressed": "compressed answer — not read",
+    "post_own_fetch_parse": "got {status}, couldn't parse the page",
     "post_preview_title": "Preview: title",
     "post_preview_image": "Preview: image",
     "post_preview_image_none": "none",

@@ -5,7 +5,7 @@ import pytest
 
 from bot.site_check.html_guard import MAX_TAG_CHARS, guard_html
 from bot.site_check.page_contacts import parse_contacts
-from bot.site_check.page_fetch import decode_page
+from bot.site_check.page_text import decode_page
 from bot.site_check.head_tags import parse_head
 
 NORMAL_HTML = "<html><head><title>Кафе</title></head><body><p>Привет</p></body></html>"

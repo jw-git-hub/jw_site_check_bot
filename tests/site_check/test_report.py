@@ -617,6 +617,13 @@ def test_owner_sees_why_the_new_blocks_are_missing():
         post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT))
 
 
+def test_owner_sees_why_a_parsed_page_was_hidden():
+    """Задача 33: разбор страницы в отдельном процессе не удался — своя загрузка была, разбор — нет."""
+    stub = rich_text(post_numbers(TEXTS, "ru", page(), security(), MEASURED_AT,
+                                  preview(failure=FetchFailure.PARSE, status=200)))
+    assert "Своя загрузка страницы | ответ 200 получен, разобрать страницу не удалось" in stub
+
+
 def test_contacts_lines_ways_findings_and_counters():
     facts = contacts(short=("43-43-48",), markers=frozenset({"metrika", "top_mail"}))
     text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
