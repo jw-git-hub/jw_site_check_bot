@@ -226,3 +226,19 @@ def test_http_iana_address_is_not_used():
     """Список IANA прислал адрес без https:// — зона считается без RDAP (решение контроллёра)."""
     servers = bootstrap_servers({"services": [[["pro"], ["http://rdap.example/"]]]})
     assert servers == {}
+
+
+def test_secure_rdap_address_skips_a_leading_non_https_url():
+    """Берём первый https-адрес зоны, а не только urls[0] (задача 33, M5)."""
+    servers = bootstrap_servers({"services": [[["pro"], ["http://insecure.example/", "https://secure.example/"]]]})
+    assert servers == {"pro": "https://secure.example/"}
+
+
+async def test_cache_drops_expired_entries_on_a_new_write(monkeypatch):
+    """Кеш не должен расти бессрочно (задача 33, M6): просроченная запись выбрасывается при записи новой."""
+    monkeypatch.setattr(domain_expiry, "CACHE_SECONDS", 100)
+    client = whois_client(FakeWhois(PAID))
+    client._cache["stale.ru"] = (0.0, DomainPaid("stale.ru", date(2020, 1, 1), WHOIS))
+    client._monotonic = lambda: 200.0
+    await client.paid_until("motor43.ru")
+    assert set(client._cache) == {"motor43.ru"}

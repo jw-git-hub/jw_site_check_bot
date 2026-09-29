@@ -73,9 +73,10 @@ def bootstrap_servers(payload: Any) -> dict[str, str]:
 
 
 def _secure_rdap_address(urls: Any) -> str | None:
-    if not isinstance(urls, list) or not urls or not isinstance(urls[0], str):
+    """Первый https-адрес зоны, а не только urls[0] (задача 33, M5): IANA не обещает https первым в списке."""
+    if not isinstance(urls, list):
         return None
-    return urls[0] if urls[0].startswith(SECURE_RDAP_PREFIX) else None
+    return next((url for url in urls if isinstance(url, str) and url.startswith(SECURE_RDAP_PREFIX)), None)
 
 
 def rdap_expiration(payload: Any) -> date | None:
@@ -130,8 +131,14 @@ class RegistryClient:
             return cached[1]
         found = await self._lookup(domain)
         if found:
-            self._cache[domain] = (self._monotonic(), found)
+            self._remember(domain, found)
         return found
+
+    def _remember(self, domain: str, found: DomainPaid) -> None:
+        """Записывая новый срок, заодно выбрасываем просроченные (задача 33, M6) — иначе кеш растёт бессрочно."""
+        now = self._monotonic()
+        self._cache = {key: value for key, value in self._cache.items() if now - value[0] < CACHE_SECONDS}
+        self._cache[domain] = (now, found)
 
     async def _lookup(self, domain: str) -> DomainPaid | None:
         zone = domain.rsplit(".", 1)[-1]
