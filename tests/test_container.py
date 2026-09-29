@@ -23,7 +23,7 @@ def test_container_is_isolated_and_limited():
     assert BOT["read_only"] is True
     assert BOT["cap_drop"] == ["ALL"]
     assert "no-new-privileges:true" in BOT["security_opt"]
-    assert BOT["mem_limit"] == BOT["memswap_limit"] == "256m"
+    assert BOT["mem_limit"] == BOT["memswap_limit"] == "384m"
     assert BOT["pids_limit"] == 64
     assert BOT["dns"] == ["1.1.1.1", "8.8.8.8"]
     network = COMPOSE["networks"]["site_check"]

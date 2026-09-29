@@ -16,8 +16,10 @@ services:
       - /tmp:size=16m,mode=1777
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-    mem_limit: 256m
-    memswap_limit: 256m
+    # 384 МБ (ТЗ, С13): замер на сервере дал VmRSS 207 МБ при прежнем пределе 256 МБ (задача 33, раздел 20 ТЗ) —
+    # разбор страницы переехал в отдельный процесс со своим пределом памяти (bot/site_check/parse_worker.py).
+    mem_limit: 384m
+    memswap_limit: 384m
     cpus: 1.0
     pids_limit: 64
     dns: [1.1.1.1, 8.8.8.8]
