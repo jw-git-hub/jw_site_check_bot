@@ -352,6 +352,24 @@ def test_discuss_button_opens_dm_with_domain_and_another_is_callback():
     assert buttons[2][0]["text"] == "📣 Канал"
 
 
+def _heading_pill(message: dict, name: str) -> dict:
+    heading = next(block for block in message["blocks"] if block["type"] == "heading" and block["size"] == 2
+                   and block["text"][0] == name)
+    return heading["text"][2]
+
+
+def test_graded_section_heading_carries_a_grade_pill_button():
+    """Пилюля — настоящая rich-кнопка с callback_data «grade:<оценка>» и стилем по оценке (задача 33c)."""
+    pill = _heading_pill(report("ru", page(), security()), "Скорость")
+    assert pill == {"type": "button", "button": {"text": "хорошо", "callback_data": "grade:good", "style": "success"}}
+
+
+def test_unknown_group_heading_pill_has_no_style():
+    failed = SecurityFacts((TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),), (RedirectState.CLOSED,), ())
+    pill = _heading_pill(report("ru", page(), failed), "Защита")
+    assert pill == {"type": "button", "button": {"text": "не удалось проверить", "callback_data": "grade:unknown"}}
+
+
 def test_owner_gets_numbers_for_post_and_others_do_not():
     owner = rich_text(report("ru", page(), security(), is_admin=True))
     assert "Подробные замеры — видите только вы" in owner
