@@ -65,3 +65,17 @@ def test_chat_and_booking_are_found_by_their_code():
 
 def test_completeness_is_passed_through():
     assert parse_contacts("<p>кусок</p>", complete=False).complete is False
+
+
+def test_short_call_link_text_strips_anything_that_is_not_a_number():
+    html = '<a href="tel:12345@fake_support">жми</a>'
+    facts = parse_contacts(html, complete=True)
+    assert facts.short_call_links == ("12345",)
+
+
+def test_short_call_link_text_is_capped_at_32_chars():
+    # href проходит .strip() — заполнитель не пробел, а дефис (тоже разрешённый в номере символ).
+    html = f'<a href="tel:{"1" * 5}{"-" * 100}">жми</a>'
+    facts = parse_contacts(html, complete=True)
+    assert len(facts.short_call_links[0]) == 32
+    assert facts.short_call_links[0] == "11111" + "-" * 27

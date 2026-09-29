@@ -32,6 +32,8 @@ MAIL_PREFIX = "mailto:"
 FORMAT_DETECTION = "format-detection"
 TEXT_JOIN = " "
 NODES_JOIN = "\n"  # границы элементов: иначе два номера подряд phonenumbers склеит в один и отбросит
+CALL_TEXT_CHARS = re.compile(r"[^\d+()\- ]")  # что похоже на номер (задача 33, I2) — остальное в отчёт не идёт
+CALL_TEXT_MAX_CHARS = 32  # длиннее — не номер, а вставленный текст или обломок огромного href
 
 
 @dataclass(frozen=True)
@@ -61,7 +63,7 @@ def parse_contacts(html: str, complete: bool) -> ContactFacts:
     calls = [unquote(href[len(CALL_PREFIX):]) for href in hrefs if href.lower().startswith(CALL_PREFIX)]
     return ContactFacts(
         call_links=sum(1 for call in calls if _digits(call) >= FULL_NUMBER_DIGITS),
-        short_call_links=tuple(dict.fromkeys(call for call in calls
+        short_call_links=tuple(dict.fromkeys(_display_call(call) for call in calls
                                              if LOCAL_NUMBER_MIN_DIGITS <= _digits(call) < FULL_NUMBER_DIGITS)),
         text_phones=_text_phones(NODES_JOIN.join(page.text)), tap_blocked=page.tap_blocked,
         whatsapp=_any(hrefs, WHATSAPP), telegram=_any(hrefs, TELEGRAM),
@@ -73,6 +75,12 @@ def parse_contacts(html: str, complete: bool) -> ContactFacts:
 
 def _digits(value: str) -> int:
     return len(DIGIT.findall(value))
+
+
+def _display_call(raw: str) -> str:
+    """tel: без кода — в отчёт как есть, но только похожее на номер (задача 33, I2): вписанный текст (в т. ч.
+    «@username») и огромный href в сообщение не попадают."""
+    return CALL_TEXT_CHARS.sub("", raw)[:CALL_TEXT_MAX_CHARS]
 
 
 def _any(hrefs: list[str], pattern: re.Pattern) -> bool:
