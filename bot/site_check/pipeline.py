@@ -10,7 +10,7 @@ from loguru import logger
 from bot.core.clock import Clock
 from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.lighthouse import AuditState, PageFacts, parse_lighthouse
-from bot.site_check.page_fetch import PagePreview
+from bot.site_check.page_fetch import PREVIEW_BUDGET_SECONDS, PagePreview
 from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
                                       classify)
 from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes,
@@ -22,7 +22,8 @@ from bot.site_check.verdict import TLS_INVALID, SecurityFacts, Verdict, judge
 CHECK_DEADLINE_SECONDS = 120  # ТЗ, Л4: одна проверка целиком
 PROBE_TIMEOUT_SECONDS = 10    # ТЗ, Л4: до замера
 AFTER_TIMEOUT_SECONDS = 15    # ТЗ, Л4: после замера
-PREVIEW_BUDGET_SECONDS = 12   # ТЗ, Л4, С5: своя загрузка страницы — 12 секунд внутри 15 после замера
+# PREVIEW_BUDGET_SECONDS (своя загрузка страницы, 12 секунд внутри 15 после замера) — в page_fetch.py: там же
+# картинке превью достаётся остаток этого срока (задача 33, M2).
 DOMAIN_BUDGET_SECONDS = 8     # ТЗ, Л4, С15: реестры — не дольше 8 секунд внутри 15 после замера
 CERT_BLOCKS = "cert_blocks"
 UNREACHABLE = "unreachable"

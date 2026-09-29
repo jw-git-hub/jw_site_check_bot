@@ -63,7 +63,7 @@ def preview(page_head=None, image_state=ImageState.OK, image_status=200, failure
         return PagePreview(url, None, failure, status, 0, 0.0, None)
     tags = page_head or head()
     image = ImageCheck("og.jpg", image_state, image_status, "image/jpeg", 70_415) if tags.preview_image else None
-    return PagePreview(url, tags, None, status, 6_102, 400.0, image, "", True, contact_facts)
+    return PagePreview(url, tags, None, status, 6_102, 400.0, image, True, contact_facts)
 
 
 def audit(score=1, mode="numeric", value=None, lcp_savings=None, items=None) -> dict:

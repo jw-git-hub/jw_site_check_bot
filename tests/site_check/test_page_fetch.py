@@ -191,7 +191,6 @@ async def test_loader_reads_head_and_checks_the_image():
     assert (preview.failure, preview.status, preview.head.title, preview.image.state) == \
         (None, 200, "Shop", ImageState.OK)
     assert (preview.url, preview.head_bytes, preview.complete) == (PAGE, len(HEAD), True)
-    assert preview.html.startswith("<html lang='ru'><head>")
 
 
 async def test_loader_parses_contacts_of_the_whole_page():
@@ -221,6 +220,83 @@ async def test_loader_keeps_the_address_without_parameters():
 async def test_loader_bot_protection_stub_gives_no_head():
     preview = await PreviewLoader(FakeSender({PAGE: Answer(status=429, content_type=HTML)})).load(PAGE)
     assert (preview.head, preview.failure, preview.status, preview.image) == (None, FetchFailure.STATUS, 429, None)
+
+
+async def test_own_load_is_refused_while_the_home_address_is_unknown():
+    """Задача 33, M8: домен на внешний адрес дома иначе показал бы в отчёте порт домашнего роутера."""
+    guard = AddressGuard(resolver_for({}))
+    sender = FakeSender()
+    preview = await PreviewLoader(sender, guard).load(PAGE)
+    assert (preview.head, preview.failure, preview.contacts) == (None, FetchFailure.REFUSED, None)
+    assert sender.urls == []
+
+
+async def test_own_load_proceeds_once_the_home_address_is_known():
+    guard = AddressGuard(resolver_for({}))
+    guard.home_ip = "93.184.215.14"
+    sender = FakeSender({PAGE: page_answer(), IMAGE: Answer(status=200, content_type="image/jpeg")})
+    preview = await PreviewLoader(sender, guard).load(PAGE)
+    assert (preview.failure, preview.head.title) == (None, "Shop")
+
+
+class ManualClock:
+    def __init__(self, *ticks: float):
+        self._ticks = list(ticks)
+
+    def __call__(self) -> float:
+        return self._ticks.pop(0)
+
+
+async def test_image_check_gets_only_the_remaining_time_of_the_shared_budget(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 12.0)
+    seen = {}
+
+    async def fake_check_image(send, raw, timeout):
+        seen["timeout"] = timeout
+        return ImageState.UNKNOWN
+
+    monkeypatch.setattr(page_fetch, "check_image", fake_check_image)
+    sender = FakeSender({PAGE: page_answer()})
+    clock = ManualClock(0.0, 9.0, 9.0)  # started; elapsed_ms; перед проверкой картинки
+    await PreviewLoader(sender, monotonic=clock).load(PAGE)
+    assert seen["timeout"] == pytest.approx(3.0)  # 12 - 9, не полные IMAGE_TIMEOUT_SECONDS (4)
+
+
+async def test_image_check_never_gets_a_negative_timeout(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 12.0)
+    seen = {}
+
+    async def fake_check_image(send, raw, timeout):
+        seen["timeout"] = timeout
+        return ImageState.UNKNOWN
+
+    monkeypatch.setattr(page_fetch, "check_image", fake_check_image)
+    sender = FakeSender({PAGE: page_answer()})
+    clock = ManualClock(0.0, 20.0, 20.0)  # страница сама уже съела весь общий срок
+    await PreviewLoader(sender, monotonic=clock).load(PAGE)
+    assert seen["timeout"] == 0.0
+
+
+async def test_page_and_image_requests_send_different_accept_headers():
+    captured = {}
+
+    async def echo(request: web.Request) -> web.Response:
+        captured[request.rel_url.query["kind"]] = request.headers.get("Accept")
+        return web.Response(text="ok", content_type=HTML)
+
+    app = web.Application()
+    app.router.add_get("/echo", echo)
+    server = TestServer(app)
+    await server.start_server()
+    session = aiohttp.ClientSession(auto_decompress=False)
+    send = AiohttpSender(session)
+    try:
+        await send(str(server.make_url("/echo").with_query(kind="page")), True)
+        await send(str(server.make_url("/echo").with_query(kind="image")), False)
+    finally:
+        await session.close()
+        await server.close()
+    assert captured == {"page": "text/html,application/xhtml+xml", "image": "image/*,*/*;q=0.8"}
 
 
 async def test_guarded_resolver_gives_only_checked_addresses():

@@ -86,7 +86,7 @@ def _checking(settings: Settings, clock: Clock, users: Users, repo: ChecksRepo, 
               sites: aiohttp.ClientSession) -> tuple[CheckQueue, Intake]:
     limits = Limits(repo, clock, settings.user_daily_limit, settings.global_daily_limit, settings.admin_id)
     pagespeed = PageSpeedClient(http, settings.pagespeed_api_key.get_secret_value(), clock)
-    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock, PreviewLoader(AiohttpSender(sites)),
+    pipeline = Pipeline(GuardedProbes(guard), pagespeed, clock, PreviewLoader(AiohttpSender(sites), guard),
                         RegistryClient(http))
     runner = CheckRunner(pipeline, repo, limits, messenger, TEXTS, BRAND, notifier, clock)
     queue = CheckQueue(settings.check_workers, settings.queue_max, runner.run, clock)

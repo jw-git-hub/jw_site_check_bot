@@ -33,8 +33,13 @@ from bot.site_check.url_input import Target, own_request_target
 PAGE_MAX_BYTES = 2 * 1024 * 1024  # ТЗ, С5, версия 1.2: вся страница
 STOP_AT_HEAD = False              # контакты — по всей странице (ТЗ, 5.10)
 READ_CHUNK_BYTES = 64 * 1024
-PAGE_TIMEOUT_SECONDS = 8         # вся загрузка страницы с переходами; внешний срок 12 с — в pipeline.py
+PAGE_TIMEOUT_SECONDS = 8         # вся загрузка страницы с переходами
 IMAGE_TIMEOUT_SECONDS = 4
+# Общий срок своей загрузки целиком (ТЗ, Л4, С5) — внутри 15 после замера (pipeline.py). PAGE_TIMEOUT_SECONDS +
+# IMAGE_TIMEOUT_SECONDS дают ровно эту сумму без запаса: картинке достаётся не она, а остаток этого срока
+# (задача 33, M2) — иначе медленная картинка снимает уже готовые заголовок и контакты (общий wait_for в
+# pipeline.py обрывает всё сразу).
+PREVIEW_BUDGET_SECONDS = 12
 CONNECT_TIMEOUT_SECONDS = 4
 MAX_OWN_REDIRECTS = 3            # ТЗ, С4
 HTTP_OK = 200
@@ -62,6 +67,8 @@ CONTENT_ENCODING_HEADER = "Content-Encoding"
 LOCATION_HEADER = "Location"
 REQUEST_HEADERS = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml",
                    "Accept-Encoding": "identity"}
+IMAGE_ACCEPT = "image/*,*/*;q=0.8"  # картинка превью — не HTML (задача 33, M3)
+IMAGE_REQUEST_HEADERS = {**REQUEST_HEADERS, "Accept": IMAGE_ACCEPT}
 # Сбои сети и кривые ответы: aiohttp.ClientError (и отказ резолвера), OSError, битые заголовки (UnicodeError).
 NETWORK_ERRORS = (aiohttp.ClientError, OSError, ValueError)
 IMAGE_CHECK_ERRORS = (TimeoutError, *NETWORK_ERRORS)
@@ -127,7 +134,6 @@ class PagePreview:
     head_bytes: int
     elapsed_ms: float
     image: ImageCheck | None     # None — в head нет картинки превью или head не получен
-    html: str = ""               # декодированное прочитанное: разбор head, в версии 1.2 — и контактов (задача 35)
     complete: bool = False       # прочитано всё, что просили, — а не обрезано PAGE_MAX_BYTES
     contacts: ContactFacts | None = None  # None — загрузка не удалась (page_contacts.py, задача 35)
 
@@ -209,13 +215,13 @@ def _known_codec(name: str) -> bool:
         return False
 
 
-async def check_image(send: Sender, raw: str) -> ImageCheck:
+async def check_image(send: Sender, raw: str, timeout: float = IMAGE_TIMEOUT_SECONDS) -> ImageCheck:
     """Картинка превью (ТЗ, 5.7): адрес не полностью — находка без сети; иначе только статус и заголовки."""
     name = file_name(raw) or raw
     if not raw.lower().startswith(FULL_URL_PREFIXES):
         return ImageCheck(name, ImageState.RELATIVE)
     try:
-        landing = await asyncio.wait_for(follow(send, raw, read_head=False), IMAGE_TIMEOUT_SECONDS)
+        landing = await asyncio.wait_for(follow(send, raw, read_head=False), timeout)
     except IMAGE_CHECK_ERRORS:
         return ImageCheck(name, ImageState.UNKNOWN)
     if landing.failure or landing.answer is None:
@@ -233,13 +239,22 @@ def _image_state(answer: Answer) -> ImageState:
 
 
 class PreviewLoader:
-    """Своя загрузка для «Поиска» и «Ссылки в мессенджерах» (ТЗ, 5.6–5.7): head страницы и проверка её картинки."""
+    """Своя загрузка для «Поиска» и «Ссылки в мессенджерах» (ТЗ, 5.6–5.7): head страницы и проверка её картинки.
 
-    def __init__(self, send: Sender, monotonic: Callable[[], float] = time.monotonic):
+    guard — та же защита адресов, что и у остальных своих запросов: пока внешний адрес дома не узнан
+    (guard.home_ip is None), своя загрузка не делается вовсе (задача 33, M8) — иначе домен на этот адрес
+    покажет в отчёте страницу проброшенного порта домашнего роутера.
+    """
+
+    def __init__(self, send: Sender, guard: AddressGuard | None = None,
+                monotonic: Callable[[], float] = time.monotonic):
         self._send = send
+        self._guard = guard
         self._monotonic = monotonic
 
     async def load(self, url: str) -> PagePreview:
+        if self._guard is not None and self._guard.home_ip is None:
+            return PagePreview(strip_params(url), None, FetchFailure.REFUSED, None, 0, 0.0, None)
         started = self._monotonic()
         landing = await fetch_page(self._send, url)
         elapsed_ms = (self._monotonic() - started) * MS_IN_SECOND
@@ -247,10 +262,17 @@ class PreviewLoader:
             status = landing.answer.status if landing.answer else None
             return PagePreview(strip_params(landing.url), None, landing.failure, status, 0, elapsed_ms, None)
         answer = landing.answer
-        html, head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
-        image = await check_image(self._send, head.preview_image) if head.preview_image else None
+        _, head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
+        image = await self._check_preview_image(head, started) if head.preview_image else None
         return PagePreview(strip_params(landing.url), head, None, answer.status, len(answer.body), elapsed_ms, image,
-                           html, answer.complete, contacts)
+                           answer.complete, contacts)
+
+    async def _check_preview_image(self, head: HeadTags, started: float) -> ImageCheck:
+        """Картинке — остаток общего срока, не полный IMAGE_TIMEOUT_SECONDS (задача 33, M2): иначе медленная
+        картинка при почти исчерпанном PREVIEW_BUDGET_SECONDS снимает уже готовые заголовок и контакты."""
+        remaining = PREVIEW_BUDGET_SECONDS - (self._monotonic() - started)
+        timeout = min(IMAGE_TIMEOUT_SECONDS, max(remaining, 0.0))
+        return await check_image(self._send, head.preview_image, timeout)
 
 
 def _parse_preview(body: bytes, charset: str | None, complete: bool) -> tuple[str, HeadTags, ContactFacts]:
@@ -267,7 +289,8 @@ class AiohttpSender:
         self._session = session
 
     async def __call__(self, url: str, read_head: bool) -> Answer:
-        async with self._session.get(url, allow_redirects=False, headers=REQUEST_HEADERS) as response:
+        headers = REQUEST_HEADERS if read_head else IMAGE_REQUEST_HEADERS
+        async with self._session.get(url, allow_redirects=False, headers=headers) as response:
             answer = _answer(response)
             if read_head and is_readable_page(answer):
                 body, complete = await read_page_bytes(response.content, PAGE_MAX_BYTES, STOP_AT_HEAD)
