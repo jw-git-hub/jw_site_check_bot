@@ -48,6 +48,14 @@ HEAD_END = re.compile(rb"</head\s*>|<body[\s>]", re.IGNORECASE)
 META_CHARSET = re.compile(rb"""<meta[^>]+charset\s*=\s*["']?\s*([A-Za-z0-9_.:-]+)""", re.IGNORECASE)
 CHARSET_SNIFF_BYTES = 4096
 FALLBACK_CHARSET = "utf-8"
+# Белый список текстовых кодеков по их каноническому имени codecs.lookup(name).name (задача 33, C2) — не любой
+# codecs.lookup: punycode/idna/rot13/base64/zlib и подобные существуют в реестре, но текстом сайта не являются.
+ISO8859_CHARSETS = frozenset(f"iso8859-{n}" for n in range(1, 17) if n != 12)  # 8859-12 не стандартизирован
+TEXT_CODECS = frozenset({
+    "utf-8", "utf-16", "utf-32",
+    "cp1250", "cp1251", "cp1252", "cp1253", "cp1254", "cp1255", "cp1256", "cp1257", "cp1258",
+    "koi8-r", "koi8-u", "cp866", "mac-cyrillic",
+}) | ISO8859_CHARSETS
 MS_IN_SECOND = 1000
 CONTENT_TYPE_HEADER = "Content-Type"
 CONTENT_ENCODING_HEADER = "Content-Encoding"
@@ -167,11 +175,26 @@ def _page_failure(landing: Landing) -> Landing:
 
 
 def decode_page(body: bytes, charset: str | None) -> str:
-    """Кодировка: из Content-Type, иначе из <meta charset> в начале страницы, иначе UTF-8 (ТЗ, 16)."""
+    """Кодировка: из Content-Type, иначе из <meta charset> в начале страницы, иначе UTF-8 (ТЗ, 16).
+
+    Кодек — только из белого списка текстовых (TEXT_CODECS, задача 33, C2): codecs.lookup принимает и
+    punycode (квадратичный декодер: 2 МБ — около 15 минут синхронно), и idna/rot13/base64/zlib — не текст,
+    а сериализация другого рода. Всё вне списка и любая ошибка декодирования — как UTF-8 с заменой.
+    """
     for name in (charset, _meta_charset(body)):
-        if name and _known_codec(name):
-            return body.decode(name, errors="replace")
+        decoded = _try_decode(body, name)
+        if decoded is not None:
+            return decoded
     return body.decode(FALLBACK_CHARSET, errors="replace")
+
+
+def _try_decode(body: bytes, name: str | None) -> str | None:
+    if not name or not _known_codec(name):
+        return None
+    try:
+        return body.decode(name, errors="replace")
+    except (LookupError, UnicodeError):
+        return None
 
 
 def _meta_charset(body: bytes) -> str | None:
@@ -181,10 +204,9 @@ def _meta_charset(body: bytes) -> str | None:
 
 def _known_codec(name: str) -> bool:
     try:
-        codecs.lookup(name)
+        return codecs.lookup(name).name in TEXT_CODECS
     except LookupError:
         return False
-    return True
 
 
 async def check_image(send: Sender, raw: str) -> ImageCheck:

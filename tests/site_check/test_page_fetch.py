@@ -1,6 +1,7 @@
 import asyncio
 import gzip
 import socket
+import time
 
 import aiohttp
 import pytest
@@ -127,6 +128,31 @@ def test_windows_1251_declared_only_in_meta_is_decoded():
     html = ('<head><meta http-equiv="Content-Type" content="text/html; charset=windows-1251">'
             '<title>Шиномонтаж в Кирове</title></head>')
     assert parse_head(decode_page(html.encode("cp1251"), None)).title == "Шиномонтаж в Кирове"
+
+
+DANGEROUS_OR_BINARY_CODECS = ["punycode", "idna", "rot13", "base64", "zlib", "hex_codec"]
+
+
+@pytest.mark.parametrize("name", DANGEROUS_OR_BINARY_CODECS)
+def test_dangerous_or_binary_codec_in_header_falls_back_to_utf8(name):
+    assert decode_page("Привет".encode(), name) == "Привет"
+
+
+@pytest.mark.parametrize("name", DANGEROUS_OR_BINARY_CODECS)
+def test_dangerous_or_binary_codec_in_meta_falls_back_to_utf8(name):
+    html = f'<head><meta charset="{name}"><title>Кафе</title></head>'.encode()
+    assert parse_head(decode_page(html, None)).title == "Кафе"
+
+
+PUNYCODE_ATTACK_BYTES = 400_000       # квадратичный декодер: 2 МБ ≈ 15 минут без защиты (задача 33, C2)
+PUNYCODE_TIME_LIMIT_SECONDS = 1.0
+
+
+def test_punycode_header_does_not_hang_on_a_large_page():
+    body = b"<html>-" + b"a" * PUNYCODE_ATTACK_BYTES
+    started = time.perf_counter()
+    decode_page(body, "punycode")
+    assert time.perf_counter() - started < PUNYCODE_TIME_LIMIT_SECONDS
 
 
 @pytest.mark.parametrize(("answer", "state", "status"), [
