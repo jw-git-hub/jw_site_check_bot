@@ -3,7 +3,7 @@
 Свои методы, где rich_message — словарь: типизированные классы aiogram разбирали бы блоки через объединение
 моделей pydantic. Остальной код говорит с Telegram через протокол Messenger, в тестах — подделка.
 
-Полоса-картинка шапки (задача 23b): `AiogramMessenger` — единственное место, где метка `rich.header(lang)`
+Полоса-анимация шапки (задача 33d): `AiogramMessenger` — единственное место, где метка `rich.header(lang)`
 превращается в файл или в запомненный file_id, кэшем `bot.core.banner.BannerCache`.
 """
 from typing import Any, Protocol

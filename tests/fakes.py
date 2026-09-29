@@ -17,8 +17,9 @@ FAKE_NOW = datetime(2026, 9, 25, 12, 0, tzinfo=UTC)
 ADMIN_ID = 1
 DIVIDER_TEXT = "────"
 BLOCKED_TEXT = "Forbidden: bot was blocked by the user"
-# Строка полосы для сравнения с примерами ТЗ (7.3) — сама полоса картинкой, метку показываем текстом (задача 23b).
-BANNER_LINES = {"ru": "[полоса ~/проверка-сайта]", "en": "[banner ~/site-check]"}
+# Строка полосы для сравнения с примерами ТЗ (7.3) — сама полоса анимацией, метку показываем текстом (задача 33d:
+# анимация с мигающим «_», раньше была картинка — задача 23b).
+BANNER_LINES = {"ru": "[полоса ~/проверка-сайта_ (мигает _)]", "en": "[banner ~/site-check_ (blinks _)]"}
 SCREENSHOT_LINE = "[снимок первого экрана]"
 # Цитата фактов (задача 33c) — «┃ » вместо настоящей отрисовки Telegram, у самого текста маркера нет.
 QUOTE_MARK = "┃ "
@@ -118,6 +119,8 @@ def _block_lines(blocks: list[dict[str, Any]]) -> list[str]:
         if kind == "divider":
             lines.append(DIVIDER_TEXT)
         elif kind == "photo":
+            lines.append(SCREENSHOT_LINE)  # снимок первого экрана — единственный, кто теперь шлёт photo (ТЗ, 5.9)
+        elif kind == "animation":
             lines.append(_banner_line(block))
         elif kind == "details":
             lines += [block["summary"], *_block_lines(block["blocks"])]
@@ -136,11 +139,9 @@ def _blockquote_lines(blocks: list[dict[str, Any]]) -> list[str]:
 
 
 def _banner_line(block: dict[str, Any]) -> str:
-    """Строка полосы для тестов (задача 23b): метка `banner:<lang>` — как ставит `rich.header`, до подстановки
-    файла или file_id мессенджером (тесты собирают сообщения напрямую, а не через AiogramMessenger)."""
-    media = block["photo"]["media"]
-    if not isinstance(media, str):
-        return SCREENSHOT_LINE  # снимок первого экрана — файлом (ТЗ, 5.9)
+    """Строка полосы-анимации для тестов (задача 33d): метка `banner:<lang>` — как ставит `rich.header`, до
+    подстановки файла или file_id мессенджером (тесты собирают сообщения напрямую, а не через AiogramMessenger)."""
+    media = block["animation"]["media"]
     lang = media.removeprefix(BANNER_MEDIA_PREFIX)
     return BANNER_LINES.get(lang, media)
 

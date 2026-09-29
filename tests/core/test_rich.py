@@ -3,11 +3,16 @@ from urllib.parse import unquote
 from bot.core import rich
 
 
-def test_header_is_a_banner_photo_block_labelled_by_language():
-    """Шапка — блок-картинка полосы (задача 23b): файл и file_id подставляет мессенджер, здесь только метка
-    языка — rich.py ничего не знает про файлы (ТЗ, 7.1)."""
-    assert rich.header("ru") == {"type": "photo", "photo": {"type": "photo", "media": "banner:ru"}}
-    assert rich.header("en") == {"type": "photo", "photo": {"type": "photo", "media": "banner:en"}}
+def test_header_is_a_banner_animation_block_labelled_by_language():
+    """Шапка — блок-анимация полосы с мигающим «_» (задача 33d): файл и file_id подставляет мессенджер, здесь
+    только метка языка — rich.py ничего не знает про файлы (ТЗ, 7.1)."""
+    assert rich.header("ru") == {"type": "animation", "animation": {"type": "animation", "media": "banner:ru"}}
+    assert rich.header("en") == {"type": "animation", "animation": {"type": "animation", "media": "banner:en"}}
+
+
+def test_photo_is_a_plain_picture_block():
+    """Снимок первого экрана — по-прежнему картинкой, не анимацией (ТЗ, 5.9)."""
+    assert rich.photo("file123") == {"type": "photo", "photo": {"type": "photo", "media": "file123"}}
 
 
 def test_footer_links_site_and_username_in_monospace():

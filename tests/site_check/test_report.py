@@ -28,7 +28,7 @@ JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для м
 
 # Пример ТЗ 7.3, версия 1.2: восемь блоков, снимок и срок домена, на главной jw-dev.pro стоит noindex
 # и нет счётчика посещений (разведка 27.09.2026).
-JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта]
+JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта_ (мигает _)]
 jw-dev.pro
 [снимок первого экрана]
 Есть что чинить: страница закрыта от поисковиков, и нет счётчика посещений.
@@ -77,7 +77,7 @@ AVTOSPASATEL_OG = ("Шиномонтаж в Кирове - АвтоСпасат�
 AVTOSPASATEL_HEAVIEST = (("road1.png", 116_155), ("gruzovoy-shinomontazh-1.jpg", 94_509), ("datchiki1.jpg", 76_554))
 
 # Пример ТЗ 7.3, версия 1.2: живые данные avtospasatel43.ru, восемь блоков.
-AVTOSPASATEL_RU = """[полоса ~/проверка-сайта]
+AVTOSPASATEL_RU = """[полоса ~/проверка-сайта_ (мигает _)]
 avtospasatel43.ru
 [снимок первого экрана]
 Есть что чинить: с телефона открывается медленно, и страница тяжеловата.
@@ -138,7 +138,7 @@ WIX_COFFEE_FRAGMENT_RU = """Поиск в Google [стоит поправить�
 ┃ местами текст плохо виден на фоне — например, «© 2023 «Бариста». Сайт создан на Wix.com»
 ┃ на солнце и людям со слабым зрением его трудно прочитать"""
 
-EXAMPLE_RU = """[полоса ~/проверка-сайта]
+EXAMPLE_RU = """[полоса ~/проверка-сайта_ (мигает _)]
 example.com
 Есть что чинить: с телефона открывается медленно, и страница слишком тяжёлая.
 ────
@@ -166,7 +166,7 @@ example.com
 ────
 jw-dev.pro · @jw_dev_pro"""
 
-EXAMPLE_EN = """[banner ~/site-check]
+EXAMPLE_EN = """[banner ~/site-check_ (blinks _)]
 example.com
 Needs fixing: it loads slowly on phones, and the page is too heavy.
 ────
@@ -196,7 +196,7 @@ jw-dev.pro · @jw_dev_pro"""
 
 # Отчёт при сертификате, который блокирует браузер (задача 23a): блоки без данных из-за той же причины
 # собираются под один заголовок, идущий после оценённых блоков.
-EXPIRED_BADSSL_RU = """[полоса ~/проверка-сайта]
+EXPIRED_BADSSL_RU = """[полоса ~/проверка-сайта_ (мигает _)]
 expired.badssl.com
 Браузер не пускает на сайт: сертификат истёк.
 ────
@@ -362,7 +362,8 @@ def test_owner_gets_numbers_for_post_and_others_do_not():
 
 def test_screenshot_goes_right_under_the_domain():
     message = report("ru", page(screenshot=TINY_JPEG), security(), display="jw-dev.pro")
-    assert rich_text(message).splitlines()[:3] == ["[полоса ~/проверка-сайта]", "jw-dev.pro", "[снимок первого экрана]"]
+    assert rich_text(message).splitlines()[:3] == ["[полоса ~/проверка-сайта_ (мигает _)]", "jw-dev.pro",
+                                                    "[снимок первого экрана]"]
     assert message["blocks"][2]["photo"]["media"].filename == "screen.jpg"
 
 

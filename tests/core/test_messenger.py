@@ -1,7 +1,8 @@
 import json
 
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
-from aiogram.types import BufferedInputFile, Chat, FSInputFile, Message, PhotoSize, RichBlockPhoto, RichMessage
+from aiogram.types import (Animation, BufferedInputFile, Chat, FSInputFile, Message, RichBlockAnimation,
+                           RichMessage)
 
 import pytest
 
@@ -12,7 +13,7 @@ from bot.core.messenger import (EMPTY_KEYBOARD, AiogramMessenger, DeliveryFailed
 from tests.fakes import FAKE_NOW, FakeMessenger, fake_bot
 
 DIVIDER_ONLY = {"blocks": [{"type": "divider"}]}
-BANNER_MESSAGE = {"blocks": [{"type": "photo", "photo": {"type": "photo", "media": "banner:ru"}},
+BANNER_MESSAGE = {"blocks": [{"type": "animation", "animation": {"type": "animation", "media": "banner:ru"}},
                              {"type": "paragraph", "text": ["привет"]}]}
 
 
@@ -21,8 +22,8 @@ def sent_message(message_id: int) -> Message:
 
 
 def sent_message_with_banner(message_id: int, file_id: str) -> Message:
-    rich_message = RichMessage(blocks=[RichBlockPhoto(photo=[PhotoSize(file_id=file_id, file_unique_id=file_id,
-                                                                       width=1600, height=400)])])
+    clip = Animation(file_id=file_id, file_unique_id=file_id, width=1600, height=400, duration=1)
+    rich_message = RichMessage(blocks=[RichBlockAnimation(animation=clip)])
     return Message(message_id=message_id, date=FAKE_NOW, chat=Chat(id=1, type="private"), rich_message=rich_message)
 
 
@@ -159,7 +160,7 @@ async def test_send_without_a_cached_file_id_uploads_the_banner_file():
     `InputFile`, а не строка-метка."""
     bot = fake_bot({"sendRichMessage": sent_message(7)})
     await AiogramMessenger(bot).send(1, BANNER_MESSAGE)
-    media = bot.session.calls[0].rich_message["blocks"][0]["photo"]["media"]
+    media = bot.session.calls[0].rich_message["blocks"][0]["animation"]["media"]
     assert isinstance(media, FSInputFile)
     assert BANNER_FILES["ru"].samefile(media.path)
 
@@ -168,7 +169,7 @@ async def test_send_does_not_mutate_the_callers_rich_message():
     bot = fake_bot({"sendRichMessage": sent_message(7)})
     original = {"blocks": [dict(BANNER_MESSAGE["blocks"][0]), dict(BANNER_MESSAGE["blocks"][1])]}
     await AiogramMessenger(bot).send(1, original)
-    assert original["blocks"][0]["photo"]["media"] == "banner:ru"
+    assert original["blocks"][0]["animation"]["media"] == "banner:ru"
 
 
 async def test_send_remembers_file_id_and_reuses_it_on_the_next_send():
@@ -176,7 +177,7 @@ async def test_send_remembers_file_id_and_reuses_it_on_the_next_send():
     messenger = AiogramMessenger(bot)
     await messenger.send(1, BANNER_MESSAGE)
     await messenger.send(1, BANNER_MESSAGE)
-    media = bot.session.calls[1].rich_message["blocks"][0]["photo"]["media"]
+    media = bot.session.calls[1].rich_message["blocks"][0]["animation"]["media"]
     assert media == "file123"
 
 
@@ -184,10 +185,10 @@ async def test_edit_substitutes_the_banner_and_remembers_its_file_id_too():
     bot = fake_bot({"editMessageText": sent_message_with_banner(7, "file456")})
     messenger = AiogramMessenger(bot)
     await messenger.edit(1, 5, BANNER_MESSAGE)
-    first_media = bot.session.calls[0].rich_message["blocks"][0]["photo"]["media"]
+    first_media = bot.session.calls[0].rich_message["blocks"][0]["animation"]["media"]
     assert isinstance(first_media, FSInputFile)
     await messenger.edit(1, 5, BANNER_MESSAGE)
-    second_media = bot.session.calls[1].rich_message["blocks"][0]["photo"]["media"]
+    second_media = bot.session.calls[1].rich_message["blocks"][0]["animation"]["media"]
     assert second_media == "file456"
 
 
