@@ -147,6 +147,6 @@ def test_site_fetches_go_through_their_own_guarded_session():
     """С14: своя загрузка страницы — отдельной защищённой сессией, не общей `http` (PageSpeed, адрес дома)."""
     source = inspect.getsource(app)
     assert "sites = guarded_session(guard)" in source
-    assert "PreviewLoader(AiohttpSender(sites), guard)" in source
+    assert "PreviewLoader(AiohttpSender(sites))" in source
     assert "await parts.sites.close()" in source
     assert "RegistryClient(http)" in source

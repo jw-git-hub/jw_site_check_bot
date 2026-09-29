@@ -156,11 +156,13 @@ class RegistryClient:
 
     async def _rdap_servers(self) -> dict[str, str]:
         """Пустой список — сорвавшийся список IANA, не «в мире нет RDAP»: кешируем его ненадолго, а не на сутки,
-        иначе один сбойный ответ выключает RDAP до следующего дня (задача 33, I1)."""
+        иначе один сбойный ответ выключает RDAP до следующего дня (задача 33, I1). Неудачное обновление не
+        затирает прежний хороший список (раунд 2) — пустым кешируем только то, что и получили пустым."""
         ttl = CACHE_SECONDS if self._servers else FAILED_BOOTSTRAP_RETRY_SECONDS
         fresh = self._servers_at is not None and self._monotonic() - self._servers_at < ttl
         if not fresh:
-            self._servers = bootstrap_servers(await self._get_json(self._bootstrap_url, BOOTSTRAP_MAX_BYTES))
+            fetched = bootstrap_servers(await self._get_json(self._bootstrap_url, BOOTSTRAP_MAX_BYTES))
+            self._servers = fetched or self._servers
             self._servers_at = self._monotonic()
         return self._servers
 

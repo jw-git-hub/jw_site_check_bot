@@ -222,23 +222,6 @@ async def test_loader_bot_protection_stub_gives_no_head():
     assert (preview.head, preview.failure, preview.status, preview.image) == (None, FetchFailure.STATUS, 429, None)
 
 
-async def test_own_load_is_refused_while_the_home_address_is_unknown():
-    """Задача 33, M8: домен на внешний адрес дома иначе показал бы в отчёте порт домашнего роутера."""
-    guard = AddressGuard(resolver_for({}))
-    sender = FakeSender()
-    preview = await PreviewLoader(sender, guard).load(PAGE)
-    assert (preview.head, preview.failure, preview.contacts) == (None, FetchFailure.REFUSED, None)
-    assert sender.urls == []
-
-
-async def test_own_load_proceeds_once_the_home_address_is_known():
-    guard = AddressGuard(resolver_for({}))
-    guard.home_ip = "93.184.215.14"
-    sender = FakeSender({PAGE: page_answer(), IMAGE: Answer(status=200, content_type="image/jpeg")})
-    preview = await PreviewLoader(sender, guard).load(PAGE)
-    assert (preview.failure, preview.head.title) == (None, "Shop")
-
-
 class ManualClock:
     def __init__(self, *ticks: float):
         self._ticks = list(ticks)
@@ -299,9 +282,13 @@ async def test_page_and_image_requests_send_different_accept_headers():
     assert captured == {"page": "text/html,application/xhtml+xml", "image": "image/*,*/*;q=0.8"}
 
 
+HOME_IP = "198.51.100.1"  # заглушка «адрес дома узнан» — не совпадает с адресами сайтов в этих тестах
+
+
 async def test_guarded_resolver_gives_only_checked_addresses():
-    resolver = GuardedResolver(AddressGuard(resolver_for({"shop.example": [PUBLIC]})))
-    [result] = await resolver.resolve("shop.example", 443)
+    guard = AddressGuard(resolver_for({"shop.example": [PUBLIC]}))
+    guard.home_ip = HOME_IP
+    [result] = await GuardedResolver(guard).resolve("shop.example", 443)
     assert (result["host"], result["hostname"], result["port"], result["family"]) == \
         (PUBLIC, "shop.example", 443, socket.AF_INET)
 
@@ -309,9 +296,10 @@ async def test_guarded_resolver_gives_only_checked_addresses():
 @pytest.mark.parametrize("addresses", [["10.0.0.1"], [PUBLIC, "127.0.0.1"], ["100.100.100.100"],
                                        NoIPv4("shop.example")])
 async def test_guarded_resolver_refuses_internal_and_ipv6_only_names(addresses):
-    resolver = GuardedResolver(AddressGuard(resolver_for({"shop.example": addresses})))
+    guard = AddressGuard(resolver_for({"shop.example": addresses}))
+    guard.home_ip = HOME_IP
     with pytest.raises(RefusedAddress):
-        await resolver.resolve("shop.example", 80)
+        await GuardedResolver(guard).resolve("shop.example", 80)
 
 
 async def test_guarded_resolver_refuses_the_home_address():
@@ -319,6 +307,21 @@ async def test_guarded_resolver_refuses_the_home_address():
     guard.home_ip = PUBLIC
     with pytest.raises(RefusedAddress):
         await GuardedResolver(guard).resolve("shop.example", 80)
+
+
+async def test_guarded_resolver_refuses_everything_while_the_home_address_is_unknown():
+    """Задача 33, M8: пока адрес дома не узнан, резолвер отказывает даже публичному адресу без нарушений."""
+    guard = AddressGuard(resolver_for({"shop.example": [PUBLIC]}))
+    assert guard.home_ip is None
+    with pytest.raises(RefusedAddress):
+        await GuardedResolver(guard).resolve("shop.example", 443)
+
+
+async def test_guarded_resolver_resolves_once_the_home_address_becomes_known():
+    guard = AddressGuard(resolver_for({"shop.example": [PUBLIC]}))
+    guard.home_ip = HOME_IP
+    [result] = await GuardedResolver(guard).resolve("shop.example", 443)
+    assert result["host"] == PUBLIC
 
 
 async def test_guarded_session_has_no_proxy_cookies_dns_cache_or_decompression():
@@ -436,6 +439,7 @@ async def test_bot_protection_stub_is_not_a_page(site):
 async def test_guarded_session_connects_to_the_checked_address_with_the_site_name(site):
     server, _ = site
     guard = AddressGuard(resolver_for({"shop.example": ["127.0.0.1"]}), is_allowed=lambda address, home: True)
+    guard.home_ip = HOME_IP
     session = guarded_session(guard)
     try:
         answer = await AiohttpSender(session)(f"http://shop.example:{server.port}/host", True)
@@ -446,7 +450,20 @@ async def test_guarded_session_connects_to_the_checked_address_with_the_site_nam
 
 async def test_guarded_session_never_connects_to_an_internal_address(site):
     server, _ = site
-    session = guarded_session(AddressGuard(resolver_for({"shop.example": ["127.0.0.1"]})))
+    guard = AddressGuard(resolver_for({"shop.example": ["127.0.0.1"]}))
+    guard.home_ip = HOME_IP  # иначе отказ был бы из-за неизвестного адреса дома, а не внутреннего адреса сайта
+    session = guarded_session(guard)
+    try:
+        with pytest.raises(aiohttp.ClientConnectorError):
+            await AiohttpSender(session)(f"http://shop.example:{server.port}/host", True)
+    finally:
+        await session.close()
+
+
+async def test_guarded_session_never_connects_while_the_home_address_is_unknown(site):
+    """Задача 33, M8: своя загрузка страницы не идёт вовсе, пока адрес дома не узнан."""
+    server, _ = site
+    session = guarded_session(AddressGuard(resolver_for({"shop.example": [PUBLIC]}), is_allowed=lambda a, h: True))
     try:
         with pytest.raises(aiohttp.ClientConnectorError):
             await AiohttpSender(session)(f"http://shop.example:{server.port}/host", True)

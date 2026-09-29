@@ -188,6 +188,37 @@ async def test_failed_bootstrap_list_is_retried_soon_not_after_a_day(monkeypatch
         await server.close()
 
 
+async def test_a_failed_refresh_keeps_the_previous_good_bootstrap_list(tmp_path):
+    """Обновление списка IANA сорвалось — прежний хороший список не затирается пустым (раунд 2, задача 33, I1)."""
+    calls = []
+
+    async def dns(request: web.Request) -> web.Response:
+        calls.append("bootstrap")
+        if len(calls) == 1:
+            return web.json_response({"services": [[["pro"], [str(request.url.with_path("/rdap/"))]]]})
+        return web.Response(status=500)
+
+    async def rdap(request: web.Request) -> web.Response:
+        return web.json_response({"events": [{"eventAction": "expiration", "eventDate": "2027-08-25T15:48:28Z"}]})
+
+    app = web.Application()
+    app.router.add_get("/dns.json", dns)
+    app.router.add_get("/rdap/domain/{name}", rdap)
+    server = await https_server(app, tmp_path)
+    session = https_session()
+    clock = ManualClock()
+    try:
+        client = RegistryClient(session, monotonic=clock, bootstrap_url=str(server.make_url("/dns.json")))
+        assert await client.paid_until("jw-dev.pro") == DomainPaid("jw-dev.pro", date(2027, 8, 25), RDAP)
+        clock.now = 24 * 3600 + 1  # хороший список устарел — обновление пробуем, а IANA сейчас отвечает 500
+        assert await client.paid_until("site.pro") == DomainPaid("site.pro", date(2027, 8, 25), RDAP)
+        assert calls == ["bootstrap", "bootstrap"]  # обновление пробовали, но старый список не потерялся
+        assert client._servers == {"pro": str(server.make_url("/rdap/"))}
+    finally:
+        await session.close()
+        await server.close()
+
+
 # --- ТЗ, С15: реестры — не через защиту адресов сайта, но без переходов и с фиксированным whois-хостом ---
 
 async def test_rdap_server_redirect_is_not_followed(tmp_path):

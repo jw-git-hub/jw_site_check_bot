@@ -241,20 +241,15 @@ def _image_state(answer: Answer) -> ImageState:
 class PreviewLoader:
     """Своя загрузка для «Поиска» и «Ссылки в мессенджерах» (ТЗ, 5.6–5.7): head страницы и проверка её картинки.
 
-    guard — та же защита адресов, что и у остальных своих запросов: пока внешний адрес дома не узнан
-    (guard.home_ip is None), своя загрузка не делается вовсе (задача 33, M8) — иначе домен на этот адрес
-    покажет в отчёте страницу проброшенного порта домашнего роутера.
+    Защита от адреса дома (задача 33, M8) — не здесь, а в GuardedResolver: через него идут все свои запросы
+    (страница, переходы, картинка), туда и достаточно поставить один отказ, пока адрес дома не узнан.
     """
 
-    def __init__(self, send: Sender, guard: AddressGuard | None = None,
-                monotonic: Callable[[], float] = time.monotonic):
+    def __init__(self, send: Sender, monotonic: Callable[[], float] = time.monotonic):
         self._send = send
-        self._guard = guard
         self._monotonic = monotonic
 
     async def load(self, url: str) -> PagePreview:
-        if self._guard is not None and self._guard.home_ip is None:
-            return PagePreview(strip_params(url), None, FetchFailure.REFUSED, None, 0, 0.0, None)
         started = self._monotonic()
         landing = await fetch_page(self._send, url)
         elapsed_ms = (self._monotonic() - started) * MS_IN_SECOND
@@ -262,7 +257,7 @@ class PreviewLoader:
             status = landing.answer.status if landing.answer else None
             return PagePreview(strip_params(landing.url), None, landing.failure, status, 0, elapsed_ms, None)
         answer = landing.answer
-        _, head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
+        head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
         image = await self._check_preview_image(head, started) if head.preview_image else None
         return PagePreview(strip_params(landing.url), head, None, answer.status, len(answer.body), elapsed_ms, image,
                            answer.complete, contacts)
@@ -275,11 +270,12 @@ class PreviewLoader:
         return await check_image(self._send, head.preview_image, timeout)
 
 
-def _parse_preview(body: bytes, charset: str | None, complete: bool) -> tuple[str, HeadTags, ContactFacts]:
+def _parse_preview(body: bytes, charset: str | None, complete: bool) -> tuple[HeadTags, ContactFacts]:
     """Decode + parse_head + parse_contacts вместе, вне цикла событий (задача 33, C1): CPU-ёмкий разбор даже
-    под защитой html_guard не должен держать опрос Telegram и вторую проверку."""
+    под защитой html_guard не должен держать опрос Telegram и вторую проверку. Раскодированный html дальше не
+    нужен (задача 33, M4) — наружу не отдаём."""
     html = decode_page(body, charset)
-    return html, parse_head(html), parse_contacts(html, complete)
+    return parse_head(html), parse_contacts(html, complete)
 
 
 class AiohttpSender:
@@ -325,13 +321,20 @@ class RefusedAddress(OSError):
 
 
 class GuardedResolver(AbstractResolver):
-    """Резолвер aiohttp поверх AddressGuard (ТЗ, С2, С3, С14): отдаёт только проверенные IPv4."""
+    """Резолвер aiohttp поверх AddressGuard (ТЗ, С2, С3, С14): отдаёт только проверенные IPv4.
+
+    Пока адрес дома не узнан (guard.home_ip is None), отказывает всем запросам без исключений (задача 33,
+    M8) — через эту же сессию идут страница, переходы и картинка своей загрузки; иначе домен на внешний
+    адрес дома вернул бы в отчёте страницу проброшенного порта роутера.
+    """
 
     def __init__(self, guard: AddressGuard):
         self._guard = guard
 
     async def resolve(self, host: str, port: int = 0,
                       family: socket.AddressFamily = socket.AF_INET) -> list[ResolveResult]:
+        if self._guard.home_ip is None:
+            raise RefusedAddress(f"адрес дома не узнан: {host}")
         try:
             addresses = await self._guard.resolve(host)
         except GUARD_REFUSALS as error:
