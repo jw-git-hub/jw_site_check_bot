@@ -32,29 +32,38 @@ JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта]
 jw-dev.pro
 [снимок первого экрана]
 Есть что чинить: страница закрыта от поисковиков, и нет счётчика посещений.
-Скорость — хорошо
-> главное на экране — через 1,4 секунды
-Телефон — хорошо
-> мобильная версия есть
-> кнопки стоят свободно
-Защита — хорошо
-> сертификат действует до 8 декабря 2026
-> адрес без https переводит на защищённый
-> домен оплачен до 25 августа 2027
-Картинки — хорошо
-> страница весит 260 КБ
-> самая тяжёлая — 00-oblozhka.webp, 110 КБ
-Заявки и контакты — стоит поправить
-> связаться можно: в Telegram, по почте, через форму заявки
-> счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли
-Поиск в Google — плохо
-> страница закрыта от поисковиков: в коде стоит запрет noindex
-> Google и Яндекс не покажут её в поиске
-Ссылка в мессенджерах — хорошо
-> для превью заданы картинка и название «{JW_DEV_PRO_TITLE}»
-Удобство чтения — хорошо
-> текст хорошо виден на фоне
-> у картинок есть подписи
+────
+Скорость [хорошо·success]
+┃ главное на экране — через 1,4 секунды
+────
+Телефон [хорошо·success]
+┃ мобильная версия есть
+┃ кнопки стоят свободно
+────
+Защита [хорошо·success]
+┃ сертификат действует до 8 декабря 2026
+┃ адрес без https переводит на защищённый
+┃ домен оплачен до 25 августа 2027
+────
+Картинки [хорошо·success]
+┃ страница весит 260 КБ
+┃ самая тяжёлая — 00-oblozhka.webp, 110 КБ
+────
+Заявки и контакты [стоит поправить·primary]
+┃ связаться можно: в Telegram, по почте, через форму заявки
+┃ счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли
+────
+Поиск в Google [плохо·danger]
+┃ страница закрыта от поисковиков: в коде стоит запрет noindex
+┃ Google и Яндекс не покажут её в поиске
+────
+Ссылка в мессенджерах [хорошо·success]
+┃ для превью заданы картинка и название «{JW_DEV_PRO_TITLE}»
+────
+Удобство чтения [хорошо·success]
+┃ текст хорошо виден на фоне
+┃ у картинок есть подписи
+────
 Что поправить в первую очередь
 > Снять запрет noindex — иначе страницу не найти в Google и Яндексе.
 > Поставить счётчик посещений — станет видно, сколько людей заходит и откуда.
@@ -72,35 +81,44 @@ AVTOSPASATEL_RU = """[полоса ~/проверка-сайта]
 avtospasatel43.ru
 [снимок первого экрана]
 Есть что чинить: с телефона открывается медленно, и страница тяжеловата.
-Скорость — плохо
-> главное на экране — через 14 секунд
-> больше всего времени уходит на тяжёлые картинки
-Телефон — хорошо
-> мобильная версия есть
-> кнопки стоят свободно
-Защита — хорошо
-> сертификат действует до 8 декабря 2026
-> адрес без https переводит на защищённый
-> домен оплачен до 16 июня 2027
-Картинки — стоит поправить
-> страница весит 4,7 МБ, из них 1,5 МБ — картинки
-> самые тяжёлые: road1.png — 113 КБ, gruzovoy-shinomontazh-1.jpg — 92 КБ, datchiki1.jpg — 75 КБ
-> картинки можно ужать примерно в 2 раза почти без потери качества
-> 3 картинки на телефоне выглядят нечётко — например, 20let.png
-Заявки и контакты — стоит поправить
-> связаться можно: звонком в одно касание
-> по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться
-> посещения считают Яндекс Метрика и Top.Mail.ru
-Поиск в Google — хорошо
-> страница открыта для поисковиков
-> заголовок для поиска: «Шиномонтаж в Кирове - "АвтоСпасатель". Услуги шиномонтажа, автопомощи…»
-Ссылка в мессенджерах — хорошо
-> для превью заданы картинка и название «Шиномонтаж в Кирове - АвтоСпасатель. Услуги шиномонтажа, автопомощи в…»
-Удобство чтения — стоит поправить
-> местами текст плохо виден на фоне — например, «Политикой обработки персональных данных и файлов Cookie»
-> на солнце и людям со слабым зрением его трудно прочитать
-> у 9 картинок нет подписи — например, 20let.png, avtomoyka-open-340x210.jpg
-> Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там
+────
+Скорость [плохо·danger]
+┃ главное на экране — через 14 секунд
+┃ больше всего времени уходит на тяжёлые картинки
+────
+Телефон [хорошо·success]
+┃ мобильная версия есть
+┃ кнопки стоят свободно
+────
+Защита [хорошо·success]
+┃ сертификат действует до 8 декабря 2026
+┃ адрес без https переводит на защищённый
+┃ домен оплачен до 16 июня 2027
+────
+Картинки [стоит поправить·primary]
+┃ страница весит 4,7 МБ, из них 1,5 МБ — картинки
+┃ самые тяжёлые: road1.png — 113 КБ, gruzovoy-shinomontazh-1.jpg — 92 КБ, datchiki1.jpg — 75 КБ
+┃ картинки можно ужать примерно в 2 раза почти без потери качества
+┃ 3 картинки на телефоне выглядят нечётко — например, 20let.png
+────
+Заявки и контакты [стоит поправить·primary]
+┃ связаться можно: звонком в одно касание
+┃ по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться
+┃ посещения считают Яндекс Метрика и Top.Mail.ru
+────
+Поиск в Google [хорошо·success]
+┃ страница открыта для поисковиков
+┃ заголовок для поиска: «Шиномонтаж в Кирове - "АвтоСпасатель". Услуги шиномонтажа, автопомощи…»
+────
+Ссылка в мессенджерах [хорошо·success]
+┃ для превью заданы картинка и название «Шиномонтаж в Кирове - АвтоСпасатель. Услуги шиномонтажа, автопомощи в…»
+────
+Удобство чтения [стоит поправить·primary]
+┃ местами текст плохо виден на фоне — например, «Политикой обработки персональных данных и файлов Cookie»
+┃ на солнце и людям со слабым зрением его трудно прочитать
+┃ у 9 картинок нет подписи — например, 20let.png, avtomoyka-open-340x210.jpg
+┃ Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там
+────
 Что поправить в первую очередь
 > Ужать картинки — страница станет легче и быстрее откроется с телефона.
 > Загрузить картинки крупнее — на телефоне они станут чёткими.
@@ -108,32 +126,39 @@ avtospasatel43.ru
 ────
 jw-dev.pro · @jw_dev_pro"""
 
-WIX_COFFEE_FRAGMENT_RU = """Поиск в Google — стоит поправить
-> заголовок для поиска: «Главная | Mysite»
-> описания для поиска нет — Google сам выберет кусок текста со страницы
-Ссылка в мессенджерах — стоит поправить
-> для превью не задана картинка — в Telegram ссылка придёт без картинки
-> название в превью: «Главная | Mysite»
-Удобство чтения — стоит поправить
-> местами текст плохо виден на фоне — например, «© 2023 «Бариста». Сайт создан на Wix.com»
-> на солнце и людям со слабым зрением его трудно прочитать"""
+WIX_COFFEE_FRAGMENT_RU = """Поиск в Google [стоит поправить·primary]
+┃ заголовок для поиска: «Главная | Mysite»
+┃ описания для поиска нет — Google сам выберет кусок текста со страницы
+────
+Ссылка в мессенджерах [стоит поправить·primary]
+┃ для превью не задана картинка — в Telegram ссылка придёт без картинки
+┃ название в превью: «Главная | Mysite»
+────
+Удобство чтения [стоит поправить·primary]
+┃ местами текст плохо виден на фоне — например, «© 2023 «Бариста». Сайт создан на Wix.com»
+┃ на солнце и людям со слабым зрением его трудно прочитать"""
 
 EXAMPLE_RU = """[полоса ~/проверка-сайта]
 example.com
 Есть что чинить: с телефона открывается медленно, и страница слишком тяжёлая.
-Скорость — плохо
-> главное на экране — через 7 секунд
-> больше всего времени уходит на тяжёлые картинки
-Телефон — стоит поправить
-> мобильная версия есть
-> кнопки и ссылки стоят тесно: пальцем легко попасть не туда
-Защита — стоит поправить
-> сертификат действует до 14 марта 2027
-> по ссылке без https часть браузеров откроет сайт без защиты, с пометкой «Не защищено»
-Картинки — плохо
-> страница весит 12 МБ, из них 10 МБ — картинки
-> самые тяжёлые: slider-1.jpg — 3,2 МБ, about.png — 2,1 МБ, team.jpg — 1,8 МБ
-> картинки можно ужать примерно в 6 раз почти без потери качества
+────
+Скорость [плохо·danger]
+┃ главное на экране — через 7 секунд
+┃ больше всего времени уходит на тяжёлые картинки
+────
+Телефон [стоит поправить·primary]
+┃ мобильная версия есть
+┃ кнопки и ссылки стоят тесно: пальцем легко попасть не туда
+────
+Защита [стоит поправить·primary]
+┃ сертификат действует до 14 марта 2027
+┃ по ссылке без https часть браузеров откроет сайт без защиты, с пометкой «Не защищено»
+────
+Картинки [плохо·danger]
+┃ страница весит 12 МБ, из них 10 МБ — картинки
+┃ самые тяжёлые: slider-1.jpg — 3,2 МБ, about.png — 2,1 МБ, team.jpg — 1,8 МБ
+┃ картинки можно ужать примерно в 6 раз почти без потери качества
+────
 Что поправить в первую очередь
 > Ужать картинки — страница станет легче и быстрее откроется с телефона.
 > Включить переадресацию на https — чтобы по любой ссылке сайт открывался защищённым.
@@ -144,19 +169,24 @@ jw-dev.pro · @jw_dev_pro"""
 EXAMPLE_EN = """[banner ~/site-check]
 example.com
 Needs fixing: it loads slowly on phones, and the page is too heavy.
-Speed — poor
-> the main content appears after 7 seconds
-> most of that time goes to heavy images
-Phone — worth fixing
-> there is a mobile version
-> buttons and links sit too close together: it's easy to tap the wrong one
-Security — worth fixing
-> the certificate is valid until 14 March 2027
-> links without https open the site unprotected in some browsers, marked "Not secure"
-Images — poor
-> the page weighs 12 MB, 10 MB of it images
-> heaviest: slider-1.jpg — 3.2 MB, about.png — 2.1 MB, team.jpg — 1.8 MB
-> the images can be compressed about 6 times with almost no loss in quality
+────
+Speed [poor·danger]
+┃ the main content appears after 7 seconds
+┃ most of that time goes to heavy images
+────
+Phone [worth fixing·primary]
+┃ there is a mobile version
+┃ buttons and links sit too close together: it's easy to tap the wrong one
+────
+Security [worth fixing·primary]
+┃ the certificate is valid until 14 March 2027
+┃ links without https open the site unprotected in some browsers, marked "Not secure"
+────
+Images [poor·danger]
+┃ the page weighs 12 MB, 10 MB of it images
+┃ heaviest: slider-1.jpg — 3.2 MB, about.png — 2.1 MB, team.jpg — 1.8 MB
+┃ the images can be compressed about 6 times with almost no loss in quality
+────
 Fix first
 > Compress the images — the page gets lighter and opens faster on phones.
 > Turn on the redirect to https — so the site opens secure from any link.
@@ -169,11 +199,14 @@ jw-dev.pro · @jw_dev_pro"""
 EXPIRED_BADSSL_RU = """[полоса ~/проверка-сайта]
 expired.badssl.com
 Браузер не пускает на сайт: сертификат истёк.
-Защита — плохо
-> сертификат истёк 12 апреля 2015
-> браузер показывает предупреждение во весь экран, сайт открывается только через «Дополнительно»
-Скорость, телефон, картинки — не удалось проверить
-> браузер не открывает сайт из-за сертификата
+────
+Защита [плохо·danger]
+┃ сертификат истёк 12 апреля 2015
+┃ браузер показывает предупреждение во весь экран, сайт открывается только через «Дополнительно»
+────
+Скорость, телефон, картинки [не удалось проверить]
+┃ браузер не открывает сайт из-за сертификата
+────
 Что поправить в первую очередь
 > Заменить сертификат — сейчас браузер пугает посетителей предупреждением.
 ────
@@ -255,33 +288,33 @@ def test_bot_protection_stub_hides_preview_and_keeps_search_from_lighthouse():
     facts = page(search_facts=search(description=AuditState.FAILED))
     text = rich_text(report("ru", facts, security(), preview_facts=preview(failure=FetchFailure.STATUS, status=403)))
     assert "Ссылка в мессенджерах" not in text and "заголовок для поиска" not in text
-    assert ("Поиск в Google — стоит поправить\n"
-            "> описания для поиска нет — Google сам выберет кусок текста со страницы") in text
+    assert ("Поиск в Google [стоит поправить·primary]\n"
+            "┃ описания для поиска нет — Google сам выберет кусок текста со страницы") in text
 
 
-@pytest.mark.parametrize(("state", "line"), [
-    (ImageState.BROKEN, "> картинка для превью не открывается (ошибка 404) — в Telegram ссылка придёт без картинки"),
-    (ImageState.NOT_IMAGE, "> картинка для превью не открывается — в Telegram ссылка придёт без картинки"),
-    (ImageState.SVG, "> картинка для превью — в формате SVG, Telegram её не показывает"),
-    (ImageState.RELATIVE, "> адрес картинки для превью указан не полностью — Telegram её не показывает"),
+@pytest.mark.parametrize(("state", "fact"), [
+    (ImageState.BROKEN, "картинка для превью не открывается (ошибка 404) — в Telegram ссылка придёт без картинки"),
+    (ImageState.NOT_IMAGE, "картинка для превью не открывается — в Telegram ссылка придёт без картинки"),
+    (ImageState.SVG, "картинка для превью — в формате SVG, Telegram её не показывает"),
+    (ImageState.RELATIVE, "адрес картинки для превью указан не полностью — Telegram её не показывает"),
 ])
-def test_preview_image_lines_with_the_title_after_them(state, line):
+def test_preview_image_lines_with_the_title_after_them(state, fact):
     shown = preview(head(og_title="Кафе"), image_state=state, image_status=404 if state is ImageState.BROKEN else 200)
     text = rich_text(report("ru", page(), security(), preview_facts=shown))
-    assert f"Ссылка в мессенджерах — стоит поправить\n{line}\n> название в превью: «Кафе»" in text
+    assert f"Ссылка в мессенджерах [стоит поправить·primary]\n┃ {fact}\n┃ название в превью: «Кафе»" in text
 
 
 def test_preview_good_without_description_and_without_title():
     no_description = preview(head(og_title="Кафе", description=None))
-    assert "> для превью заданы картинка и название «Кафе», без описания" in \
+    assert "┃ для превью заданы картинка и название «Кафе», без описания" in \
         rich_text(report("ru", page(), security(), preview_facts=no_description))
     untitled = rich_text(report("ru", page(), security(), preview_facts=preview(head(title=None))))
-    assert "> название для превью не задано — вместо него покажется адрес сайта" in untitled
+    assert "┃ название для превью не задано — вместо него покажется адрес сайта" in untitled
 
 
 def test_preview_lines_in_english():
     text = rich_text(report("en", page(), security(), preview_facts=preview(head(og_image=None))))
-    assert "Link in messengers — worth fixing\n> no preview image is set — in Telegram the link will arrive" in text
+    assert "Link in messengers [worth fixing·primary]\n┃ no preview image is set — in Telegram the link will arrive" in text
 
 
 def test_example_report_matches_spec_in_russian():
@@ -295,9 +328,9 @@ def test_example_report_matches_spec_in_english():
 def test_picture_lines_one_and_many():
     many = rich_text(report("ru", page(image_facts=images(blurry=("20let.png", "a.jpg", "b.jpg"))), security()))
     one = rich_text(report("ru", page(image_facts=images(stretched=("team.jpg",))), security()))
-    assert "> 3 картинки на телефоне выглядят нечётко — например, 20let.png" in many
-    assert "> картинка растянута или сплющена — team.jpg" in one
-    assert "Картинки — стоит поправить\n> страница весит 260 КБ\n> самая тяжёлая — 00-oblozhka.webp, 110 КБ" in one
+    assert "┃ 3 картинки на телефоне выглядят нечётко — например, 20let.png" in many
+    assert "┃ картинка растянута или сплющена — team.jpg" in one
+    assert "Картинки [стоит поправить·primary]\n┃ страница весит 260 КБ\n┃ самая тяжёлая — 00-oblozhka.webp, 110 КБ" in one
 
 
 def test_certificate_blocking_report_matches_spec():
@@ -347,28 +380,28 @@ def test_unknown_security_is_named_in_summary():
     failed = SecurityFacts((TlsFacts("site.test", TlsOutcome.CONNECT_FAILED),), (RedirectState.CLOSED,), ())
     text = rich_text(report("ru", page(), failed))
     assert "Всё, что удалось проверить, в порядке. Не удалось проверить защиту." in text
-    assert "Защита — не удалось проверить\n> сайт не ответил на мои запросы" in text
+    assert "Защита [не удалось проверить]\n┃ сайт не ответил на мои запросы" in text
 
 
 def test_expiring_certificate_sentence_and_fix():
     text = rich_text(report("ru", page(), security(days_left=6)))
-    assert ("> сертификат действует до 1 октября 2026\n"
-            "> сертификат закончится через 6 дней — если он не продлится сам, браузер начнёт показывать "
+    assert ("┃ сертификат действует до 1 октября 2026\n"
+            "┃ сертификат закончится через 6 дней — если он не продлится сам, браузер начнёт показывать "
             "предупреждение") in text
     assert "> Проверить автопродление сертификата до 1 октября 2026." in text
 
 
 def test_security_names_the_paid_domain_date():
     facts = security(domain=DomainPaid("jw-dev.pro", date(2027, 8, 25), RDAP))
-    assert ("Защита — хорошо\n> сертификат действует до 8 декабря 2026\n> адрес без https переводит на защищённый\n"
-            "> домен оплачен до 25 августа 2027") in rich_text(report("ru", page(), facts))
+    assert ("Защита [хорошо·success]\n┃ сертификат действует до 8 декабря 2026\n┃ адрес без https переводит на "
+            "защищённый\n┃ домен оплачен до 25 августа 2027") in rich_text(report("ru", page(), facts))
 
 
 def test_domain_ending_soon_is_worth_fixing_with_its_date():
     facts = security(domain=DomainPaid("site.ru", date(2026, 10, 14), "whois"))
     text = rich_text(report("ru", page(), facts))
     assert "В целом в порядке, но скоро кончается оплата домена." in text
-    assert "> домен оплачен до 14 октября 2026 — если не продлить, сайт и почта перестанут открываться" in text
+    assert "┃ домен оплачен до 14 октября 2026 — если не продлить, сайт и почта перестанут открываться" in text
     assert "> Продлить домен до 14 октября 2026 или включить автопродление." in text
 
 
@@ -376,7 +409,7 @@ def test_missing_server_response_time_uses_plain_texts():
     """server_ms может быть None (лидирует document-latency-insight, а server-response-time пропал)."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=None))
     text = rich_text(report("ru", facts, security()))
-    assert "> больше всего времени уходит на ответ сервера" in text
+    assert "┃ больше всего времени уходит на ответ сервера" in text
     assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
     assert "0 секунд" not in text
 
@@ -386,7 +419,7 @@ def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
     может выбраться и когда сам server_ms маленький — тогда тоже без выдуманных секунд."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=40.0))
     text = rich_text(report("ru", facts, security()))
-    assert "> больше всего времени уходит на ответ сервера" in text
+    assert "┃ больше всего времени уходит на ответ сервера" in text
     assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
     assert "0 секунд" not in text
 
@@ -398,7 +431,7 @@ def test_expired_certificate_with_a_future_leaf_date_uses_no_date_text():
     facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, cert(days_left=30)),),
                           (RedirectState.REDIRECTS,), ())
     text = rich_text(report("ru", page(), facts))
-    assert "> сертификат истёк\n> браузер показывает предупреждение во весь экран" in text
+    assert "┃ сертификат истёк\n┃ браузер показывает предупреждение во весь экран" in text
     assert "октября" not in text
 
 
@@ -406,9 +439,9 @@ def test_expired_certificate_without_parseable_data_uses_no_date_text():
     """read_cert_unverified может не разобрать сертификат и отдать cert=None — тогда без пустой даты в строке."""
     failed_cert = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, None),), (RedirectState.REDIRECTS,), ())
     text_ru = rich_text(report("ru", page(), failed_cert))
-    assert "> сертификат истёк\n> браузер показывает предупреждение во весь экран" in text_ru
+    assert "┃ сертификат истёк\n┃ браузер показывает предупреждение во весь экран" in text_ru
     text_en = rich_text(report("en", page(), failed_cert))
-    assert "> the certificate has expired\n> the browser shows a full-screen warning" in text_en
+    assert "┃ the certificate has expired\n┃ the browser shows a full-screen warning" in text_en
 
 
 def test_security_bad_certificate_still_lists_other_consequences():
@@ -417,8 +450,8 @@ def test_security_bad_certificate_still_lists_other_consequences():
     facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.WRONG_HOST, cert()),), (RedirectState.REDIRECTS,),
                           ("http://x/a.js",))
     text = rich_text(report("ru", page(), facts))
-    assert "> сертификат выдан на другой адрес" in text
-    assert "> часть файлов страницы грузится без защиты" in text
+    assert "┃ сертификат выдан на другой адрес" in text
+    assert "┃ часть файлов страницы грузится без защиты" in text
 
 
 def two_host_security(first_outcome, second_outcome, first_cert=True, second_cert=True) -> SecurityFacts:
@@ -429,12 +462,12 @@ def two_host_security(first_outcome, second_outcome, first_cert=True, second_cer
 
 
 def security_fact_lines(text: str, lang: str) -> list[str]:
-    """Строки «>» блока «Защита» — между его заголовком и следующим («Картинки»/«Images»)."""
+    """Строки цитаты блока «Защита» — между его заголовком и следующим («Картинки»/«Images»)."""
     security_title, next_title = ("Защита", "Картинки") if lang == "ru" else ("Security", "Images")
     lines = text.splitlines()
     start = next(i for i, line in enumerate(lines) if line.startswith(security_title))
     end = next(i for i, line in enumerate(lines) if i > start and line.startswith(next_title))
-    return [line for line in lines[start:end] if line.startswith("> ")]
+    return [line for line in lines[start:end] if line.startswith("┃ ")]
 
 
 def test_second_bad_security_finding_does_not_crash_or_get_a_tail():
@@ -454,12 +487,12 @@ def test_wrong_host_and_incomplete_chain_state_both_consequences():
     поправить» в этом сценарии, есть свой tail_incomplete_chain."""
     facts = two_host_security(TlsOutcome.WRONG_HOST, TlsOutcome.INCOMPLETE_CHAIN)
     text_ru = rich_text(report("ru", page(), facts))
-    assert "> сертификат выдан на другой адрес" in text_ru
-    assert "> сервер отдаёт сертификат не полностью, и в части браузеров и приложений сайт покажется небезопасным" \
+    assert "┃ сертификат выдан на другой адрес" in text_ru
+    assert "┃ сервер отдаёт сертификат не полностью, и в части браузеров и приложений сайт покажется небезопасным" \
         in text_ru
     text_en = rich_text(report("en", page(), facts))
-    assert "> the certificate is issued for another address" in text_en
-    assert "> the server sends the certificate incompletely, so some browsers and apps will show the site as " \
+    assert "┃ the certificate is issued for another address" in text_en
+    assert "┃ the server sends the certificate incompletely, so some browsers and apps will show the site as " \
         "unsafe" in text_en
 
 
@@ -469,15 +502,15 @@ def test_no_https_with_secure_redirect_elsewhere_report():
     facts = two_host_security(TlsOutcome.NO_HTTPS, TlsOutcome.OK, first_cert=False)
     result_page = page(final_url="https://www.site.test/")
     text_ru = rich_text(report("ru", result_page, facts))
-    assert "Защита — стоит поправить" in text_ru
-    assert "> сертификат действует до 8 декабря 2026" in text_ru
-    assert "> ссылка с https на присланный адрес не откроется — браузер покажет ошибку" in text_ru
+    assert "Защита [стоит поправить·primary]" in text_ru
+    assert "┃ сертификат действует до 8 декабря 2026" in text_ru
+    assert "┃ ссылка с https на присланный адрес не откроется — браузер покажет ошибку" in text_ru
     assert "> Подключить сертификат и на этот адрес — тогда сайт откроется по любой ссылке." in text_ru
     assert "работает без защиты" not in text_ru
     text_en = rich_text(report("en", result_page, facts))
-    assert "Security — worth fixing" in text_en
-    assert "> the certificate is valid until 8 December 2026" in text_en
-    assert "> a https link to this exact address won't open — the browser shows an error" in text_en
+    assert "Security [worth fixing·primary]" in text_en
+    assert "┃ the certificate is valid until 8 December 2026" in text_en
+    assert "┃ a https link to this exact address won't open — the browser shows an error" in text_en
     assert "> Add a certificate for this address too — then any link to the site will open." in text_en
     assert "works without a secure connection" not in text_en
 
@@ -527,21 +560,21 @@ def test_readability_lines_name_the_pale_text_and_the_pictures():
                                                alt=AuditState.FAILED, alt_names=("20let.png", "diplom-tm-2025-m.jpg"),
                                                alt_count=9, lang=AuditState.FAILED))
     text = rich_text(report("ru", facts, security()))
-    assert ("Удобство чтения — стоит поправить\n"
-            "> местами текст плохо виден на фоне — например, «НАШИ ЦЕНЫ»\n"
-            "> на солнце и людям со слабым зрением его трудно прочитать\n"
-            "> у 9 картинок нет подписи — например, 20let.png, diplom-tm-2025-m.jpg\n"
-            "> Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там\n"
-            "> в коде не указан язык страницы — программа чтения вслух может читать текст с чужим произношением"
+    assert ("Удобство чтения [стоит поправить·primary]\n"
+            "┃ местами текст плохо виден на фоне — например, «НАШИ ЦЕНЫ»\n"
+            "┃ на солнце и людям со слабым зрением его трудно прочитать\n"
+            "┃ у 9 картинок нет подписи — например, 20let.png, diplom-tm-2025-m.jpg\n"
+            "┃ Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там\n"
+            "┃ в коде не указан язык страницы — программа чтения вслух может читать текст с чужим произношением"
             ) in text
     assert "В целом в порядке, но местами текст плохо виден." in text
 
 
 def test_readability_good_lines_and_silence_without_facts():
     good = rich_text(report("ru", page(readability_facts=readability()), security()))
-    assert "Удобство чтения — хорошо\n> текст хорошо виден на фоне\n> у картинок есть подписи" in good
+    assert "Удобство чтения [хорошо·success]\n┃ текст хорошо виден на фоне\n┃ у картинок есть подписи" in good
     no_images = rich_text(report("ru", page(readability_facts=readability(alt=AuditState.NOT_APPLICABLE)), security()))
-    assert "Удобство чтения — хорошо\n> текст хорошо виден на фоне\nЧто поправить" in no_images
+    assert "Удобство чтения [хорошо·success]\n┃ текст хорошо виден на фоне\n────\nЧто поправить" in no_images
     silent = readability(contrast=AuditState.UNKNOWN, alt=AuditState.NOT_APPLICABLE)
     assert "Удобство чтения" not in rich_text(report("ru", page(readability_facts=silent), security()))
 
@@ -549,49 +582,49 @@ def test_readability_good_lines_and_silence_without_facts():
 def test_readability_lines_in_english():
     facts = page(readability_facts=readability(alt=AuditState.FAILED, alt_names=("team.jpg",)))
     text = rich_text(report("en", facts, security()))
-    assert "Readability — worth fixing\n> no alt text on 1 image — for example, team.jpg" in text
+    assert "Readability [worth fixing·primary]\n┃ no alt text on 1 image — for example, team.jpg" in text
 
 
 def test_closed_page_report_lines_and_fix():
     facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META))
     text = rich_text(report("ru", facts, security()))
     assert "Есть что чинить: страница закрыта от поисковиков." in text
-    assert ("Поиск в Google — плохо\n> страница закрыта от поисковиков: в коде стоит запрет noindex\n"
-            "> Google и Яндекс не покажут её в поиске") in text
+    assert ("Поиск в Google [плохо·danger]\n┃ страница закрыта от поисковиков: в коде стоит запрет noindex\n"
+            "┃ Google и Яндекс не покажут её в поиске") in text
     assert "> Снять запрет noindex — иначе страницу не найти в Google и Яндексе." in text
 
 
 def test_open_page_quotes_the_real_title_or_speaks_generally():
     quoted = rich_text(report("ru", page(search_facts=search()), security(),
                               preview_facts=preview(head(title="Кофейня Vitru | Нижний Тагил | Главная"))))
-    assert ("Поиск в Google — хорошо\n> страница открыта для поисковиков\n"
-            "> заголовок для поиска: «Кофейня Vitru | Нижний Тагил | Главная»") in quoted
+    assert ("Поиск в Google [хорошо·success]\n┃ страница открыта для поисковиков\n"
+            "┃ заголовок для поиска: «Кофейня Vitru | Нижний Тагил | Главная»") in quoted
     general = rich_text(report("ru", page(search_facts=search()), security()))
-    assert "> заголовок и описание для поиска есть" in general
+    assert "┃ заголовок и описание для поиска есть" in general
     assert "защита работает, поисковикам открыт." in general
 
 
 def test_long_title_is_cut_with_an_ellipsis():
     text = rich_text(report("ru", page(search_facts=search()), security(), preview_facts=preview(head(title="А" * 100))))
-    assert "> заголовок для поиска: «" + "А" * 69 + "…»" in text
+    assert "┃ заголовок для поиска: «" + "А" * 69 + "…»" in text
 
 
 def test_worth_fixing_search_quotes_the_title_first():
     facts = page(search_facts=search(description=AuditState.FAILED, robots=AuditState.FAILED, robots_status=503))
     text = rich_text(report("ru", facts, security(), preview_facts=preview(head(title="Главная | Mysite",
                                                                                 canonical="https://other.example/"))))
-    assert ("Поиск в Google — стоит поправить\n> заголовок для поиска: «Главная | Mysite»\n"
-            "> файл robots.txt не открывается (ошибка 503) — Google в таком случае может перестать заходить на сайт\n"
-            "> описания для поиска нет — Google сам выберет кусок текста со страницы\n"
-            "> основным адресом в коде указан другой сайт — other.example\n"
-            "> Google может показывать в поиске его, а не эту страницу") in text
+    assert ("Поиск в Google [стоит поправить·primary]\n┃ заголовок для поиска: «Главная | Mysite»\n"
+            "┃ файл robots.txt не открывается (ошибка 503) — Google в таком случае может перестать заходить на сайт\n"
+            "┃ описания для поиска нет — Google сам выберет кусок текста со страницы\n"
+            "┃ основным адресом в коде указан другой сайт — other.example\n"
+            "┃ Google может показывать в поиске его, а не эту страницу") in text
 
 
 def test_search_lines_in_english():
     facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.ROBOTS_TXT))
     text = rich_text(report("en", facts, security()))
-    assert ("Google search — poor\n> search engines are forbidden to read the page — the robots.txt file says so\n"
-            "> it's missing from search or shown without a description") in text
+    assert ("Google search [poor·danger]\n┃ search engines are forbidden to read the page — the robots.txt file says so\n"
+            "┃ it's missing from search or shown without a description") in text
 
 
 def test_owner_sees_search_preview_and_readability_rows():
@@ -627,24 +660,24 @@ def test_owner_sees_why_a_parsed_page_was_hidden():
 def test_contacts_lines_ways_findings_and_counters():
     facts = contacts(short=("43-43-48",), markers=frozenset({"metrika", "top_mail"}))
     text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
-    assert ("Заявки и контакты — стоит поправить\n> связаться можно: звонком в одно касание\n"
-            "> по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться\n"
-            "> посещения считают Яндекс Метрика и Top.Mail.ru") in text
+    assert ("Заявки и контакты [стоит поправить·primary]\n┃ связаться можно: звонком в одно касание\n"
+            "┃ по кнопке звонка набирается 43-43-48 — с мобильного без кода города не дозвониться\n"
+            "┃ посещения считают Яндекс Метрика и Top.Mail.ru") in text
 
 
 def test_contacts_ways_in_order_and_missing_counter():
     facts = contacts(call_links=0, telegram=True, email=True, forms=1, markers=frozenset())
     text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
-    assert ("> связаться можно: в Telegram, по почте, через форму заявки\n"
-            "> счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли") in text
+    assert ("┃ связаться можно: в Telegram, по почте, через форму заявки\n"
+            "┃ счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли") in text
     assert "> Поставить счётчик посещений — станет видно, сколько людей заходит и откуда." in text
 
 
 def test_platform_statistics_line_and_phone_text_wording():
     facts = contacts(call_links=0, text_phones=1, tap_blocked=True, markers=frozenset({"tilda_stats"}))
     text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
-    assert "> телефон написан просто текстом — по нему нельзя нажать, чтобы позвонить" in text
-    assert "> посещения считает статистика Tilda" in text
+    assert "┃ телефон написан просто текстом — по нему нельзя нажать, чтобы позвонить" in text
+    assert "┃ посещения считает статистика Tilda" in text
 
 
 def test_owner_sees_how_the_page_was_read_and_what_was_found():
@@ -659,5 +692,5 @@ def test_owner_sees_how_the_page_was_read_and_what_was_found():
 def test_contacts_lines_in_english():
     facts = contacts(call_links=0, text_phones=1)
     text = rich_text(report("en", page(), security(), preview_facts=preview(contact_facts=facts)))
-    assert "Leads and contacts — worth fixing" in text
-    assert "> the phone is plain text — on Android it can't be tapped to call" in text
+    assert "Leads and contacts [worth fixing·primary]" in text
+    assert "┃ the phone is plain text — on Android it can't be tapped to call" in text

@@ -28,7 +28,7 @@ from bot.site_check.pagespeed import MEASURE_FAILED
 from bot.site_check.pipeline import CheckFailed, CheckResult, Pipeline
 from bot.site_check.probe import SERVICE_DOWN
 from bot.site_check.queue import CheckJob, CheckQueue
-from bot.site_check.report import AGAIN_CALLBACK, ReportRequest, build_report
+from bot.site_check.report import AGAIN_CALLBACK, GRADE_CALLBACK_PREFIX, ReportRequest, build_report
 from bot.site_check.url_input import SOCIAL, Rejection, Target, parse_input
 
 BUSY = "busy"
@@ -38,6 +38,8 @@ COMMAND_PREFIX = "/"
 SERVICE_NOTICES = {"quota": "notify_pagespeed_quota", "key": "notify_pagespeed_key"}
 OTHER_SERVICE_NOTICE = "notify_pagespeed_other"
 AUDITS_JOIN = ", "
+GRADE_HINTS = {"good": "grade_hint_good", "fix": "grade_hint_fix", "bad": "grade_hint_bad",
+              "unknown": "grade_hint_unknown"}
 RETRY_DELAY_SECONDS = 2  # 1–3 с — доставка итога повторяется один раз
 DELIVERY_ATTEMPTS = 2  # первая попытка плюс одна повторная
 
@@ -319,3 +321,14 @@ async def on_again(callback: CallbackQuery, users: Users, messenger: Messenger, 
         await callback.answer()
     user = await users.touch(callback.from_user.id, callback.from_user.language_code)
     await messenger.send(callback.message.chat.id, replies.again(texts, user.lang))
+
+
+@router.callback_query(F.data.startswith(GRADE_CALLBACK_PREFIX))
+async def on_grade_pressed(callback: CallbackQuery, users: Users, texts: Texts) -> None:
+    """Нажатие на пилюлю оценки — всплывающая подсказка на языке человека (задача 33c, ТЗ 7.1, 7.4)."""
+    grade = callback.data.removeprefix(GRADE_CALLBACK_PREFIX)
+    user = await users.touch(callback.from_user.id, callback.from_user.language_code)
+    hint = texts.get(user.lang, GRADE_HINTS[grade]) if grade in GRADE_HINTS else None
+    # Устаревшее нажатие («query is too old») не должно ронять обработчик (как в on_lang_chosen).
+    with contextlib.suppress(TelegramAPIError):
+        await callback.answer(hint)

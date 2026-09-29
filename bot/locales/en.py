@@ -49,6 +49,10 @@ TEXTS = {
     "grade_fix": "worth fixing",
     "grade_bad": "poor",
     "grade_unknown": "couldn't check",
+    "grade_hint_good": "Good — everything here is fine, nothing to fix.",
+    "grade_hint_fix": "Worth fixing — the site works, but there's room to improve. Not urgent.",
+    "grade_hint_bad": "Poor — this is getting in visitors' way right now. Fix it first.",
+    "grade_hint_unknown": "This part couldn't be checked — the reason is in the line below.",
     "summary_all_good": "The site is fine: it opens fast, works well on phones, and the connection is secure.",
     "summary_all_good_searchable": "The site is fine: it opens fast, works well on phones, the connection is "
                                    "secure, and search engines can see it.",

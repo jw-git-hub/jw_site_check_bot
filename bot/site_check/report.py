@@ -1,7 +1,8 @@
 """Отчёт → rich-сообщение (ТЗ, 7.1–7.3). Какие находки — решает verdict.py; здесь только слова и порядок блоков.
 
-Заголовок блока — оценка, под ним факты по одной строке, каждая начинается с «> » (решение владельца после живой
-приёмки, задача 23a). Блоки «не удалось проверить» с общей причиной собираются под один заголовок и идут после
+Вид «Б1» (решение владельца 29.09.2026, задача 33c): каждый блок — линия-разделитель, заголовок с именем и
+цветной пилюлей оценки, факты цитатой (blockquote), без маркера «> » — маркер остаётся только в разделе
+«Что поправить». Блоки «не удалось проверить» с общей причиной собираются под один заголовок и идут после
 оценённых блоков.
 """
 from dataclasses import dataclass
@@ -30,9 +31,13 @@ FIX_MARKER = "> "
 FACTS_JOIN = "\n"
 UNKNOWN_NAMES_JOIN = ", "
 AGAIN_CALLBACK = "again"
+GRADE_CALLBACK_PREFIX = "grade:"
+PILL_GAP = " "
 SENTENCE_GAP = " "
 ITEMS_JOIN = ", "
 PARTS_JOIN = "; "
+GRADE_STYLE: dict[Grade, str | None] = {Grade.GOOD: rich.STYLE_SUCCESS, Grade.FIX: rich.STYLE_PRIMARY,
+                                        Grade.BAD: rich.STYLE_DANGER, Grade.UNKNOWN: None}
 
 
 @dataclass(frozen=True)
@@ -75,8 +80,10 @@ def _report_keyboard(texts: Texts, lang: Lang, brand: Brand, domain: str) -> dic
                          rich.button_url(texts.get(lang, "channel_button"), brand.channel_url))
 
 
-def _section_title(texts: Texts, lang: Lang, verdict: BlockVerdict) -> str:
-    return f"{texts.get(lang, f'block_{verdict.block}')} — {texts.get(lang, f'grade_{verdict.grade}')}"
+def _section_heading(texts: Texts, lang: Lang, name: str, grade: Grade) -> dict:
+    """Имя блока и пилюля оценки рядом через пробел — заголовок принимает Telegram (задача 33c, ТЗ 7.1, 20)."""
+    pill = rich.pill(texts.get(lang, f"grade_{grade}"), GRADE_CALLBACK_PREFIX + grade, GRADE_STYLE[grade])
+    return rich.heading([name, PILL_GAP, pill], SECTION_SIZE)
 
 
 def summary_text(texts: Texts, lang: Lang, verdict: Verdict) -> str:
@@ -147,11 +154,13 @@ def _graded_section(texts: Texts, lang: Lang, request: ReportRequest, verdict: B
     facts = block_facts(texts, lang, request, verdict)
     if not facts:
         return []  # новому блоку при «хорошо» нечего утверждать — заголовок без строк не печатаем
-    return [rich.heading(_section_title(texts, lang, verdict), SECTION_SIZE), _facts_paragraph(facts)]
+    name = texts.get(lang, f"block_{verdict.block}")
+    return [rich.divider(), _section_heading(texts, lang, name, verdict.grade), _facts_blockquote(facts)]
 
 
-def _facts_paragraph(facts: list[str]) -> dict:
-    return rich.paragraph(FACTS_JOIN.join(FIX_MARKER + fact for fact in facts))
+def _facts_blockquote(facts: list[str]) -> dict:
+    """Факты цитатой одним абзацем — маркер «> » остаётся только в «Что поправить» (задача 33c, ТЗ 7.1)."""
+    return rich.blockquote([rich.paragraph(FACTS_JOIN.join(facts))])
 
 
 def _unknown_sections(texts: Texts, lang: Lang, verdict: Verdict) -> list[dict]:
@@ -171,9 +180,9 @@ def _group_by_reason(unknown: list[BlockVerdict]) -> list[list[BlockVerdict]]:
 
 
 def _unknown_section(texts: Texts, lang: Lang, group: list[BlockVerdict]) -> list[dict]:
-    title = f"{_unknown_group_title(texts, lang, group)} — {texts.get(lang, 'grade_unknown')}"
+    name = _unknown_group_title(texts, lang, group)
     fact = texts.get(lang, f"unknown_{group[0].unknown_reason}")
-    return [rich.heading(title, SECTION_SIZE), _facts_paragraph([fact])]
+    return [rich.divider(), _section_heading(texts, lang, name, Grade.UNKNOWN), _facts_blockquote([fact])]
 
 
 def _unknown_group_title(texts: Texts, lang: Lang, group: list[BlockVerdict]) -> str:
@@ -355,10 +364,11 @@ def _heavy_facts(texts: Texts, lang: Lang, images: ImageFacts) -> list[str]:
 
 
 def _fixes_section(texts: Texts, lang: Lang, verdict: Verdict) -> list[dict]:
+    """После последнего блока — своя линия-разделитель перед «Что поправить» (задача 33c, ТЗ 7.1)."""
     title = rich.heading(texts.get(lang, "fixes_title"), SECTION_SIZE)
     if not verdict.fixes:
-        return [title, rich.paragraph(texts.get(lang, "fixes_none"))]
-    return [title, *(rich.paragraph(FIX_MARKER + fix_text(texts, lang, fix)) for fix in verdict.fixes)]
+        return [rich.divider(), title, rich.paragraph(texts.get(lang, "fixes_none"))]
+    return [rich.divider(), title, *(rich.paragraph(FIX_MARKER + fix_text(texts, lang, fix)) for fix in verdict.fixes)]
 
 
 def fix_text(texts: Texts, lang: Lang, fix: FixItem) -> str:

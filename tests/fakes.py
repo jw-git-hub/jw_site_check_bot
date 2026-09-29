@@ -20,6 +20,8 @@ BLOCKED_TEXT = "Forbidden: bot was blocked by the user"
 # Строка полосы для сравнения с примерами ТЗ (7.3) — сама полоса картинкой, метку показываем текстом (задача 23b).
 BANNER_LINES = {"ru": "[полоса ~/проверка-сайта]", "en": "[banner ~/site-check]"}
 SCREENSHOT_LINE = "[снимок первого экрана]"
+# Цитата фактов (задача 33c) — «┃ » вместо настоящей отрисовки Telegram, у самого текста маркера нет.
+QUOTE_MARK = "┃ "
 
 
 def fake_telegram_token() -> str:
@@ -97,7 +99,16 @@ def _inline(value: Any) -> str:
         return value
     if isinstance(value, list):
         return "".join(_inline(item) for item in value)
+    if isinstance(value, dict) and value.get("type") == "button":
+        return _pill_text(value["button"])
     return _inline(value.get("text", ""))
+
+
+def _pill_text(button: dict[str, Any]) -> str:
+    """Пилюля оценки — «[текст]», со стилем — «[текст·style]» (задача 33c): нотация для примеров ТЗ и тестов,
+    настоящий цвет пилюли задаёт поле style, а не текст."""
+    style = button.get("style")
+    return f"[{button['text']}·{style}]" if style else f"[{button['text']}]"
 
 
 def _block_lines(blocks: list[dict[str, Any]]) -> list[str]:
@@ -110,11 +121,18 @@ def _block_lines(blocks: list[dict[str, Any]]) -> list[str]:
             lines.append(_banner_line(block))
         elif kind == "details":
             lines += [block["summary"], *_block_lines(block["blocks"])]
+        elif kind == "blockquote":
+            lines += _blockquote_lines(block["blocks"])
         elif kind == "table":
             lines += [" | ".join(_inline(cell["text"]) for cell in row) for row in block["cells"]]
         else:
             lines.append(_inline(block["text"]))
     return lines
+
+
+def _blockquote_lines(blocks: list[dict[str, Any]]) -> list[str]:
+    """Факты цитатой без маркера «> » (задача 33c) — «┃ » здесь только пометка для тестов и примеров ТЗ."""
+    return [QUOTE_MARK + line for text in _block_lines(blocks) for line in text.split("\n")]
 
 
 def _banner_line(block: dict[str, Any]) -> str:

@@ -12,6 +12,7 @@ from urllib.parse import quote
 
 Block = dict[str, Any]
 Inline = str | dict[str, Any]
+HeadingText = Inline | list[Inline]  # заголовок блока — имя и пилюля оценки рядом (задача 33c)
 
 BANNER_MEDIA_PREFIX = "banner:"
 SITE_TEXT = "jw-dev.pro"
@@ -23,6 +24,8 @@ TELEGRAM_LINK = "https://t.me/"
 CELL_ALIGN = "left"
 CELL_VALIGN = "top"
 STYLE_PRIMARY = "primary"
+STYLE_SUCCESS = "success"
+STYLE_DANGER = "danger"
 
 
 def code(text: str) -> dict[str, Any]:
@@ -37,12 +40,18 @@ def paragraph(*parts: Inline) -> Block:
     return {"type": "paragraph", "text": list(parts)}
 
 
-def heading(text: str, size: int) -> Block:
+def heading(text: HeadingText, size: int) -> Block:
     return {"type": "heading", "size": size, "text": text}
 
 
 def divider() -> Block:
     return {"type": "divider"}
+
+
+def blockquote(blocks: list[Block]) -> Block:
+    """Факты цитатой, без маркера «> » — у blockquote в Bot API нет цвета, цвет только у пилюли (задача 33c,
+    ТЗ 7.1)."""
+    return {"type": "blockquote", "blocks": blocks}
 
 
 def photo(media: Any) -> Block:
@@ -73,6 +82,12 @@ def _button(text: str, style: str | None, **action: str) -> dict[str, Any]:
     if style:
         button["style"] = style
     return button
+
+
+def pill(text: str, data: str, style: str | None = None) -> dict[str, Any]:
+    """Пилюля оценки внутри заголовка блока — rich-текст-кнопка, принята Telegram внутри heading (задача 33c,
+    ТЗ 7.1, 20)."""
+    return {"type": "button", "button": _button(text, style, callback_data=data)}
 
 
 def keyboard(*buttons: dict[str, Any]) -> dict[str, Any]:

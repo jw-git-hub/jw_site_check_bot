@@ -34,6 +34,23 @@ def test_table_marks_first_row_and_aligns_every_cell():
     assert all(cell["align"] == "left" and cell["valign"] == "top" for row in cells for cell in row)
 
 
+def test_blockquote_wraps_blocks_without_a_marker():
+    """Факты цитатой (задача 33c) — маркер «> » уходит в «Что поправить», здесь его нет."""
+    fact = rich.paragraph("главное на экране — через 1,4 секунды")
+    assert rich.blockquote([fact]) == {"type": "blockquote", "blocks": [fact]}
+
+
+def test_pill_is_a_button_rich_text_with_callback_data_and_style():
+    assert rich.pill("хорошо", "grade:good", rich.STYLE_SUCCESS) == {
+        "type": "button", "button": {"text": "хорошо", "callback_data": "grade:good", "style": "success"}}
+
+
+def test_pill_without_style_omits_the_field():
+    """«Не удалось проверить» — без style (задача 33c, ТЗ 7.1)."""
+    assert rich.pill("не удалось проверить", "grade:unknown") == {
+        "type": "button", "button": {"text": "не удалось проверить", "callback_data": "grade:unknown"}}
+
+
 def test_dm_link_encodes_prefilled_text():
     text = "Пришёл из проверки сайта: пример.рф"
     url = rich.dm_link("jw_dev_pro", text)

@@ -14,7 +14,8 @@ from bot.core.users import Users
 from bot.locales import TEXTS
 from bot.site_check import handlers, replies
 from bot.site_check.checks import ChecksRepo
-from bot.site_check.handlers import (CheckRunner, IncomingText, Intake, NOT_TEXT, QUEUE_FULL, entity_urls, on_again)
+from bot.site_check.handlers import (CheckRunner, IncomingText, Intake, NOT_TEXT, QUEUE_FULL, entity_urls, on_again,
+                                     on_grade_pressed)
 from bot.site_check.limits import LIMIT_GLOBAL, Limits
 from bot.site_check.notifier import Notifier
 from bot.site_check.pagespeed import (BLOCKED_STATUSES, ERROR_CODES, ERRORED_DOCUMENT, FIRST_SERVER_ERROR,
@@ -125,7 +126,7 @@ async def test_report_shows_the_preview_block_from_the_check_result(world):
                                                          judge(page(), security(), TODAY, shown), shown)
     await world.intake.handle_text(link("example.com"))
     await settle(world)
-    assert ("Ссылка в мессенджерах — хорошо\n> для превью заданы картинка и название «Кафе «Парижская»»"
+    assert ("Ссылка в мессенджерах [хорошо·success]\n┃ для превью заданы картинка и название «Кафе «Парижская»»"
             in rich_text(world.messenger.edited[-1][2]))
 
 
@@ -290,6 +291,28 @@ async def test_on_again_survives_a_stale_callback(db):
     callback = make_callback("again", user_id=USER).as_(bot)
     await on_again(callback, users=users, messenger=messenger, texts=TEXTS)
     assert "Пришлите ссылку на сайт" in messenger.last()
+
+
+async def test_grade_pill_answers_with_the_hint_in_the_users_language(db):
+    """Нажатие на пилюлю оценки — короткая подсказка (всплывающая, не alert), на языке человека (задача 33c)."""
+    users = Users(db, FakeClock())
+    await users.touch(USER, "ru")
+    await users.set_lang(USER, "en")
+    bot = fake_bot()
+    callback = make_callback("grade:bad", user_id=USER).as_(bot)
+    await on_grade_pressed(callback, users=users, texts=TEXTS)
+    answer = bot.session.calls[-1]
+    assert answer.__api_method__ == "answerCallbackQuery"
+    assert answer.text == TEXTS.get("en", "grade_hint_bad")
+    assert not answer.show_alert
+
+
+async def test_grade_pill_survives_a_stale_callback(db):
+    """Устаревшее нажатие («query is too old») не должно ронять обработчик пилюли (как у on_lang_chosen)."""
+    users = Users(db, FakeClock())
+    stale_answer = TelegramBadRequest(method=AnswerCallbackQuery(callback_query_id="1"), message="query is too old")
+    callback = make_callback("grade:good", user_id=USER).as_(fake_bot({"answerCallbackQuery": stale_answer}))
+    await on_grade_pressed(callback, users=users, texts=TEXTS)
 
 
 async def test_reservation_is_released_when_building_status_fails(world, monkeypatch):
