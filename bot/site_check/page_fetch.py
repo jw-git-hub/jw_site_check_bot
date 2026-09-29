@@ -225,11 +225,17 @@ class PreviewLoader:
             status = landing.answer.status if landing.answer else None
             return PagePreview(strip_params(landing.url), None, landing.failure, status, 0, elapsed_ms, None)
         answer = landing.answer
-        html = decode_page(answer.body, answer.charset)
-        head = parse_head(html)
+        html, head, contacts = await asyncio.to_thread(_parse_preview, answer.body, answer.charset, answer.complete)
         image = await check_image(self._send, head.preview_image) if head.preview_image else None
         return PagePreview(strip_params(landing.url), head, None, answer.status, len(answer.body), elapsed_ms, image,
-                           html, answer.complete, parse_contacts(html, answer.complete))
+                           html, answer.complete, contacts)
+
+
+def _parse_preview(body: bytes, charset: str | None, complete: bool) -> tuple[str, HeadTags, ContactFacts]:
+    """Decode + parse_head + parse_contacts вместе, вне цикла событий (задача 33, C1): CPU-ёмкий разбор даже
+    под защитой html_guard не должен держать опрос Telegram и вторую проверку."""
+    html = decode_page(body, charset)
+    return html, parse_head(html), parse_contacts(html, complete)
 
 
 class AiohttpSender:

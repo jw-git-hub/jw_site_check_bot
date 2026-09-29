@@ -9,6 +9,7 @@ from urllib.parse import unquote
 
 import phonenumbers
 
+from bot.site_check.html_guard import guard_html
 from bot.site_check.markers import find_markers
 
 DEFAULT_REGION = "RU"
@@ -50,6 +51,8 @@ class ContactFacts:
 
 
 def parse_contacts(html: str, complete: bool) -> ContactFacts:
+    html, whole = guard_html(html)  # задача 33, C1: гигантский тег не отдаём html.parser целиком
+    complete = complete and whole
     page = _PageParser()
     page.feed(html)
     page.close()

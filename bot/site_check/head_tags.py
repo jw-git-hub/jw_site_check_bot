@@ -3,14 +3,19 @@
 Мессенджер не выполняет JavaScript: превью строится по статическому HTML — ровно по тому, что читает этот модуль.
 Разбор кончается на </head> или <body>: <title> внутри svg в теле страницы — не заголовок.
 """
+import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
 
 from bot.site_check.audits import WHITESPACE
+from bot.site_check.html_guard import guard_html
 
 OG_IMAGE_KEYS = ("og:image", "og:image:url", "og:image:secure_url")
 TWITTER_IMAGE_KEYS = ("twitter:image", "twitter:image:src")
 CANONICAL_REL = "canonical"
+# Раньше этого места parse_head не смотрит вовсе (задача 33, C1) — нет смысла тащить в разбор и в защиту
+# от гигантских тегов (html_guard.guard_html) байты, которые всё равно не про <head>.
+HEAD_BOUNDARY = re.compile(r"</head\s*>|<body[\s>]", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -41,10 +46,17 @@ class HeadTags:
 
 
 def parse_head(html: str) -> HeadTags:
+    guarded, _ = guard_html(_head_slice(html))
     parser = _HeadParser()
-    parser.feed(html)
+    parser.feed(guarded)
     parser.close()
     return parser.tags()
+
+
+def _head_slice(html: str) -> str:
+    """Только до </head> или <body> (задача 33, C1) — тело страницы разбору head не нужно."""
+    match = HEAD_BOUNDARY.search(html)
+    return html[:match.end()] if match else html
 
 
 def _clean(value: str | None) -> str | None:
