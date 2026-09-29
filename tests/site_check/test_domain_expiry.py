@@ -151,6 +151,43 @@ async def test_gtld_goes_to_rdap_from_the_iana_list_and_is_cached(registry):
     assert calls == ["bootstrap", "jw-dev.pro"]
 
 
+class ManualClock:
+    def __init__(self):
+        self.now = 0.0
+
+    def __call__(self) -> float:
+        return self.now
+
+
+async def test_failed_bootstrap_list_is_retried_soon_not_after_a_day(monkeypatch):
+    """Список IANA не 200 — не кешировать пустой результат на сутки (решение контроллёра, задача 33, I1)."""
+    monkeypatch.setattr(domain_expiry, "FAILED_BOOTSTRAP_RETRY_SECONDS", 10)
+    calls = []
+
+    async def broken(request: web.Request) -> web.Response:
+        calls.append("bootstrap")
+        return web.Response(status=500)
+
+    app = web.Application()
+    app.router.add_get("/dns.json", broken)
+    server = TestServer(app)
+    await server.start_server()
+    session = aiohttp.ClientSession()
+    clock = ManualClock()
+    try:
+        client = RegistryClient(session, monotonic=clock, bootstrap_url=str(server.make_url("/dns.json")))
+        assert await client.paid_until("jw-dev.pro") is None
+        clock.now = 5
+        assert await client.paid_until("jw-dev.pro") is None
+        assert calls == ["bootstrap"]  # раньше FAILED_BOOTSTRAP_RETRY_SECONDS — без повторного запроса
+        clock.now = 11
+        assert await client.paid_until("jw-dev.pro") is None
+        assert calls == ["bootstrap", "bootstrap"]  # срок вышел — RDAP пробуем снова, не молчим сутки
+    finally:
+        await session.close()
+        await server.close()
+
+
 # --- ТЗ, С15: реестры — не через защиту адресов сайта, но без переходов и с фиксированным whois-хостом ---
 
 async def test_rdap_server_redirect_is_not_followed(tmp_path):

@@ -29,6 +29,7 @@ REQUEST_TIMEOUT_SECONDS = 4        # ТЗ, С15
 MAX_ANSWER_BYTES = 64 * 1024       # ТЗ, С15
 BOOTSTRAP_MAX_BYTES = 512 * 1024   # список IANA — около 70 КБ
 CACHE_SECONDS = 24 * 3600
+FAILED_BOOTSTRAP_RETRY_SECONDS = 10 * 60  # список IANA не получен — не молчать сутки (задача 33, I1)
 HTTP_OK = 200
 DATE_LENGTH = len("2027-07-30")
 PAID_TILL = re.compile(r"^paid-till:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
@@ -147,7 +148,10 @@ class RegistryClient:
         return DomainPaid(domain, found, RDAP) if found else None
 
     async def _rdap_servers(self) -> dict[str, str]:
-        fresh = self._servers_at is not None and self._monotonic() - self._servers_at < CACHE_SECONDS
+        """Пустой список — сорвавшийся список IANA, не «в мире нет RDAP»: кешируем его ненадолго, а не на сутки,
+        иначе один сбойный ответ выключает RDAP до следующего дня (задача 33, I1)."""
+        ttl = CACHE_SECONDS if self._servers else FAILED_BOOTSTRAP_RETRY_SECONDS
+        fresh = self._servers_at is not None and self._monotonic() - self._servers_at < ttl
         if not fresh:
             self._servers = bootstrap_servers(await self._get_json(self._bootstrap_url, BOOTSTRAP_MAX_BYTES))
             self._servers_at = self._monotonic()
