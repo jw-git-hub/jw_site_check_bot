@@ -32,8 +32,8 @@ class ReadabilityFacts:
     alt_missing_count: int
     alt_icons_skipped: int               # сколько мелких значков не в счёт
     lang: AuditState
-    unnamed_controls: int                # ссылки и кнопки без названия — только владельцу
-    unlabeled_fields: int                # поля без подписи — только владельцу
+    unnamed_controls: int                # ссылки и кнопки без названия — только в замерах
+    unlabeled_fields: int                # поля без подписи — только в замерах
 
 
 def parse_readability(audits: dict[str, Any]) -> ReadabilityFacts:

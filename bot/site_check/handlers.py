@@ -243,7 +243,7 @@ class CheckRunner:
     async def _finish_done(self, job: CheckJob, result: CheckResult) -> None:
         comparison = await self._comparison(job, result)
         request = ReportRequest(job.target.display, job.target.display_host, result.verdict, result.page,
-                                result.security, job.is_admin, self._clock.now(), result.preview, comparison)
+                                result.security, self._clock.now(), result.preview, comparison)
         built = self._safe_message(lambda: build_report(self._texts, job.lang, self._brand, request))
         if built is None:
             # Сбой сборки отчёта (ТЗ Л9) — наша сторона, а не сайта, замер не в счёт.

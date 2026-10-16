@@ -276,7 +276,7 @@ TEXTS = {
     "discuss_button": "💬 Talk to the developer",
     "another_button": "🔍 Check another site",
     "discuss_prefill": "From the site check: {domain}",
-    "post_numbers_title": "Detailed measurements — only you see this",
+    "post_numbers_title": "Detailed measurements",
     "post_what": "What",
     "post_value": "Value",
     "post_lcp": "Main content (LCP)",

@@ -47,7 +47,6 @@ class ReportRequest:
     verdict: Verdict
     page: PageFacts | None
     security: SecurityFacts
-    is_admin: bool
     measured_at: datetime
     preview: PagePreview | None = None  # своя загрузка страницы (ТЗ, 5.6–5.7); None — не было или не удалась
     comparison: Comparison | None = None  # заметные изменения с прошлой проверки (ТЗ, 5.12, версия 1.2)
@@ -60,7 +59,7 @@ def build_report(texts: Texts, lang: Lang, brand: Brand, request: ReportRequest)
     blocks += _graded_sections(texts, lang, request)
     blocks += _unknown_sections(texts, lang, request.verdict)
     blocks += _fixes_section(texts, lang, request.verdict)
-    if request.is_admin and request.page:
+    if request.page:
         blocks.append(post_numbers(texts, lang, request.page, request.security, request.measured_at, request.preview))
     message = rich.message([*blocks, rich.divider(), rich.footer()])
     return message, _report_keyboard(texts, lang, brand, request.domain)

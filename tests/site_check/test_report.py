@@ -222,23 +222,28 @@ def example_security():
     return security(days_left=170, redirects=(RedirectState.NO_REDIRECT,))
 
 
-def build(lang, request_page, request_security, display="example.com", is_admin=False,
-          preview_facts=None) -> tuple[dict, dict]:
+def build(lang, request_page, request_security, display="example.com", preview_facts=None) -> tuple[dict, dict]:
     verdict = judge(request_page, request_security, TODAY, preview_facts)
-    request = ReportRequest(display, display.split("/")[0], verdict, request_page, request_security, is_admin,
+    request = ReportRequest(display, display.split("/")[0], verdict, request_page, request_security,
                             MEASURED_AT, preview_facts)
     return build_report(TEXTS, lang, BRAND, request)
 
 
-def report(lang, request_page, request_security, display="example.com", is_admin=False, preview_facts=None) -> dict:
-    return build(lang, request_page, request_security, display, is_admin, preview_facts)[0]
+def body_text(message: dict) -> str:
+    """Текст отчёта без свёрнутого блока замеров — для сверки с примерами ТЗ."""
+    blocks = [block for block in message["blocks"] if block["type"] != "details"]
+    return rich_text({**message, "blocks": blocks})
+
+
+def report(lang, request_page, request_security, display="example.com", preview_facts=None) -> dict:
+    return build(lang, request_page, request_security, display, preview_facts)[0]
 
 
 def test_comparison_paragraph_goes_right_after_the_summary():
     found = Comparison(date(2026, 9, 12), (4200, 2100), (12 * MB, 3_250_586),
                        ((Block.SPEED, Grade.BAD, Grade.GOOD),))
     verdict = judge(page(), security(), TODAY)
-    request = ReportRequest("site.test", "site.test", verdict, page(), security(), False, MEASURED_AT, None, found)
+    request = ReportRequest("site.test", "site.test", verdict, page(), security(), MEASURED_AT, None, found)
     lines = rich_text(build_report(TEXTS, "ru", BRAND, request)[0]).splitlines()
     assert lines[3] == ("С прошлой проверки (12 сентября 2026): главное на экране — 4,2 секунды → 2,1 секунды, "
                         "страница — 12 МБ → 3,1 МБ; скорость — плохо → хорошо.")
@@ -255,7 +260,7 @@ def jw_dev_pro_request_parts():
 
 def test_jw_dev_pro_report_matches_spec():
     facts, security_facts, shown = jw_dev_pro_request_parts()
-    text = rich_text(report("ru", facts, security_facts, display="jw-dev.pro", preview_facts=shown))
+    text = body_text(report("ru", facts, security_facts, display="jw-dev.pro", preview_facts=shown))
     assert text == JW_DEV_PRO_RU
 
 
@@ -272,7 +277,7 @@ def test_avtospasatel_report_matches_spec():
                          og_image="https://avtospasatel43.ru/images/500x500-blue-logo.jpg"),
                     contact_facts=contacts(short=("43-43-48",), markers=frozenset({"metrika", "top_mail"})))
     paid = security(domain=DomainPaid("avtospasatel43.ru", date(2027, 6, 16), "whois"))
-    text = rich_text(report("ru", facts, paid, display="avtospasatel43.ru", preview_facts=shown))
+    text = body_text(report("ru", facts, paid, display="avtospasatel43.ru", preview_facts=shown))
     assert text == AVTOSPASATEL_RU
 
 
@@ -318,11 +323,11 @@ def test_preview_lines_in_english():
 
 
 def test_example_report_matches_spec_in_russian():
-    assert rich_text(report("ru", example_page(), example_security())) == EXAMPLE_RU
+    assert body_text(report("ru", example_page(), example_security())) == EXAMPLE_RU
 
 
 def test_example_report_matches_spec_in_english():
-    assert rich_text(report("en", example_page(), example_security())) == EXAMPLE_EN
+    assert body_text(report("en", example_page(), example_security())) == EXAMPLE_EN
 
 
 def test_picture_lines_one_and_many():
@@ -370,12 +375,24 @@ def test_unknown_group_heading_pill_has_no_style():
     assert pill == {"type": "button", "button": {"text": "не удалось проверить", "callback_data": "grade:unknown"}}
 
 
-def test_owner_gets_numbers_for_post_and_others_do_not():
-    owner = rich_text(report("ru", page(), security(), is_admin=True))
-    assert "Подробные замеры — видите только вы" in owner
-    assert "Главное на экране (LCP) | 1,4 секунды" in owner
-    assert "Замер (UTC+7) | 25.09.2026 12:30" in owner
-    assert "Подробные замеры — видите только вы" not in rich_text(report("ru", page(), security()))
+def test_everyone_gets_detailed_measurements_collapsed():
+    message = report("ru", page(), security())
+    blocks = [block for block in message["blocks"] if block["type"] == "details"]
+    assert [block["summary"] for block in blocks] == ["Подробные замеры"]
+    text = rich_text(message)
+    assert "видите только вы" not in text
+    assert "Главное на экране (LCP) | 1,4 секунды" in text
+    assert "Замер (UTC+7) | 25.09.2026 12:30" in text
+
+
+def test_detailed_measurements_title_in_english():
+    blocks = [block for block in report("en", page(), security())["blocks"] if block["type"] == "details"]
+    assert [block["summary"] for block in blocks] == ["Detailed measurements"]
+
+
+def test_no_page_no_detailed_measurements():
+    message = report("ru", None, security())
+    assert not [block for block in message["blocks"] if block["type"] == "details"]
 
 
 def test_screenshot_goes_right_under_the_domain():
@@ -389,10 +406,9 @@ def test_no_screenshot_no_block():
     assert "[снимок первого экрана]" not in rich_text(report("ru", page(), security()))
 
 
-def test_owner_sees_the_screenshot_size():
-    owner = rich_text(report("ru", page(screenshot=TINY_JPEG), security(), is_admin=True))
-    assert "Снимок первого экрана | 1 КБ" in owner
-    assert "Снимок первого экрана | нет в ответе" in rich_text(report("ru", page(), security(), is_admin=True))
+def test_measurements_show_the_screenshot_size():
+    assert "Снимок первого экрана | 1 КБ" in rich_text(report("ru", page(screenshot=TINY_JPEG), security()))
+    assert "Снимок первого экрана | нет в ответе" in rich_text(report("ru", page(), security()))
 
 
 def test_unknown_security_is_named_in_summary():
@@ -427,7 +443,7 @@ def test_domain_ending_soon_is_worth_fixing_with_its_date():
 def test_missing_server_response_time_uses_plain_texts():
     """server_ms может быть None (лидирует document-latency-insight, а server-response-time пропал)."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=None))
-    text = rich_text(report("ru", facts, security()))
+    text = body_text(report("ru", facts, security()))
     assert "┃ больше всего времени уходит на ответ сервера" in text
     assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
     assert "0 секунд" not in text
@@ -437,7 +453,7 @@ def test_fast_server_response_uses_plain_texts_even_when_named_the_cause():
     """server_savings_ms (document-latency-insight) включает переадресации и сжатие, поэтому причина «сервер»
     может выбраться и когда сам server_ms маленький — тогда тоже без выдуманных секунд."""
     facts = page(speed(lcp=7000.0, server=2000.0, server_ms=40.0))
-    text = rich_text(report("ru", facts, security()))
+    text = body_text(report("ru", facts, security()))
     assert "┃ больше всего времени уходит на ответ сервера" in text
     assert "> Разобраться с сервером или хостингом — он долго думает, прежде чем отдать страницу." in text
     assert "0 секунд" not in text
@@ -449,7 +465,7 @@ def test_expired_certificate_with_a_future_leaf_date_uses_no_date_text():
     2026», хотя эта дата ещё не наступила."""
     facts = SecurityFacts((TlsFacts("site.test", TlsOutcome.EXPIRED, cert(days_left=30)),),
                           (RedirectState.REDIRECTS,), ())
-    text = rich_text(report("ru", page(), facts))
+    text = body_text(report("ru", page(), facts))
     assert "┃ сертификат истёк\n┃ браузер показывает предупреждение во весь экран" in text
     assert "октября" not in text
 
