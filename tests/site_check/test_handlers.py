@@ -26,7 +26,7 @@ from bot.site_check.queue import CheckQueue
 from bot.site_check.url_input import BAD_ADDRESS, NOT_A_LINK
 from bot.site_check.verdict import judge
 from tests.builders import TODAY, head, page, preview, security, speed
-from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, fake_bot, make_callback, rich_text
+from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, fake_bot, has_banner, make_callback, rich_text
 
 USER = 77
 FIRST_MESSAGE_ID = 101  # FakeMessenger нумерует с 101
@@ -97,6 +97,8 @@ async def test_link_gets_status_then_report_in_the_same_message(world):
     await world.intake.handle_text(link("example.com"))
     await settle(world)
     assert world.messenger.sent[0][1]["blocks"][1]["text"] == ["Проверяю example.com…"]
+    assert has_banner(world.messenger.sent[0][1])
+    assert has_banner(world.messenger.edited[-1][2])  # отчёт — правка «Проверяю…», шапка остаётся
     assert world.messenger.sent[0][2] is None  # у «Проверяю…» клавиатуры нет
     chat_id, message_id, report, keyboard = world.messenger.edited[-1]
     assert (chat_id, message_id) == (USER, FIRST_MESSAGE_ID)
@@ -133,12 +135,14 @@ async def test_report_shows_the_preview_block_from_the_check_result(world):
 async def test_not_a_link_is_explained_and_recorded_without_charge(world):
     await world.intake.handle_text(link("привет"))
     assert "Это не похоже на адрес сайта" in world.messenger.last()
+    assert not has_banner(world.messenger.history[-1])
     assert await rows(world.db, "SELECT status, error_code, charged FROM checks") == [("failed", "not_a_link", 0)]
 
 
 async def test_social_page_offers_discussion(world):
     await world.intake.handle_text(link("https://instagram.com/shop"))
     assert "Это страница на Instagram" in world.messenger.last()
+    assert not has_banner(world.messenger.history[-1])
 
 
 async def test_second_link_during_check_is_refused(world):
@@ -146,6 +150,7 @@ async def test_second_link_during_check_is_refused(world):
     await world.intake.handle_text(link("example.com"))
     await world.intake.handle_text(link("example.org"))
     assert "Сначала закончу с example.com" in world.messenger.last()
+    assert not has_banner(world.messenger.history[-1])
     world.pipeline.gate.set()
     await settle(world)
     assert world.pipeline.calls == ["example.com"]
@@ -159,6 +164,7 @@ async def test_report_is_sent_anew_when_status_message_is_gone(world):
     await settle(world)
     chat_id, message, keyboard = world.messenger.sent[-1]
     assert "Сайт в порядке" in rich_text(message)
+    assert has_banner(message)
     # Отчёт, ушедший новым сообщением (правка не прошла), — тоже с клавиатурой (задача 23a).
     assert keyboard["inline_keyboard"][0][0]["text"] == "💬 Обсудить с разработчиком"
 
@@ -180,6 +186,7 @@ async def test_site_failure_is_explained_and_charged(world):
     await world.intake.handle_text(link("example.com"))
     await settle(world)
     assert "По этому адресу страницы нет" in world.messenger.last()
+    assert has_banner(world.messenger.edited[-1][2])  # итог-отказ правит «Проверяю…» — шапка остаётся
     assert await rows(world.db, "SELECT error_code, charged FROM checks") == [("not_found", 1)]
     # Отказ без клавиатуры правит статус — тоже без reply_markup=None, иначе Telegram оставил бы висеть
     # клавиатуру, будь она у прежнего сообщения (задача 23a, правка 1).
@@ -213,6 +220,7 @@ async def test_user_limit_is_explained(world, settings):
         await settle(world)
     await world.intake.handle_text(link("example.com"))
     assert "Лимит — 10 проверок в сутки" in world.messenger.last()
+    assert not has_banner(world.messenger.history[-1])
 
 
 def test_entity_urls_take_links_and_text_links():
@@ -366,6 +374,25 @@ async def test_queue_overflow_with_delivery_failure_releases_reservation_once(wo
 
     world.queue.reserve(overflow_user, "новая бронь")  # свежая бронь не пострадала от лишнего release
     assert world.queue.busy_display(overflow_user) == "новая бронь"
+
+
+async def test_queue_full_refusal_before_the_check_is_a_new_message_without_banner(world, monkeypatch):
+    monkeypatch.setattr(world.queue, "is_full", lambda: True)
+    await world.intake.handle_text(link("example.com"))
+    assert not world.messenger.edited
+    assert "Сейчас много проверок" in world.messenger.last()
+    assert not has_banner(world.messenger.history[-1])
+
+
+async def test_queue_overflow_after_the_status_edits_it_and_keeps_the_banner(world, monkeypatch):
+    def submit_finds_it_full(job):
+        raise asyncio.QueueFull()
+
+    monkeypatch.setattr(world.queue, "is_full", lambda: False)
+    monkeypatch.setattr(world.queue, "submit", submit_finds_it_full)
+    await world.intake.handle_text(link("example.net"))
+    assert has_banner(world.messenger.sent[0][1])
+    assert has_banner(world.messenger.edited[-1][2])
 
 
 # Список кодов исходов — из констант самих модулей, не переписан строками заново.

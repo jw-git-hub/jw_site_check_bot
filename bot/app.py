@@ -151,7 +151,7 @@ def throttle_notice(language_code: str | None) -> str:
 
 
 def _throttle_notice_sender(messenger: Messenger) -> Callable[[int, str | None], Awaitable[None]]:
-    """send_notice для ThrottleMiddleware: то же rich-сообщение с шапкой (ТЗ, 7.1), доставка best-effort —
+    """send_notice для ThrottleMiddleware: rich-сообщение без шапки (ТЗ, 7.1), доставка best-effort —
     предупреждение о частоте не должно ронять обработку из-за DeliveryFailed."""
     async def send(chat_id: int, language_code: str | None) -> None:
         lang = detect_lang(language_code)
@@ -177,7 +177,7 @@ def closed_answer(users: Users, messenger: Messenger) -> Callable[[TelegramObjec
 async def close_interrupted(repo: ChecksRepo, messenger: Messenger) -> None:
     """После перезапуска незаконченные проверки не повторяются: одна уронила бота — повтор уронит снова (ТЗ, Л5)."""
     for item in await best_effort(repo.interrupt_unfinished(), "незаконченные проверки", []):
-        message = replies.failure(TEXTS, item.lang, INTERRUPTED)
+        message = replies.check_failure(TEXTS, item.lang, INTERRUPTED)
         with contextlib.suppress(DeliveryFailed):
             await edit_or_send(messenger, item.chat_id, item.message_id, message)
 

@@ -1,7 +1,7 @@
 from bot.core.commands import simple_message
 from bot.locales import TEXTS
 from bot.site_check.notifier import DAY, ONCE, OWNER_LANG, Notifier
-from tests.fakes import ADMIN_ID, BANNER_LINES, FakeClock, FakeMessenger, rich_text
+from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, has_banner, rich_text
 
 
 async def test_first_notification_reuses_the_shared_service_message():
@@ -46,6 +46,7 @@ async def test_delivery_failure_is_logged_and_swallowed():
     await notifier.notify("pagespeed", "notify_pagespeed_key", DAY)  # не должно бросить исключение
 
 
-def test_notification_message_has_the_brand_header():
+def test_notification_message_has_no_banner():
     message = simple_message(TEXTS, OWNER_LANG, TEXTS.get("ru", "notify_pagespeed_key"))
-    assert rich_text(message).startswith(BANNER_LINES["ru"] + "\n")
+    assert not has_banner(message)
+    assert rich_text(message) == TEXTS.get("ru", "notify_pagespeed_key")

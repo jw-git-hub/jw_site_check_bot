@@ -14,7 +14,7 @@ from bot.site_check.pipeline import CheckResult
 from bot.site_check.url_input import parse_input
 from bot.site_check.verdict import judge
 from tests.builders import TODAY, page, security
-from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, make_message
+from tests.fakes import ADMIN_ID, FakeClock, FakeMessenger, has_banner, make_message
 
 
 async def fill(db) -> ChecksRepo:
@@ -38,6 +38,7 @@ async def test_stats_by_label_for_week_and_month(db):
     assert "fb | 1 | 0 | 1 | 1" in text
     assert "Отказы: not_a_link — 1." in text
     assert "Нажатия «Обсудить» бот не видит" in text
+    assert not has_banner(messenger.history[-1])
 
 
 async def test_site_shows_where_the_person_came_from_and_what_they_saw(db):
@@ -68,6 +69,7 @@ async def test_site_shows_lcp_seconds_and_page_weight(db):
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
                   repo=await fill(db), messenger=messenger, texts=TEXTS)
     assert "1,4 секунды · 260 КБ" in messenger.last()
+    assert not has_banner(messenger.history[-1])
 
 
 # Нет цифры в metrics (проверка упала до замера) — прочерк, без падения.
@@ -81,6 +83,7 @@ async def test_site_shows_a_dash_when_key_numbers_are_missing(db):
     await on_site(make_message("/site site.org", user_id=ADMIN_ID), CommandObject(command="site", args="site.org"),
                   repo=repo, messenger=messenger, texts=TEXTS)
     assert "— · —" in messenger.last()
+    assert not has_banner(messenger.history[-1])  # и пустой /site без проверок — без шапки
 
 
 # Служебное сообщение «пришлите домен» собрано через simple_message, не своей копией.
@@ -89,6 +92,7 @@ async def test_site_usage_message_is_built_with_simple_message(db):
     await on_site(make_message("/site", user_id=ADMIN_ID), CommandObject(command="site", args=None),
                   repo=await fill(db), messenger=messenger, texts=TEXTS)
     assert messenger.sent[-1][1] == simple_message(TEXTS, OWNER_LANG, TEXTS.get(OWNER_LANG, "site_usage"))
+    assert not has_banner(messenger.sent[-1][1])
 
 
 # usage-сообщение собрано вызовом simple_message, SECTION_SIZE и ITEMS_JOIN — из bot.site_check.report, не

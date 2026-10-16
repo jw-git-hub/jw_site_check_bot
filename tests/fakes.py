@@ -95,6 +95,11 @@ def rich_text(rich_message: dict[str, Any]) -> str:
     return "\n".join(_block_lines(rich_message["blocks"]))
 
 
+def has_banner(rich_message: dict[str, Any]) -> bool:
+    """Есть ли у сообщения шапка-анимация (решение владельца 16.10.2026: только у проверки и приветствия)."""
+    return rich_message["blocks"][0]["type"] == "animation"
+
+
 def _inline(value: Any) -> str:
     if isinstance(value, str):
         return value

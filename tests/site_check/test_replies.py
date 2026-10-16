@@ -3,7 +3,7 @@ import pytest
 from bot.brand import BRAND
 from bot.locales import TEXTS
 from bot.site_check import replies
-from tests.fakes import BANNER_LINES, rich_text
+from tests.fakes import BANNER_LINES, has_banner, rich_text
 
 
 def test_checking_and_queued():
@@ -20,7 +20,7 @@ def test_queued_with_one_site_ahead_uses_singular_verb():
 @pytest.mark.parametrize("lang", ["ru", "en"])
 @pytest.mark.parametrize("code", replies.FAILURE_CODES)
 def test_every_failure_has_text_in_both_languages(lang, code):
-    text = rich_text(replies.failure(TEXTS, lang, code, status=500, site="example.com"))
+    text = rich_text(replies.check_failure(TEXTS, lang, code, status=500, site="example.com"))
     assert text.startswith(BANNER_LINES[lang] + "\n")
     assert "{" not in text
 
@@ -45,3 +45,22 @@ def test_social_page_offers_to_talk_about_own_site():
 
 def test_busy_names_the_site():
     assert "Сначала закончу с example.com" in rich_text(replies.busy(TEXTS, "ru", "example.com"))
+
+
+def test_status_of_a_check_and_its_failure_carry_the_banner():
+    """Правка сообщения с анимацией шапку не убирает — всё, во что превращается «Проверяю…», остаётся с шапкой."""
+    assert has_banner(replies.checking(TEXTS, "ru", "example.com"))
+    assert has_banner(replies.queued(TEXTS, "ru", 2, 1))
+    assert has_banner(replies.check_failure(TEXTS, "ru", "timeout"))
+
+
+@pytest.mark.parametrize("code", replies.FAILURE_CODES)
+def test_refusal_sent_as_a_new_message_has_no_banner(code):
+    assert not has_banner(replies.failure(TEXTS, "ru", code, status=500, site="example.com"))
+
+
+def test_other_replies_have_no_banner():
+    assert not has_banner(replies.again(TEXTS, "ru"))
+    assert not has_banner(replies.busy(TEXTS, "ru", "example.com"))
+    assert not has_banner(replies.limit_user(TEXTS, "ru", 10, 3))
+    assert not has_banner(replies.social(TEXTS, "ru", BRAND, "Instagram")[0])

@@ -7,8 +7,8 @@ from bot.core.commands import on_about, on_lang, on_lang_chosen, on_order, on_st
 from bot.core.messenger import EMPTY_KEYBOARD
 from bot.core.users import Users
 from bot.locales import TEXTS
-from tests.fakes import (ADMIN_ID, BANNER_LINES, FakeClock, FakeMessenger, fake_bot, make_callback, make_message,
-                         rich_text)
+from tests.fakes import (ADMIN_ID, BANNER_LINES, FakeClock, FakeMessenger, fake_bot, has_banner, make_callback,
+                         make_message, rich_text)
 
 
 def start(args: str | None) -> CommandObject:
@@ -21,6 +21,7 @@ async def test_start_welcomes_owner_and_records_label(db, settings):
                    messenger=messenger, texts=TEXTS, settings=settings)
     assert "Пришлите ссылку на сайт" in messenger.last()
     assert BANNER_LINES["ru"] in messenger.last()
+    assert has_banner(messenger.history[-1])
     assert (await users.touch(ADMIN_ID, "ru")).last_source == "channel"
 
 
@@ -29,6 +30,7 @@ async def test_start_before_launch_answers_soon_to_others(db, settings):
     await on_start(make_message("/start fb", user_id=500), start("fb"), users=Users(db, FakeClock()),
                    messenger=messenger, texts=TEXTS, settings=settings)
     assert "Бот скоро откроется" in messenger.last()
+    assert has_banner(messenger.history[-1])  # ответ на /start — тоже приветствие, с шапкой
 
 
 async def test_lang_choice_and_callback_switch_language(db):
@@ -36,9 +38,11 @@ async def test_lang_choice_and_callback_switch_language(db):
     await on_lang(make_message("/lang", user_id=500), users=users, messenger=messenger, texts=TEXTS)
     keyboard = messenger.sent[-1][2]
     assert [row[0]["text"] for row in keyboard["inline_keyboard"]] == ["🇷🇺 Русский", "🇬🇧 English"]
+    assert not has_banner(messenger.sent[-1][1])
     callback = make_callback("lang:en", user_id=500).as_(fake_bot())
     await on_lang_chosen(callback, users=users, messenger=messenger, texts=TEXTS)
     assert "Done: I'll write in English." in messenger.last()
+    assert not has_banner(messenger.history[-1])
     assert (await users.touch(500, "ru")).lang == "en"
     # Правка /lang в подтверждение должна убрать кнопки «Русский»/«English», а не оставить их висеть под
     # новым текстом (Telegram сам старую клавиатуру не убирает — задача 23a, правка 1).
@@ -60,6 +64,7 @@ async def test_about_has_buttons_and_footer(db):
     chat_id, message, keyboard = messenger.sent[-1]
     assert [row[0]["text"] for row in keyboard["inline_keyboard"]] == ["🌐 Сайт jw-dev.pro", "📣 Канал"]
     assert rich_text(message).endswith("────\njw-dev.pro · @jw_dev_pro")
+    assert not has_banner(message)
 
 
 async def test_order_button_opens_dm_with_prefilled_text(db):
@@ -68,6 +73,7 @@ async def test_order_button_opens_dm_with_prefilled_text(db):
     button = messenger.sent[-1][2]["inline_keyboard"][0][0]
     assert button["url"].startswith("https://t.me/jw_dev_pro?text=")
     assert button["style"] == "primary"
+    assert not has_banner(messenger.sent[-1][1])
 
 
 async def test_setup_commands_touches_only_command_menu():

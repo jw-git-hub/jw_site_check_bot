@@ -36,18 +36,25 @@ router = Router(name="core_commands")
 
 
 def simple_message(texts: Texts, lang: Lang, text: str) -> dict:
+    """Обычное сообщение — без шапки: шапка-анимация только у проверки и приветствия (решение владельца
+    16.10.2026)."""
+    return rich.message([rich.paragraph(text)])
+
+
+def banner_message(texts: Texts, lang: Lang, text: str) -> dict:
+    """Сообщение с шапкой-анимацией — приветствие и сообщения проверки (правка сообщения с анимацией шапку
+    не убирает, поэтому всё, во что превращается «Проверяю…», тоже с шапкой)."""
     return rich.message([rich.header(lang), rich.paragraph(text)])
 
 
 def lang_choice(texts: Texts, lang: Lang) -> tuple[dict, dict]:
     buttons = [rich.button_callback(name, LANG_CALLBACK_PREFIX + code) for code, name in LANGUAGES.items()]
-    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "lang_choose"))])
+    message = simple_message(texts, lang, texts.get(lang, "lang_choose"))
     return message, rich.keyboard(*buttons)
 
 
 def about_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
-    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "about")),
-                            rich.divider(), rich.footer()])
+    message = rich.message([rich.paragraph(texts.get(lang, "about")), rich.divider(), rich.footer()])
     keyboard = rich.keyboard(rich.button_url(texts.get(lang, "about_site_button"), brand.site_url),
                              rich.button_url(texts.get(lang, "channel_button"), brand.channel_url))
     return message, keyboard
@@ -55,8 +62,7 @@ def about_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
 
 def order_message(brand: Brand, texts: Texts, lang: Lang) -> tuple[dict, dict]:
     link = rich.dm_link(brand.dm_username, texts.get(lang, "order_prefill"))
-    message = rich.message([rich.header(lang), rich.paragraph(texts.get(lang, "order")),
-                            rich.divider(), rich.footer()])
+    message = rich.message([rich.paragraph(texts.get(lang, "order")), rich.divider(), rich.footer()])
     keyboard = rich.keyboard(rich.button_url(texts.get(lang, "order_button"), link, rich.STYLE_PRIMARY))
     return message, keyboard
 
@@ -66,7 +72,7 @@ async def on_start(message: Message, command: CommandObject, users: Users, messe
                    settings: CoreSettings) -> None:
     user = await users.touch(message.from_user.id, message.from_user.language_code, parse_label(command.args))
     key = "welcome" if is_open_for(settings, user.user_id) else "not_open_yet"
-    await messenger.send(message.chat.id, simple_message(texts, user.lang, texts.get(user.lang, key)))
+    await messenger.send(message.chat.id, banner_message(texts, user.lang, texts.get(user.lang, key)))
 
 
 @router.message(Command("lang"))

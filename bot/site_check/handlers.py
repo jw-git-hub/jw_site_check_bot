@@ -172,7 +172,7 @@ class Intake:
         effort — release места делает единственный вызывающий, `_enqueue`."""
         if job.check_id:
             await best_effort(self._repo.finish_failed(job.check_id, QUEUE_FULL, charged=False), "очередь полна", None)
-        message = replies.failure(self._texts, job.lang, QUEUE_FULL)
+        message = replies.check_failure(self._texts, job.lang, QUEUE_FULL)
         try:
             await edit_or_send(self._messenger, job.chat_id, job.message_id, message)
         except DeliveryFailed as error:
@@ -267,10 +267,11 @@ class CheckRunner:
         return compare(previous, result) if previous else None
 
     async def _finish_failed(self, job: CheckJob, failure: CheckFailed) -> None:
-        message = self._safe_message(lambda: replies.failure(self._texts, job.lang, failure.code,
-                                                              status=failure.page_status, site=job.target.display))
+        message = self._safe_message(lambda: replies.check_failure(self._texts, job.lang, failure.code,
+                                                                    status=failure.page_status,
+                                                                    site=job.target.display))
         if message is None:
-            message = replies.failure(self._texts, job.lang, MEASURE_FAILED)
+            message = replies.check_failure(self._texts, job.lang, MEASURE_FAILED)
         await self._deliver(job, message)
         if failure.charged:
             self._limits.remember_charge(job.user_id)

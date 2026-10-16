@@ -15,8 +15,8 @@ from bot.app import (_error_recipient, _throttle_notice_sender, build_dispatcher
 from bot.core.users import Users
 from bot.site_check.checks import QUEUED, ChecksRepo, NewCheck
 from bot.site_check.url_input import parse_input
-from tests.fakes import (FAKE_NOW, FakeClock, FakeMessenger, fake_bot, fake_google_key, make_callback, make_message,
-                         make_user)
+from tests.fakes import (FAKE_NOW, FakeClock, FakeMessenger, fake_bot, fake_google_key, has_banner, make_callback,
+                         make_message, make_user)
 
 ROOT = Path(__file__).resolve().parents[1]
 STRANGER = 500
@@ -56,6 +56,7 @@ async def test_unfinished_checks_are_closed_on_start(db):
     await close_interrupted(repo, messenger)
     assert messenger.edited[0][:2] == (77, 9)
     assert "Проверка прервалась" in messenger.last()
+    assert has_banner(messenger.history[-1])  # правка «Проверяю…» шапку не убирает
 
 
 def test_throttle_notice_is_a_rich_text_in_the_telegram_language():
@@ -72,6 +73,7 @@ async def test_throttle_notice_sender_sends_rich_message_with_header():
     await send_notice(42, "ru")
     assert messenger.sent == [(42, messenger.sent[0][1], None)]
     assert "Слишком часто" in messenger.last()
+    assert not has_banner(messenger.history[-1])
 
 
 async def test_throttle_notice_sender_suppresses_delivery_failure():
@@ -88,6 +90,7 @@ async def test_closed_bot_answers_soon_to_strangers(db):
     answer = closed_answer(Users(db, FakeClock()), messenger)
     await answer(make_message("example.com", user_id=STRANGER))
     assert "Бот скоро откроется" in messenger.last()
+    assert not has_banner(messenger.history[-1])
     bot = fake_bot()
     await answer(make_callback("again", user_id=STRANGER).as_(bot))
     assert [call.__api_method__ for call in bot.session.calls] == ["answerCallbackQuery"]
@@ -117,6 +120,7 @@ async def test_unhandled_handler_error_gets_a_short_reply_instead_of_silence():
     message = make_message("example.com", user_id=STRANGER, language_code="ru")
     await dispatcher.feed_update(fake_bot(), Update(update_id=1, message=message))
     assert "Что-то пошло не так" in messenger.last()
+    assert not has_banner(messenger.history[-1])
 
 
 async def test_unhandled_handler_error_sends_no_reply_when_recipient_is_unknown():
