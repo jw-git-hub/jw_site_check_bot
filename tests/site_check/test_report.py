@@ -59,7 +59,7 @@ jw-dev.pro
 ┃ не нашёл знакомых счётчиков посещений: {COUNTERS_RU}. Если у вас свой счётчик, всё в порядке; если нет — не видно, сколько людей заходит и откуда
 ────
 Поиск в Google [плохо·danger]
-┃ страница закрыта от поисковиков: в коде стоит запрет noindex
+┃ страница закрыта от поисковиков: в коде стоит запрет на показ в поиске (noindex)
 ┃ Google и Яндекс не покажут её в поиске
 ────
 Ссылка в мессенджерах [хорошо·success]
@@ -67,10 +67,10 @@ jw-dev.pro
 ────
 Удобство чтения [хорошо·success]
 ┃ текст хорошо виден на фоне
-┃ у картинок есть подписи
+┃ у картинок есть текстовые описания
 ────
 Что поправить в первую очередь
-> Снять запрет noindex — иначе страницу не найти в Google и Яндексе.
+> Снять запрет на показ в поиске (noindex) — иначе страницу не найти в Google и Яндексе.
 > Поставить счётчик посещений — станет видно, сколько людей заходит и откуда.
 ────
 jw-dev.pro · @jw_dev_pro"""
@@ -104,7 +104,7 @@ avtospasatel43.ru
 ┃ страница весит 4,7 МБ, из них 1,5 МБ — картинки
 ┃ самые тяжёлые: road1.png — 113 КБ, gruzovoy-shinomontazh-1.jpg — 92 КБ, datchiki1.jpg — 75 КБ
 ┃ картинки можно ужать примерно в 2 раза почти без потери качества
-┃ 3 картинки на телефоне выглядят нечётко — например, 20let.png
+┃ у 3 картинок на телефоне не хватает чёткости — например, 20let.png
 ────
 Заявки и контакты [стоит поправить·primary]
 ┃ связаться можно: звонком в одно касание
@@ -121,12 +121,12 @@ avtospasatel43.ru
 Удобство чтения [стоит поправить·primary]
 ┃ местами текст плохо виден на фоне — например, «Политикой обработки персональных данных и файлов Cookie»
 ┃ на солнце и людям со слабым зрением его трудно прочитать
-┃ у 9 картинок нет подписи — например, 20let.png, avtomoyka-open-340x210.jpg
+┃ у 9 картинок нет текстового описания — например, 20let.png, avtomoyka-open-340x210.jpg
 ┃ Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там
 ────
 Что поправить в первую очередь
 > Ужать картинки — страница станет легче и быстрее откроется с телефона.
-> Загрузить картинки крупнее — на телефоне они станут чёткими.
+> Загрузить нечёткие картинки в большем разрешении — на телефоне они станут чёткими.
 > Указать в кнопке звонка номер с кодом города — тогда с мобильного дозвонятся.
 ────
 jw-dev.pro · @jw_dev_pro"""
@@ -136,7 +136,7 @@ WIX_COFFEE_FRAGMENT_RU = """Поиск в Google [стоит поправить�
 ┃ описания для поиска нет — Google сам выберет кусок текста со страницы
 ────
 Ссылка в мессенджерах [стоит поправить·primary]
-┃ для превью не задана картинка — в Telegram ссылка придёт без картинки
+┃ для превью не задана картинка — в мессенджерах ссылка придёт без картинки
 ┃ название в превью: «Главная | Mysite»
 ────
 Удобство чтения [стоит поправить·primary]
@@ -251,7 +251,7 @@ def test_comparison_paragraph_goes_right_after_the_summary():
     request = ReportRequest("site.test", "site.test", verdict, page(), security(), MEASURED_AT, None, found)
     lines = rich_text(build_report(TEXTS, "ru", BRAND, request)[0]).splitlines()
     assert lines[3] == ("С прошлой проверки (12 сентября 2026): главное на экране — 4,2 секунды → 2,1 секунды, "
-                        "страница — 12 МБ → 3,1 МБ; скорость — плохо → хорошо.")
+                        "вес страницы — 12 МБ → 3,1 МБ; скорость — плохо → хорошо.")
 
 
 def jw_dev_pro_request_parts():
@@ -303,10 +303,10 @@ def test_bot_protection_stub_hides_preview_and_keeps_search_from_lighthouse():
 
 
 @pytest.mark.parametrize(("state", "fact"), [
-    (ImageState.BROKEN, "картинка для превью не открывается (ошибка 404) — в Telegram ссылка придёт без картинки"),
-    (ImageState.NOT_IMAGE, "картинка для превью не открывается — в Telegram ссылка придёт без картинки"),
-    (ImageState.SVG, "картинка для превью — в формате SVG, Telegram её не показывает"),
-    (ImageState.RELATIVE, "адрес картинки для превью указан не полностью — Telegram её не показывает"),
+    (ImageState.BROKEN, "картинка для превью не открывается (ошибка 404) — в мессенджерах ссылка придёт без картинки"),
+    (ImageState.NOT_IMAGE, "картинка для превью не открывается — в мессенджерах ссылка придёт без картинки"),
+    (ImageState.SVG, "картинка для превью — в формате SVG, мессенджеры её не показывают"),
+    (ImageState.RELATIVE, "адрес картинки для превью указан не полностью — мессенджеры её не показывают"),
 ])
 def test_preview_image_lines_with_the_title_after_them(state, fact):
     shown = preview(head(og_title="Кафе"), image_state=state, image_status=404 if state is ImageState.BROKEN else 200)
@@ -324,7 +324,7 @@ def test_preview_good_without_description_and_without_title():
 
 def test_preview_lines_in_english():
     text = rich_text(report("en", page(), security(), preview_facts=preview(head(og_image=None))))
-    assert "Link in messengers [worth fixing·primary]\n┃ no preview image is set — in Telegram the link will arrive" in text
+    assert "Link in messengers [worth fixing·primary]\n┃ no preview image is set — in messengers the link will arrive" in text
 
 
 def test_example_report_matches_spec_in_russian():
@@ -338,9 +338,21 @@ def test_example_report_matches_spec_in_english():
 def test_picture_lines_one_and_many():
     many = rich_text(report("ru", page(image_facts=images(blurry=("20let.png", "a.jpg", "b.jpg"))), security()))
     one = rich_text(report("ru", page(image_facts=images(stretched=("team.jpg",))), security()))
-    assert "┃ 3 картинки на телефоне выглядят нечётко — например, 20let.png" in many
+    assert "┃ у 3 картинок на телефоне не хватает чёткости — например, 20let.png" in many
     assert "┃ картинка растянута или сплющена — team.jpg" in one
     assert "Картинки [стоит поправить·primary]\n┃ страница весит 260 КБ\n┃ самая тяжёлая — 00-oblozhka.webp, 110 КБ" in one
+
+
+@pytest.mark.parametrize(("count", "phrase"), [(1, "у 1 картинки"), (2, "у 2 картинок"), (3, "у 3 картинок"),
+                                               (11, "у 11 картинок"), (21, "у 21 картинки"), (25, "у 25 картинок")])
+def test_picture_count_is_in_genitive_after_u(count, phrase):
+    names = tuple(f"{index}.jpg" for index in range(count))
+    stretched = rich_text(report("ru", page(image_facts=images(stretched=names)), security()))
+    blurry = rich_text(report("ru", page(image_facts=images(blurry=names)), security()))
+    if count > 1:
+        assert f"┃ {phrase} сбиты пропорции — например, 0.jpg" in stretched
+        assert f"┃ {phrase} на телефоне не хватает чёткости — например, 0.jpg" in blurry
+    assert TEXTS.count("ru", count, "picture") == f"{count} " + phrase.rsplit(" ", 1)[1]
 
 
 def test_certificate_blocking_report_matches_spec():
@@ -441,8 +453,9 @@ def test_domain_ending_soon_is_worth_fixing_with_its_date():
     facts = security(domain=DomainPaid("site.ru", date(2026, 10, 14), "whois"))
     text = rich_text(report("ru", page(), facts))
     assert "В целом в порядке, но скоро кончается оплата домена." in text
-    assert "┃ домен оплачен до 14 октября 2026 — если не продлить, сайт и почта перестанут открываться" in text
-    assert "> Продлить домен до 14 октября 2026 или включить автопродление." in text
+    assert ("┃ домен оплачен до 14 октября 2026 — если не продлить, сайт перестанет открываться, а почта на этом "
+            "домене — приходить") in text
+    assert "> Продлить домен не позже 14 октября 2026 или включить автопродление." in text
 
 
 def test_missing_server_response_time_uses_plain_texts():
@@ -591,7 +604,7 @@ def test_new_troubles_and_fixes_have_their_words():
     verdict = Verdict({block: BlockVerdict(block, Grade.GOOD) for block in Block}, SummaryKind.HAS_BAD, (closed,),
                       (FixItem(FixKey.UNBLOCK_META, closed),))
     assert summary_text(TEXTS, "ru", verdict) == "Есть что чинить: страница закрыта от поисковиков."
-    assert fix_text(TEXTS, "ru", verdict.fixes[0]) == ("Снять запрет noindex — иначе страницу не найти в Google "
+    assert fix_text(TEXTS, "ru", verdict.fixes[0]) == ("Снять запрет на показ в поиске (noindex) — иначе страницу не найти в Google "
                                                        "и Яндексе.")
 
 
@@ -603,7 +616,7 @@ def test_readability_lines_name_the_pale_text_and_the_pictures():
     assert ("Удобство чтения [стоит поправить·primary]\n"
             "┃ местами текст плохо виден на фоне — например, «НАШИ ЦЕНЫ»\n"
             "┃ на солнце и людям со слабым зрением его трудно прочитать\n"
-            "┃ у 9 картинок нет подписи — например, 20let.png, diplom-tm-2025-m.jpg\n"
+            "┃ у 9 картинок нет текстового описания — например, 20let.png, diplom-tm-2025-m.jpg\n"
             "┃ Google хуже понимает, что на них, а незрячим посетителям программа не скажет, что там\n"
             "┃ в коде не указан язык страницы — программа чтения вслух может читать текст с чужим произношением"
             ) in text
@@ -612,7 +625,7 @@ def test_readability_lines_name_the_pale_text_and_the_pictures():
 
 def test_readability_good_lines_and_silence_without_facts():
     good = rich_text(report("ru", page(readability_facts=readability()), security()))
-    assert "Удобство чтения [хорошо·success]\n┃ текст хорошо виден на фоне\n┃ у картинок есть подписи" in good
+    assert "Удобство чтения [хорошо·success]\n┃ текст хорошо виден на фоне\n┃ у картинок есть текстовые описания" in good
     no_images = rich_text(report("ru", page(readability_facts=readability(alt=AuditState.NOT_APPLICABLE)), security()))
     assert "Удобство чтения [хорошо·success]\n┃ текст хорошо виден на фоне\n────\nЧто поправить" in no_images
     silent = readability(contrast=AuditState.UNKNOWN, alt=AuditState.NOT_APPLICABLE)
@@ -622,16 +635,16 @@ def test_readability_good_lines_and_silence_without_facts():
 def test_readability_lines_in_english():
     facts = page(readability_facts=readability(alt=AuditState.FAILED, alt_names=("team.jpg",)))
     text = rich_text(report("en", facts, security()))
-    assert "Readability [worth fixing·primary]\n┃ no alt text on 1 image — for example, team.jpg" in text
+    assert "Readability [worth fixing·primary]\n┃ no text description on 1 image — for example, team.jpg" in text
 
 
 def test_closed_page_report_lines_and_fix():
     facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.META))
     text = rich_text(report("ru", facts, security()))
     assert "Есть что чинить: страница закрыта от поисковиков." in text
-    assert ("Поиск в Google [плохо·danger]\n┃ страница закрыта от поисковиков: в коде стоит запрет noindex\n"
+    assert ("Поиск в Google [плохо·danger]\n┃ страница закрыта от поисковиков: в коде стоит запрет на показ в поиске (noindex)\n"
             "┃ Google и Яндекс не покажут её в поиске") in text
-    assert "> Снять запрет noindex — иначе страницу не найти в Google и Яндексе." in text
+    assert "> Снять запрет на показ в поиске (noindex) — иначе страницу не найти в Google и Яндексе." in text
 
 
 def test_open_page_quotes_the_real_title_or_speaks_generally():
@@ -663,7 +676,7 @@ def test_worth_fixing_search_quotes_the_title_first():
 def test_search_lines_in_english():
     facts = page(search_facts=search(crawlable=AuditState.FAILED, source=BlockSource.ROBOTS_TXT))
     text = rich_text(report("en", facts, security()))
-    assert ("Google search [poor·danger]\n┃ search engines are forbidden to read the page — the robots.txt file says so\n"
+    assert ("Search visibility [poor·danger]\n┃ search engines are forbidden to read the page — the robots.txt file says so\n"
             "┃ it's missing from search or shown without a description") in text
 
 
@@ -742,4 +755,4 @@ def test_contacts_lines_in_english():
     facts = contacts(call_links=0, text_phones=1)
     text = rich_text(report("en", page(), security(), preview_facts=preview(contact_facts=facts)))
     assert "Leads and contacts [worth fixing·primary]" in text
-    assert "┃ the phone is plain text — on Android it can't be tapped to call" in text
+    assert "┃ the phone number is plain text — on Android it can't be tapped to call" in text

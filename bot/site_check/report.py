@@ -339,7 +339,7 @@ def _picture_fact(texts: Texts, lang: Lang, item: FindingItem) -> str:
     name = item.examples[0] if item.examples else ""
     if item.count == 1:
         return texts.get(lang, f"{item.finding}_one", name=name)
-    return texts.get(lang, f"{item.finding}_many", count=texts.count(lang, item.count or 0, "picture_nom"), name=name)
+    return texts.get(lang, f"{item.finding}_many", count=texts.count(lang, item.count or 0, "picture"), name=name)
 
 
 def _heaviest_one_fact(texts: Texts, lang: Lang, images: ImageFacts) -> str:
