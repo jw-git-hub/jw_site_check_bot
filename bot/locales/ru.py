@@ -106,7 +106,7 @@ TEXTS = {
     "trouble_phone_not_link": "по телефону на сайте нельзя нажать",
     "trouble_call_without_code": "кнопка звонка набирает номер без кода города",
     "trouble_no_privacy_policy": "у формы заявки нет политики персональных данных",
-    "trouble_no_analytics": "нет счётчика посещений",
+    "trouble_no_analytics": "не нашёл счётчика посещений",
     "trouble_domain_expiring": "скоро кончается оплата домена",
     "trouble_images_stretched": "картинки растянуты или сплющены",
     "trouble_images_blurry": "картинки на телефоне нечёткие",
@@ -274,7 +274,8 @@ TEXTS = {
                                   "дозвониться",
     "contacts_no_policy": "рядом с формой заявки нет ссылки на политику обработки персональных данных — её требует "
                           "закон о персональных данных (152-ФЗ)",
-    "contacts_no_counter": "счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли",
+    "contacts_no_counter": "не нашёл знакомых счётчиков посещений: {services}. Если у вас свой счётчик, всё в "
+                           "порядке; если нет — не видно, сколько людей заходит и откуда",
     "contacts_counter_one": "посещения считает {names}",
     "contacts_counter_many": "посещения считают {names}",
     "contacts_counter_platform": "посещения считает статистика {platform}",
@@ -282,6 +283,14 @@ TEXTS = {
     "service_google_analytics": "Google Analytics",
     "service_liveinternet": "LiveInternet",
     "service_top_mail": "Top.Mail.ru",
+    "service_rambler_top100": "Рамблер Топ-100",
+    "service_matomo": "Matomo",
+    "service_clarity": "Microsoft Clarity",
+    "service_hotjar": "Hotjar",
+    "service_plausible": "Plausible",
+    "service_roistat": "Roistat",
+    "service_calltouch": "Calltouch",
+    "service_comagic": "CoMagic",
     # отчёт: кнопки
     "discuss_button": "💬 Обсудить с разработчиком",
     "another_button": "🔍 Проверить другой сайт",

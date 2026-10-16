@@ -2,6 +2,7 @@
 
 Строка — со строчной буквы, без точки; «хорошо» — только факты, которые подтверждены данными (ТЗ, раздел 1).
 """
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from bot.core.i18n import Lang, Texts
@@ -134,8 +135,7 @@ def _alt_lines(texts: Texts, lang: Lang, item: FindingItem) -> list[str]:
     return [first, texts.get(lang, "readability_no_alt_effect")]
 
 
-CONTACT_FINDING_KEYS = {Finding.NO_CONTACTS: "contacts_none", Finding.NO_PRIVACY_POLICY: "contacts_no_policy",
-                        Finding.NO_ANALYTICS: "contacts_no_counter"}
+CONTACT_FINDING_KEYS = {Finding.NO_CONTACTS: "contacts_none", Finding.NO_PRIVACY_POLICY: "contacts_no_policy"}
 PLATFORM_STAT_NAMES = {TILDA_STATS: "Tilda", WIX_STATS: "Wix"}
 
 
@@ -162,11 +162,18 @@ def _contact_finding(texts: Texts, lang: Lang, item: FindingItem) -> str:
         return texts.get(lang, f"contacts_phone_text_{where}")
     if item.finding is Finding.CALL_WITHOUT_CODE:
         return texts.get(lang, "contacts_call_without_code", number=item.examples[0])
+    if item.finding is Finding.NO_ANALYTICS:
+        services = NAMES_JOIN.join(_counter_names(texts, lang, COUNTER_ORDER))
+        return texts.get(lang, "contacts_no_counter", services=services)
     return texts.get(lang, CONTACT_FINDING_KEYS[item.finding])
 
 
+def _counter_names(texts: Texts, lang: Lang, names: Iterable[str]) -> list[str]:
+    return [texts.get(lang, f"service_{name}") for name in names]
+
+
 def _counter_lines(texts: Texts, lang: Lang, markers: frozenset[str]) -> list[str]:
-    names = [texts.get(lang, f"service_{name}") for name in COUNTER_ORDER if name in markers]
+    names = _counter_names(texts, lang, (name for name in COUNTER_ORDER if name in markers))
     if names:
         key = "contacts_counter_one" if len(names) == 1 else "contacts_counter_many"
         listed = NAMES_JOIN.join(names[:-1]) + texts.get(lang, "and_last") + names[-1] if len(names) > 1 else names[0]

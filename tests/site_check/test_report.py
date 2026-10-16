@@ -23,6 +23,11 @@ from tests.fakes import rich_text
 MEASURED_AT = datetime(2026, 9, 25, 5, 30, tzinfo=UTC)
 EXAMPLE_HEAVIEST = (("slider-1.jpg", 3_355_443), ("about.png", 2_202_010), ("team.jpg", 1_887_437))
 
+COUNTERS_RU = ("Яндекс Метрика, Google Analytics, LiveInternet, Top.Mail.ru, Рамблер Топ-100, Matomo, "
+               "Microsoft Clarity, Hotjar, Plausible, Roistat, Calltouch, CoMagic")
+COUNTERS_EN = ("Yandex Metrica, Google Analytics, LiveInternet, Top.Mail.ru, Rambler Top-100, Matomo, "
+               "Microsoft Clarity, Hotjar, Plausible, Roistat, Calltouch, CoMagic")
+
 # Утверждённый владельцем вид (задача 23a, живая приёмка): заголовки блоков + короткие строки «>».
 JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для малого бизнеса — jw-dev.pro"
 
@@ -31,7 +36,7 @@ JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для м
 JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта_ (мигает _)]
 jw-dev.pro
 [снимок первого экрана]
-Есть что чинить: страница закрыта от поисковиков, и нет счётчика посещений.
+Есть что чинить: страница закрыта от поисковиков, и не нашёл счётчика посещений.
 ────
 Скорость [хорошо·success]
 ┃ главное на экране — через 1,4 секунды
@@ -51,7 +56,7 @@ jw-dev.pro
 ────
 Заявки и контакты [стоит поправить·primary]
 ┃ связаться можно: в Telegram, по почте, через форму заявки
-┃ счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли
+┃ не нашёл знакомых счётчиков посещений: {COUNTERS_RU}. Если у вас свой счётчик, всё в порядке; если нет — не видно, сколько людей заходит и откуда
 ────
 Поиск в Google [плохо·danger]
 ┃ страница закрыта от поисковиков: в коде стоит запрет noindex
@@ -704,8 +709,17 @@ def test_contacts_ways_in_order_and_missing_counter():
     facts = contacts(call_links=0, telegram=True, email=True, forms=1, markers=frozenset())
     text = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
     assert ("┃ связаться можно: в Telegram, по почте, через форму заявки\n"
-            "┃ счётчика посещений нет — не видно, сколько людей заходит и откуда они пришли") in text
+            f"┃ не нашёл знакомых счётчиков посещений: {COUNTERS_RU}. Если у вас свой счётчик, всё в порядке; "
+            "если нет — не видно, сколько людей заходит и откуда") in text
     assert "> Поставить счётчик посещений — станет видно, сколько людей заходит и откуда." in text
+
+
+def test_missing_counter_names_every_familiar_counter_from_the_one_list_in_english():
+    facts = contacts(call_links=0, telegram=True, markers=frozenset())
+    text = rich_text(report("en", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert (f"┃ I didn't find any familiar visitor analytics: {COUNTERS_EN}. If you use another one, that's fine; "
+            "if not, you can't see how many people visit or where they come from") in text
+    assert "> Add visitor analytics — you'll see how many people visit and where from." in text
 
 
 def test_platform_statistics_line_and_phone_text_wording():

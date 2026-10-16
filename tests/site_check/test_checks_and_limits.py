@@ -55,7 +55,7 @@ async def test_done_check_keeps_grades_summary_and_numbers(repo):
     assert recent.metrics["final_url"] == "https://www.site.org/"
     assert recent.metrics["cert_until"] == "2026-12-08"
     assert recent.metrics["lcp_ms"] == 1400
-    assert recent.metrics["rules"] == "1.2"
+    assert recent.metrics["rules"] == "1.2.1"
 
 
 async def test_charged_checks_are_counted_per_user_and_in_total(repo):
