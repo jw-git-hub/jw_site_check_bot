@@ -7,7 +7,6 @@ import time
 
 import pytest
 
-from bot.site_check import page_fetch
 from bot.site_check.head_tags import parse_head
 from bot.site_check.page_contacts import parse_contacts
 from bot.site_check.page_fetch import PARSE_WORKER_COMMAND, run_parse_worker
@@ -15,6 +14,8 @@ from bot.site_check.page_fetch import PARSE_WORKER_COMMAND, run_parse_worker
 # Наследуем окружение теста (scripts/test.sh уже ставит PYTHONDONTWRITEBYTECODE=1), но не полагаемся на это
 # неявно — подпроцессы здесь не должны оставлять __pycache__ в папке проекта (Syncthing).
 WORKER_ENV = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+PARSE_TIMEOUT = 5
+HANG_TIMEOUT_SECONDS = 0.05
 LINUX_ONLY = pytest.mark.skipif(sys.platform != "linux", reason="RLIMIT_AS не соблюдается на Маке")
 NORMAL_BODY = (b"<html lang='ru'><head><title>Shop</title>"
               b"<meta property='og:image' content='https://cdn.example/og.jpg'></head>"
@@ -23,7 +24,7 @@ NORMAL_BODY = (b"<html lang='ru'><head><title>Shop</title>"
 
 async def test_subprocess_parsing_matches_direct_parsing():
     """Обычная страница через настоящий подпроцесс — те же HeadTags/ContactFacts, что прямой разбор."""
-    parsed = await run_parse_worker(PARSE_WORKER_COMMAND, None, True, NORMAL_BODY)
+    parsed = await run_parse_worker(PARSE_WORKER_COMMAND, None, True, NORMAL_BODY, PARSE_TIMEOUT)
     html = NORMAL_BODY.decode()
     assert parsed == (parse_head(html), parse_contacts(html, True))
 
@@ -40,25 +41,24 @@ async def test_import_does_not_pull_in_aiogram_or_aiohttp():
 
 async def test_a_crashing_process_is_a_failure_not_an_exception():
     command = (sys.executable, "-c", "import sys; sys.exit(1)")
-    assert await run_parse_worker(command, None, True, NORMAL_BODY) is None
+    assert await run_parse_worker(command, None, True, NORMAL_BODY, PARSE_TIMEOUT) is None
 
 
 async def test_a_process_that_writes_garbage_is_a_failure_not_an_exception():
     command = (sys.executable, "-c", "import sys; sys.stdout.write('не json совсем')")
-    assert await run_parse_worker(command, None, True, NORMAL_BODY) is None
+    assert await run_parse_worker(command, None, True, NORMAL_BODY, PARSE_TIMEOUT) is None
 
 
 async def test_a_process_that_exits_before_reading_a_large_body_is_not_an_exception():
     """Ребёнок вышел раньше, чем прочитал stdin, — канал обрывается, наружу не течёт (задача 33)."""
     command = (sys.executable, "-c", "import sys; sys.exit(1)")
-    assert await run_parse_worker(command, None, True, b"x" * 2_000_000) is None
+    assert await run_parse_worker(command, None, True, b"x" * 2_000_000, PARSE_TIMEOUT) is None
 
 
-async def test_a_hanging_process_is_killed_not_awaited_forever(monkeypatch):
-    monkeypatch.setattr(page_fetch, "PARSE_TIMEOUT_SECONDS", 0.05)
+async def test_a_hanging_process_is_killed_not_awaited_forever():
     command = (sys.executable, "-c", "import time; time.sleep(10)")
     started = time.monotonic()
-    assert await run_parse_worker(command, None, True, NORMAL_BODY) is None
+    assert await run_parse_worker(command, None, True, NORMAL_BODY, HANG_TIMEOUT_SECONDS) is None
     assert time.monotonic() - started < 5
 
 

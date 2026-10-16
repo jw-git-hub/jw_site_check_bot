@@ -13,7 +13,7 @@ from bot.site_check import page_fetch
 from bot.site_check.head_tags import parse_head
 from bot.site_check.net_guard import AddressGuard, NoIPv4
 from bot.site_check.page_fetch import (PARSE_WORKER_COMMAND, READ_CHUNK_BYTES, AiohttpSender, Answer,
-                                       FetchFailure, GuardedResolver, ImageState, PreviewLoader, RefusedAddress,
+                                       FetchFailure, GuardedResolver, ImageState, Landing, PreviewLoader, RefusedAddress,
                                        check_image, fetch_page, follow, guarded_session)
 from bot.site_check.page_text import decode_page
 
@@ -21,6 +21,9 @@ PUBLIC = "93.184.215.14"
 PAGE = "https://shop.example/"
 IMAGE = "https://cdn.example/og.jpg"
 HTML = "text/html"
+PAGE_DEADLINE_SECONDS = 10.5
+OLD_PAGE_TIMEOUT_SECONDS = 8
+IMAGE_DEADLINE_SECONDS = 4
 HEAD = (b"<html lang='ru'><head><title>Shop</title>"
         b"<meta property='og:image' content='https://cdn.example/og.jpg'></head><body>")
 FORBIDDEN_LOCATIONS = [
@@ -104,18 +107,17 @@ async def test_redirect_without_location_is_given_up():
     (page_answer(content_encoding="gzip"), FetchFailure.COMPRESSED),
 ])
 async def test_only_plain_html_200_is_a_page(answer, failure):
-    assert (await fetch_page(FakeSender({PAGE: answer}), PAGE)).failure is failure
+    assert (await fetch_page(FakeSender({PAGE: answer}), PAGE, PAGE_DEADLINE_SECONDS)).failure is failure
 
 
-async def test_slow_site_is_given_up_on_its_own_deadline(monkeypatch):
-    monkeypatch.setattr(page_fetch, "PAGE_TIMEOUT_SECONDS", 0.01)
-    assert (await fetch_page(HangingSender(), PAGE)).failure is FetchFailure.TIMEOUT
+async def test_slow_site_is_given_up_on_its_own_deadline():
+    assert (await fetch_page(HangingSender(), PAGE, 0.01)).failure is FetchFailure.TIMEOUT
 
 
 @pytest.mark.parametrize("error", [aiohttp.ClientConnectionError("обрыв"), RefusedAddress("внутренний адрес"),
                                    UnicodeDecodeError("utf-8", b"\xff", 0, 1, "кривой заголовок")])
 async def test_network_trouble_is_a_failure_not_an_exception(error):
-    assert (await fetch_page(BrokenSender(error), PAGE)).failure is FetchFailure.NETWORK
+    assert (await fetch_page(BrokenSender(error), PAGE, PAGE_DEADLINE_SECONDS)).failure is FetchFailure.NETWORK
 
 
 def test_charset_from_header_then_meta_then_utf8():
@@ -164,14 +166,14 @@ def test_punycode_header_does_not_hang_on_a_large_page():
     (Answer(status=200, content_type="image/svg+xml"), ImageState.SVG, 200),
 ])
 async def test_preview_image_states(answer, state, status):
-    check = await check_image(FakeSender({IMAGE: answer}), IMAGE)
+    check = await check_image(FakeSender({IMAGE: answer}), IMAGE, IMAGE_DEADLINE_SECONDS)
     assert (check.state, check.status, check.name) == (state, status, "og.jpg")
 
 
 @pytest.mark.parametrize("raw", ["/img/og.png", "//cdn.example/og.png", "img/og.png", "data:image/png;base64,AA"])
 async def test_incomplete_preview_image_address_is_a_finding_without_network(raw):
     sender = FakeSender()
-    assert (await check_image(sender, raw)).state is ImageState.RELATIVE
+    assert (await check_image(sender, raw, IMAGE_DEADLINE_SECONDS)).state is ImageState.RELATIVE
     assert sender.urls == []
 
 
@@ -179,12 +181,12 @@ async def test_incomplete_preview_image_address_is_a_finding_without_network(raw
                                  "http://user:pass@cdn.example/og.png"])
 async def test_preview_image_on_forbidden_address_is_not_requested(raw):
     sender = FakeSender()
-    assert (await check_image(sender, raw)).state is ImageState.UNKNOWN
+    assert (await check_image(sender, raw, IMAGE_DEADLINE_SECONDS)).state is ImageState.UNKNOWN
     assert sender.urls == []
 
 
 async def test_preview_image_that_cannot_be_reached_is_unknown_not_broken():
-    assert (await check_image(BrokenSender(aiohttp.ClientConnectionError()), IMAGE)).state is ImageState.UNKNOWN
+    assert (await check_image(BrokenSender(aiohttp.ClientConnectionError()), IMAGE, IMAGE_DEADLINE_SECONDS)).state is ImageState.UNKNOWN
 
 
 async def test_loader_reads_head_and_checks_the_image():
@@ -256,7 +258,96 @@ async def test_image_check_gets_only_the_remaining_time_of_the_shared_budget(mon
     sender = FakeSender({PAGE: page_answer()})
     clock = ManualClock(0.0, 9.0, 9.0)  # started; elapsed_ms; перед проверкой картинки
     await PreviewLoader(sender, monotonic=clock).load(PAGE)
-    assert seen["timeout"] == pytest.approx(3.0)  # 12 - 9, не полные IMAGE_TIMEOUT_SECONDS (4)
+    assert seen["timeout"] == pytest.approx(3.0)  # 12 - 9
+
+
+class DelayedSender:
+    """Отвечает заготовками, но каждый адрес — не раньше своей задержки."""
+
+    def __init__(self, answers: dict[str, Answer], delays: dict[str, float]):
+        self.answers, self.delays = answers, delays
+
+    async def __call__(self, url: str, read_head: bool) -> Answer:
+        await asyncio.sleep(self.delays.get(url, 0.0))
+        return self.answers[url]
+
+
+async def test_page_gets_the_whole_budget_minus_the_parse_reserve(monkeypatch):
+    """Правка 17: странице — весь срок своей загрузки (ТЗ, Л4) без запаса на разбор, а не прежние 8 секунд."""
+    seen = {}
+
+    async def fake_fetch_page(send, url, timeout):
+        seen["timeout"] = timeout
+        return Landing(url, None, FetchFailure.TIMEOUT)
+
+    monkeypatch.setattr(page_fetch, "fetch_page", fake_fetch_page)
+    await PreviewLoader(FakeSender()).load(PAGE)
+    assert seen["timeout"] == page_fetch.PREVIEW_BUDGET_SECONDS - page_fetch.PARSE_RESERVE_SECONDS
+    assert seen["timeout"] > OLD_PAGE_TIMEOUT_SECONDS
+
+
+async def test_page_slower_than_the_old_limit_but_within_the_budget_is_loaded(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 2.0)
+    monkeypatch.setattr(page_fetch, "PARSE_RESERVE_SECONDS", 1.0)  # странице 1,0 с; разбору остаётся 1,5 с
+    sender = DelayedSender({PAGE: page_answer(b"<head><title>Shop</title></head>")}, {PAGE: 0.5})
+    preview = await PreviewLoader(sender).load(PAGE)
+    assert (preview.failure, preview.head.title) == (None, "Shop")
+
+
+async def test_page_slower_than_the_budget_minus_reserve_is_a_timeout(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 1.0)
+    monkeypatch.setattr(page_fetch, "PARSE_RESERVE_SECONDS", 0.5)  # странице 0,5 с
+    sender = DelayedSender({PAGE: page_answer()}, {PAGE: 0.6})
+    preview = await PreviewLoader(sender).load(PAGE)
+    assert (preview.failure, preview.head) == (FetchFailure.TIMEOUT, None)
+
+
+async def test_image_gets_the_whole_remainder_of_the_budget_without_a_ceiling(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 12.0)
+    seen = {}
+
+    async def fake_check_image(send, raw, timeout):
+        seen["timeout"] = timeout
+        return ImageState.UNKNOWN
+
+    monkeypatch.setattr(page_fetch, "check_image", fake_check_image)
+    clock = ManualClock(0.0, 1.0, 1.0)  # быстрая страница: на картинку остаётся 11 секунд
+    await PreviewLoader(FakeSender({PAGE: page_answer()}), monotonic=clock).load(PAGE)
+    assert seen["timeout"] == pytest.approx(11.0)
+
+
+async def test_image_slower_than_the_old_ceiling_but_within_the_remainder_is_ok(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 3.0)
+    monkeypatch.setattr(page_fetch, "PARSE_RESERVE_SECONDS", 1.0)
+    sender = DelayedSender({PAGE: page_answer(), IMAGE: Answer(status=200, content_type="image/jpeg")}, {IMAGE: 0.3})
+    preview = await PreviewLoader(sender).load(PAGE)
+    assert preview.image.state is ImageState.OK
+
+
+async def test_parse_gets_only_what_is_left_of_the_budget(monkeypatch):
+    monkeypatch.setattr(page_fetch, "PREVIEW_BUDGET_SECONDS", 12.0)
+    seen = {}
+
+    async def fake_run_parse_worker(command, charset, complete, body, timeout):
+        seen["timeout"] = timeout
+        return None
+
+    monkeypatch.setattr(page_fetch, "run_parse_worker", fake_run_parse_worker)
+    clock = ManualClock(0.0, 11.0)  # страница пришла на 11-й секунде: на разбор остаётся 1
+    await PreviewLoader(FakeSender({PAGE: page_answer()}), monotonic=clock).load(PAGE)
+    assert seen["timeout"] == pytest.approx(1.0)
+
+
+async def test_parse_is_capped_by_its_own_limit_when_the_budget_is_plentiful(monkeypatch):
+    seen = {}
+
+    async def fake_run_parse_worker(command, charset, complete, body, timeout):
+        seen["timeout"] = timeout
+        return None
+
+    monkeypatch.setattr(page_fetch, "run_parse_worker", fake_run_parse_worker)
+    await PreviewLoader(FakeSender({PAGE: page_answer()}), monotonic=ManualClock(0.0, 1.0)).load(PAGE)
+    assert seen["timeout"] == page_fetch.PARSE_TIMEOUT_SECONDS
 
 
 async def test_image_check_never_gets_a_negative_timeout(monkeypatch):
@@ -269,7 +360,7 @@ async def test_image_check_never_gets_a_negative_timeout(monkeypatch):
 
     monkeypatch.setattr(page_fetch, "check_image", fake_check_image)
     sender = FakeSender({PAGE: page_answer()})
-    clock = ManualClock(0.0, 20.0, 20.0)  # страница сама уже съела весь общий срок
+    clock = ManualClock(0.0, 11.0, 20.0)  # страница и разбор уже съели весь общий срок
     await PreviewLoader(sender, monotonic=clock).load(PAGE)
     assert seen["timeout"] == 0.0
 

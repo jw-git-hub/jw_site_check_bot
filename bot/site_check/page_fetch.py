@@ -38,15 +38,15 @@ from bot.site_check.url_input import Target, own_request_target
 PAGE_MAX_BYTES = 2 * 1024 * 1024  # ТЗ, С5, версия 1.2: вся страница
 STOP_AT_HEAD = False              # контакты — по всей странице (ТЗ, 5.10)
 READ_CHUNK_BYTES = 64 * 1024
-PAGE_TIMEOUT_SECONDS = 8         # вся загрузка страницы с переходами
-IMAGE_TIMEOUT_SECONDS = 4
-# Общий срок своей загрузки целиком (ТЗ, Л4, С5) — внутри 15 после замера (pipeline.py). PAGE_TIMEOUT_SECONDS +
-# IMAGE_TIMEOUT_SECONDS дают ровно эту сумму без запаса: картинке достаётся не она, а остаток этого срока
-# (задача 33, M2) — иначе медленная картинка снимает уже готовые заголовок и контакты (общий wait_for в
-# pipeline.py обрывает всё сразу).
+# Общий срок своей загрузки целиком (ТЗ, Л4, С5) — внутри 15 после замера (pipeline.py). Единственное место, где
+# он записан: страница, разбор и картинка делят именно его, а не свои отдельные потолки.
 PREVIEW_BUDGET_SECONDS = 12
-# Разбор — в отдельном процессе (задача 33, C1): срок внутри PREVIEW_BUDGET_SECONDS, картинке достаётся то, что
-# останется от общего срока (_check_preview_image), а не полный IMAGE_TIMEOUT_SECONDS.
+# Странице — весь срок за вычетом запаса на разбор (медленные сайты отдают её 5–9 секунд: потолок в 8 секунд то
+# укладывал их, то нет). Картинке достаётся остаток после страницы и разбора (_check_preview_image, задача 33,
+# M2), без отдельного потолка — иначе медленная картинка снимает уже готовые заголовок и контакты (общий
+# wait_for в pipeline.py обрывает всё сразу).
+PARSE_RESERVE_SECONDS = 1.5
+# Разбор — в отдельном процессе (задача 33, C1): не дольше этого и не дольше остатка общего срока.
 PARSE_TIMEOUT_SECONDS = 5
 PARSE_WORKER_COMMAND = (sys.executable, "-m", "bot.site_check.parse_worker")
 CONNECT_TIMEOUT_SECONDS = 4
@@ -158,9 +158,9 @@ async def follow(send: Sender, url: str, read_head: bool) -> Landing:
     return Landing(url, None, FetchFailure.REDIRECTS)
 
 
-async def fetch_page(send: Sender, url: str) -> Landing:
+async def fetch_page(send: Sender, url: str, timeout: float) -> Landing:
     try:
-        landing = await asyncio.wait_for(follow(send, url, read_head=True), PAGE_TIMEOUT_SECONDS)
+        landing = await asyncio.wait_for(follow(send, url, read_head=True), timeout)
     except TimeoutError:  # раньше NETWORK_ERRORS: TimeoutError — подкласс OSError
         return Landing(url, None, FetchFailure.TIMEOUT)
     except NETWORK_ERRORS:
@@ -179,7 +179,7 @@ def _page_failure(landing: Landing) -> Landing:
     return landing
 
 
-async def check_image(send: Sender, raw: str, timeout: float = IMAGE_TIMEOUT_SECONDS) -> ImageCheck:
+async def check_image(send: Sender, raw: str, timeout: float) -> ImageCheck:
     """Картинка превью (ТЗ, 5.7): адрес не полностью — находка без сети; иначе только статус и заголовки."""
     name = file_name(raw) or raw
     if not raw.lower().startswith(FULL_URL_PREFIXES):
@@ -217,13 +217,16 @@ class PreviewLoader:
 
     async def load(self, url: str) -> PagePreview:
         started = self._monotonic()
-        landing = await fetch_page(self._send, url)
-        elapsed_ms = (self._monotonic() - started) * MS_IN_SECOND
+        landing = await fetch_page(self._send, url, PREVIEW_BUDGET_SECONDS - PARSE_RESERVE_SECONDS)
+        elapsed_seconds = self._monotonic() - started
+        elapsed_ms = elapsed_seconds * MS_IN_SECOND
         if landing.failure:
             status = landing.answer.status if landing.answer else None
             return PagePreview(strip_params(landing.url), None, landing.failure, status, 0, elapsed_ms, None)
         answer = landing.answer
-        parsed = await run_parse_worker(self._parse_worker_command, answer.charset, answer.complete, answer.body)
+        timeout = min(PARSE_TIMEOUT_SECONDS, _budget_left(elapsed_seconds))
+        parsed = await run_parse_worker(self._parse_worker_command, answer.charset, answer.complete, answer.body,
+                                        timeout)
         if parsed is None:
             return PagePreview(strip_params(landing.url), None, FetchFailure.PARSE, answer.status, 0, elapsed_ms,
                                None)
@@ -233,15 +236,18 @@ class PreviewLoader:
                            answer.complete, contacts)
 
     async def _check_preview_image(self, head: HeadTags, started: float) -> ImageCheck:
-        """Картинке — остаток общего срока, не полный IMAGE_TIMEOUT_SECONDS (задача 33, M2): иначе медленная
-        картинка при почти исчерпанном PREVIEW_BUDGET_SECONDS снимает уже готовые заголовок и контакты."""
-        remaining = PREVIEW_BUDGET_SECONDS - (self._monotonic() - started)
-        timeout = min(IMAGE_TIMEOUT_SECONDS, max(remaining, 0.0))
+        """Картинке — весь остаток общего срока (задача 33, M2), без своего потолка: страница и разбор уже
+        отняли своё, а картинка не должна снимать готовые заголовок и контакты."""
+        timeout = _budget_left(self._monotonic() - started)
         return await check_image(self._send, head.preview_image, timeout)
 
 
+def _budget_left(elapsed_seconds: float) -> float:
+    return max(PREVIEW_BUDGET_SECONDS - elapsed_seconds, 0.0)
+
+
 async def run_parse_worker(command: Sequence[str], charset: str | None, complete: bool,
-                           body: bytes) -> tuple[HeadTags, ContactFacts] | None:
+                           body: bytes, timeout: float) -> tuple[HeadTags, ContactFacts] | None:
     """Разбор страницы — в отдельном процессе со своим пределом памяти (parse_worker.py, задача 33, C1):
     сторож html_guard закрывает известные нагрузки, но полное совпадение с html.parser на всех входах не
     подтвердить. Страница — только через stdin, не в аргументы командной строки. Любая неудача (срок, код
@@ -249,7 +255,7 @@ async def run_parse_worker(command: Sequence[str], charset: str | None, complete
     process = await asyncio.create_subprocess_exec(*command, stdin=asyncio.subprocess.PIPE,
                                                     stdout=asyncio.subprocess.PIPE,
                                                     stderr=asyncio.subprocess.DEVNULL)
-    output = await _parse_worker_output(process, encode_request(charset, complete, body))
+    output = await _parse_worker_output(process, encode_request(charset, complete, body), timeout)
     if output is None:
         return None
     try:
@@ -259,11 +265,11 @@ async def run_parse_worker(command: Sequence[str], charset: str | None, complete
         return None
 
 
-async def _parse_worker_output(process: asyncio.subprocess.Process, request: bytes) -> bytes | None:
-    """Истёк срок — kill() и wait(), процесс не ждём дольше PARSE_TIMEOUT_SECONDS; ненулевой код выхода или
+async def _parse_worker_output(process: asyncio.subprocess.Process, request: bytes, timeout: float) -> bytes | None:
+    """Истёк срок — kill() и wait(), процесс не ждём дольше timeout; ненулевой код выхода или
     оборванный канал — тоже неудача, без исключений наружу (задача 33)."""
     try:
-        stdout, _ = await asyncio.wait_for(process.communicate(request), PARSE_TIMEOUT_SECONDS)
+        stdout, _ = await asyncio.wait_for(process.communicate(request), timeout)
     except TimeoutError:
         process.kill()
         await process.wait()
@@ -351,6 +357,6 @@ def guarded_session(guard: AddressGuard) -> aiohttp.ClientSession:
     переиспользования соединений, без прокси из окружения, без кук, без распаковки."""
     connector = aiohttp.TCPConnector(resolver=GuardedResolver(guard), family=socket.AF_INET, use_dns_cache=False,
                                      force_close=True)
-    timeout = aiohttp.ClientTimeout(total=PAGE_TIMEOUT_SECONDS, sock_connect=CONNECT_TIMEOUT_SECONDS)
+    timeout = aiohttp.ClientTimeout(total=PREVIEW_BUDGET_SECONDS, sock_connect=CONNECT_TIMEOUT_SECONDS)
     return aiohttp.ClientSession(connector=connector, timeout=timeout, trust_env=False,
                                  cookie_jar=aiohttp.DummyCookieJar(), auto_decompress=False)
