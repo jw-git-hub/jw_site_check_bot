@@ -10,12 +10,14 @@ BRIDGE_INTERFACE="br-sitecheck"
 TIMEOUT_SECONDS=3
 PROBE_CLOSED_EXIT_CODE=42
 NEIGHBOUR_CONTAINER_NAME="jw-site-check-neighbour-probe"
-NEIGHBOUR_IMAGE="jw_site_check_bot:latest"  # уже собран локально (docker-compose.yml): скрипт его не собирает и не тянет
+PROBE_IMAGE="jw_site_check_bot:latest"  # уже собран локально (docker-compose.yml): скрипт его не собирает и не тянет
+PROBE_MEMORY="64m"  # свой предел зонда: память бота не трогаем, процессы внутри контейнера бота не запускаем
+NEIGHBOUR_IMAGE="$PROBE_IMAGE"
 NEIGHBOUR_PORT=8080  # высокий порт: контейнер не root (Dockerfile — USER 10001), 80 ему не поднять
 NEIGHBOUR_READY_ATTEMPTS=10  # короткое ограниченное ожидание, пока слушатель поднимется после run -d
 NEIGHBOUR_READY_INTERVAL_SECONDS=0.3
 ROUTER_PORTS=(80 443 8080 53)  # веб-интерфейс роутера бывает не только на 80 — пробуем весь список
-# Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker exec, трасса Python)
+# Закрыто — только явный отказ соединения. Любая другая ошибка (сбой docker run, трасса Python)
 # не должна выдаваться за «закрыто»: голый except это делал бы.
 PROBE='import socket, sys
 try:
@@ -32,9 +34,13 @@ fail() { printf 'Изоляция не проверена: %s\n' "$*" >&2; exit 
 container_running() { [ -n "$(docker compose ps --status running -q bot)" ]; }
 
 # open — соединение установилось; closed — зонд поймал явный отказ (сравнение с PROBE_CLOSED_EXIT_CODE);
-# error — что-то ещё (сбой docker exec, необработанное исключение) — это не «закрыто».
+# error — что-то ещё (сбой docker run, необработанное исключение) — это не «закрыто».
+# Зонд идёт в одноразовом контейнере из образа бота: сеть общая с ботом (--network container:...), значит
+# изоляция та же, а память и процессы — свои, внутри самого бота ничего не запускается (OOM 29.09.2026).
+# Без -i: зонд не читает stdin, а -i съел бы поток, если скрипт подан через bash -s.
 probe() {
-  if docker compose exec -T bot python -c "$PROBE" "$1" "$2" "$TIMEOUT_SECONDS" "$PROBE_CLOSED_EXIT_CODE"; then
+  if docker run --rm --pull never --network "container:$bot_container_id" --memory "$PROBE_MEMORY" \
+    --entrypoint python "$PROBE_IMAGE" -c "$PROBE" "$1" "$2" "$TIMEOUT_SECONDS" "$PROBE_CLOSED_EXIT_CODE"; then
     echo open
   elif [ "$?" -eq "$PROBE_CLOSED_EXIT_CODE" ]; then
     echo closed
@@ -127,6 +133,7 @@ report_verdict() {
 }
 
 container_running || fail "контейнер bot не запущен (docker compose up -d)"
+bot_container_id="$(docker compose ps -q bot)"
 
 router_ip="$(ip -4 route show default | awk '{print $3; exit}')" || true
 server_ip="$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i < NF; i++) if ($i == "src") print $(i + 1)}')" || true

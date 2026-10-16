@@ -70,6 +70,24 @@ def test_check_isolation_probe_treats_only_os_error_as_closed():
     assert "PROBE_CLOSED_EXIT_CODE" in script
 
 
+def test_check_isolation_probe_runs_in_its_own_container_not_inside_the_bot():
+    """Второй процесс Python внутри контейнера бота (общий лимит памяти) 29.09.2026 вызвал OOM и перезапуск
+    бота. Зонд идёт в одноразовом контейнере с общей сетью бота (та же изоляция) и своим пределом памяти."""
+    script = read("check_isolation.sh")
+    assert not re.search(r"compose\s+exec", script)
+    assert re.search(r"^PROBE_MEMORY=\S+", script, re.MULTILINE)
+    assert re.search(r"^PROBE_IMAGE=\S+", script, re.MULTILINE)
+    assert re.search(r'^NEIGHBOUR_IMAGE="\$PROBE_IMAGE"', script, re.MULTILINE)  # строка образа не дублируется
+    assert re.search(r"^bot_container_id=\"\$\(docker compose ps -q bot\)\"", script, re.MULTILINE)
+    probe_run = re.search(r"docker run --rm (?:[^\n]*\\\n)*[^\n]*", script).group(0)
+    assert "-i" not in probe_run.split()  # зонд не читает stdin; -i съел бы скрипт, поданный через bash -s
+    assert '--network "container:$bot_container_id"' in probe_run
+    assert "--pull never" in probe_run
+    assert '--memory "$PROBE_MEMORY"' in probe_run
+    assert "--entrypoint python" in probe_run
+    assert '"$PROBE_IMAGE"' in probe_run
+
+
 def test_check_isolation_distinguishes_closed_from_probe_errors():
     script = read("check_isolation.sh")
     assert re.search(r"\bclosed\)", script)
