@@ -11,6 +11,7 @@ from tests.certs import Issued, client_context_trusting, issue, issue_with_malfo
 
 HOST = "site.test"
 HUGE_HEADER_BYTES = 70_000
+TLS_BUDGET_SECONDS = 5
 
 
 @pytest.fixture
@@ -36,7 +37,7 @@ async def run_tls_check(tmp_path, root: Issued, leaf: Issued, *chain) -> TlsFact
     server = await asyncio.start_server(just_close, "127.0.0.1", 0, ssl=server_context(tmp_path, leaf, *chain))
     async with server:
         port = server.sockets[0].getsockname()[1]
-        return await check_tls(opener(port), HOST, lambda: client_context_trusting(tmp_path, root))
+        return await check_tls(opener(port), HOST, TLS_BUDGET_SECONDS, lambda: client_context_trusting(tmp_path, root))
 
 
 async def test_trusted_certificate_is_ok_with_dates_names_and_issuer(tmp_path, root):
@@ -88,7 +89,7 @@ async def test_malformed_certificate_extension_keeps_outcome_and_dates(tmp_path,
 
 
 async def test_closed_port_is_connect_failure():
-    assert (await check_tls(refused, HOST)).outcome is TlsOutcome.CONNECT_FAILED
+    assert (await check_tls(refused, HOST, TLS_BUDGET_SECONDS)).outcome is TlsOutcome.CONNECT_FAILED
 
 
 async def test_plain_http_on_tls_port_is_handshake_failure():
@@ -99,7 +100,7 @@ async def test_plain_http_on_tls_port_is_handshake_failure():
 
     server = await asyncio.start_server(answer_http, "127.0.0.1", 0)
     async with server:
-        facts = await check_tls(opener(server.sockets[0].getsockname()[1]), HOST)
+        facts = await check_tls(opener(server.sockets[0].getsockname()[1]), HOST, TLS_BUDGET_SECONDS)
     assert facts.outcome is TlsOutcome.HANDSHAKE_FAILED
 
 
@@ -162,8 +163,18 @@ async def test_unverified_second_connection_has_its_own_short_timeout(monkeypatc
         error.verify_code = 10  # EXPIRED
         raise error
 
-    facts = await check_tls(hanging_open_stream, HOST)
+    facts = await check_tls(hanging_open_stream, HOST, TLS_BUDGET_SECONDS)
     assert (facts.outcome, facts.cert) == (TlsOutcome.EXPIRED, None)
+
+
+async def test_verified_handshake_slower_than_budget_is_connect_failure():
+    """Срок проверки держит сама check_tls: проверенное рукопожатие, не уложившееся в него, — обрыв соединения."""
+    async def slow_open_stream(host, port, context):
+        await asyncio.sleep(0.2)
+        raise AssertionError("рукопожатие не должно было дождаться ответа")
+
+    facts = await check_tls(slow_open_stream, HOST, 0.02)
+    assert (facts.outcome, facts.cert) == (TlsOutcome.CONNECT_FAILED, None)
 
 
 class _RecordingTransport:

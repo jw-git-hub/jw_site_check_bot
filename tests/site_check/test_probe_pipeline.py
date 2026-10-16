@@ -1,10 +1,12 @@
 import asyncio
+import ssl
 from datetime import UTC, date, datetime
 
 import pytest
 
 from bot.site_check import pipeline as pipeline_module
 from bot.site_check import probe as probe_module
+from bot.site_check import tls_check as tls_check_module
 from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.net_guard import AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
 from bot.site_check.page_fetch import PagePreview
@@ -37,7 +39,7 @@ class FakeProbes:
             raise self.resolve_error
         return ["93.184.215.14"]
 
-    async def check_tls(self, host):
+    async def check_tls(self, host, budget):
         self.calls.append(("tls", host))
         return self.tls.get(host)
 
@@ -288,9 +290,9 @@ async def test_timeout_after_dns_falls_back_to_measuring_without_own_tls(monkeyp
     monkeypatch.setattr(pipeline_module, "PROBE_TIMEOUT_SECONDS", 0.01)
 
     class HangingTlsProbes(FakeProbes):
-        async def check_tls(self, host):
+        async def check_tls(self, host, budget):
             await asyncio.sleep(0.05)
-            return await super().check_tls(host)
+            return await super().check_tls(host, budget)
 
     pagespeed = FakePageSpeed(PAGE)
     result = await Pipeline(HangingTlsProbes(), pagespeed, FakeClock()).run(target())
@@ -305,9 +307,10 @@ async def test_hanging_tls_check_falls_back_to_http_within_its_own_budget(monkey
     """AddressGuard.open_stream может копить до 15 с (DNS + подключение) на один check_tls — у самой TLS-проверки
     внутри measure() свой короткий срок (ТЗ С5), чтобы на проверку порта 80 остался запас общего бюджета."""
     monkeypatch.setattr(probe_module, "TLS_CHECK_TIMEOUT_SECONDS", 0.02)
+    monkeypatch.setattr(probe_module, "TLS_BUDGET_SLACK_SECONDS", 0)  # фейк срок не держит сам — проверяем страховку
 
     class HangingTlsProbes(FakeProbes):
-        async def check_tls(self, host):
+        async def check_tls(self, host, budget):
             await asyncio.sleep(0.05)
             raise AssertionError("TLS-проверка не должна была дождаться ответа — сработать должен свой срок")
 
@@ -328,13 +331,56 @@ async def test_measure_step_gets_only_the_remaining_probe_budget_after_dns(monke
             clock.advance(0.08)  # «DNS отняло» 0,08 с из бюджета в 0,1 с — на TLS-шаг остаётся 0,02 с
             return await super().resolve(host)
 
-        async def check_tls(self, host):
+        async def check_tls(self, host, budget):
             await asyncio.sleep(0.05)  # дольше остатка (0,02 с), но короче полного бюджета (0,1 с)
-            return await super().check_tls(host)
+            return await super().check_tls(host, budget)
 
     probes = AdvancingProbes(tls={"site.test": OK_TLS})
     result = await Pipeline(probes, FakePageSpeed(PAGE), clock).run(target())
     assert result.verdict.blocks[Block.SECURITY].unknown_reason is UnknownReason.OWN_CHECKS_FAILED
+
+
+# --- Известный плохой сертификат не теряется из-за внешнего срока (правка 16) ---
+
+EXPIRED_VERIFY_CODE = 10
+VERIFIED_FAILURE_DELAY_SECONDS = 0.05
+SLOW_CERT_READ_SECONDS = 1
+
+
+class SlowCertDateGuard:
+    """Защита сети, у которой проверенное рукопожатие быстро говорит «сертификат истёк», а второе, непроверенное
+    соединение (за датой сертификата) зависает — как у медленных серверов вроде expired.badssl.com."""
+
+    async def resolve(self, host):
+        return [PUBLIC_ADDRESS]
+
+    async def open_stream(self, host, port, context):
+        if context is not None and context.verify_mode == ssl.CERT_NONE:
+            await asyncio.sleep(SLOW_CERT_READ_SECONDS)
+            raise AssertionError("чтение даты сертификата не должно было дождаться ответа")
+        await asyncio.sleep(VERIFIED_FAILURE_DELAY_SECONDS)
+        error = ssl.SSLCertVerificationError()
+        error.verify_code = EXPIRED_VERIFY_CODE
+        raise error
+
+
+@pytest.fixture
+def tight_tls_budgets(monkeypatch):
+    """Сумма двух рукопожатий (0,05 + 0,08) больше срока TLS-проверки (0,1) — как 2 × 1,8–5 с против 4 с."""
+    monkeypatch.setattr(probe_module, "TLS_CHECK_TIMEOUT_SECONDS", 0.1)
+    monkeypatch.setattr(tls_check_module, "UNVERIFIED_CERT_TIMEOUT_SECONDS", 0.08)
+
+
+async def test_known_bad_cert_survives_slow_cert_date_read(tight_tls_budgets):
+    facts = await probe_module.check_tls_within_budget("site.test", GuardedProbes(SlowCertDateGuard()))
+    assert (facts.outcome, facts.cert) == (TlsOutcome.EXPIRED, None)
+
+
+async def test_known_bad_cert_with_slow_date_read_still_blocks_the_report(tight_tls_budgets):
+    pagespeed = FakePageSpeed(error=LighthouseFailure("FAILED_DOCUMENT_REQUEST", None))
+    result = await Pipeline(GuardedProbes(SlowCertDateGuard()), pagespeed, FakeClock()).run(target())
+    assert result.security.cert_blocks is True
+    assert result.security.tls[0].outcome is TlsOutcome.EXPIRED
 
 
 # --- Свой короткий срок второго соединения за датой сертификата (tls_check.py) — тесты в
@@ -412,7 +458,7 @@ class ImprovingTlsProbes(FakeProbes):
         super().__init__(*args, **kwargs)
         self._tls_calls = 0
 
-    async def check_tls(self, host):
+    async def check_tls(self, host, budget):
         self._tls_calls += 1
         self.calls.append(("tls", host))
         if self._tls_calls == 1:
@@ -459,9 +505,10 @@ async def test_same_host_recheck_that_hangs_does_not_reinstate_no_https(monkeypa
     """Перепроверка после замера использует тот же короткий срок TLS-проверки, что и до замера (probe.py), —
     иначе зависший check_tls дотянул бы до внешнего AFTER_TIMEOUT_SECONDS."""
     monkeypatch.setattr(probe_module, "TLS_CHECK_TIMEOUT_SECONDS", 0.02)
+    monkeypatch.setattr(probe_module, "TLS_BUDGET_SLACK_SECONDS", 0)  # фейк срок не держит сам — проверяем страховку
 
     class HangingRecheckProbes(FakeProbes):
-        async def check_tls(self, host):
+        async def check_tls(self, host, budget):
             self.calls.append(("tls", host))
             await asyncio.sleep(0.05)
             raise AssertionError("перепроверка не должна была дождаться ответа — сработать должен свой срок")
@@ -486,7 +533,7 @@ async def test_after_timeout_does_not_reinstate_a_contradicted_no_https(monkeypa
             super().__init__(*args, **kwargs)
             self._redirect_calls = 0
 
-        async def check_tls(self, host):
+        async def check_tls(self, host, budget):
             self.calls.append(("tls", host))
             return TlsFacts(host, TlsOutcome.CONNECT_FAILED)
 

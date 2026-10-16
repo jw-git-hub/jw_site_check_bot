@@ -85,13 +85,19 @@ def unverified_context() -> ssl.SSLContext:
     return context
 
 
-async def check_tls(open_stream: StreamOpener, host: str,
+async def check_tls(open_stream: StreamOpener, host: str, budget: float,
                     make_context: Callable[[], ssl.SSLContext] = verified_context) -> TlsFacts:
+    """Весь срок (budget, секунды) — на обе части: проверенное рукопожатие, а при ошибке сертификата ещё и чтение
+    его даты. Проверенное не уложилось — обрыв соединения; дату дочитать не успели — исход остаётся тем, что
+    дала проверка (истёк, самоподписанный…), только без даты: известное не стирается внешним сроком."""
+    deadline = asyncio.get_running_loop().time() + budget
     try:
-        _reader, writer = await open_stream(host, HTTPS_PORT, make_context())
+        opening = open_stream(host, HTTPS_PORT, make_context())
+        _reader, writer = await asyncio.wait_for(opening, budget)
     except ssl.SSLCertVerificationError as error:
         outcome = VERIFY_OUTCOMES.get(error.verify_code, TlsOutcome.OTHER)
-        return TlsFacts(host, outcome, await read_cert_unverified(open_stream, host))
+        remaining = deadline - asyncio.get_running_loop().time()
+        return TlsFacts(host, outcome, await read_cert_unverified(open_stream, host, remaining))
     except ssl.SSLError:
         return TlsFacts(host, TlsOutcome.HANDSHAKE_FAILED)
     except (OSError, TimeoutError):
@@ -102,15 +108,19 @@ async def check_tls(open_stream: StreamOpener, host: str,
         await close_quietly(writer)
 
 
-async def read_cert_unverified(open_stream: StreamOpener, host: str) -> CertInfo | None:
+async def read_cert_unverified(open_stream: StreamOpener, host: str, remaining: float) -> CertInfo | None:
     """Сертификат без проверки — только прочитать даты и имена, когда проверка не прошла.
 
-    Короткий срок (UNVERIFIED_CERT_TIMEOUT_SECONDS) — не даёт зависшему соединению съесть весь бюджет
-    «до замера»: известный исход первой проверки (EXPIRED, SELF_SIGNED…) не должен из-за этого потеряться.
+    Срок — меньшее из UNVERIFIED_CERT_TIMEOUT_SECONDS и остатка срока всей TLS-проверки: зависшее соединение
+    не съедает бюджет «до замера» и не выходит за срок проверки (иначе внешний срок отменил бы всё и стёр бы
+    известный исход — EXPIRED, SELF_SIGNED…).
     """
+    timeout = min(UNVERIFIED_CERT_TIMEOUT_SECONDS, remaining)
+    if timeout <= 0:
+        return None
     try:
         opening = open_stream(host, HTTPS_PORT, unverified_context())
-        _reader, writer = await asyncio.wait_for(opening, UNVERIFIED_CERT_TIMEOUT_SECONDS)
+        _reader, writer = await asyncio.wait_for(opening, timeout)
     except (OSError, TimeoutError):
         return None
     try:

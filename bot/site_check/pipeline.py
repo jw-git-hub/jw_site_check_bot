@@ -208,7 +208,7 @@ class Pipeline:
         if final_host is None:
             redirects.append(RedirectState.UNKNOWN)
         elif final_host != submitted_host:
-            tls += _known(await self._probes.check_tls(final_host))
+            tls += _known(await check_tls_within_budget(final_host, self._probes))
             redirects.append(await check_redirect_within_budget(final_host, self._probes))
         return tuple(tls), tuple(redirects)
 

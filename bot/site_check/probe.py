@@ -17,6 +17,10 @@ DNS_REASON = "dns"  # наш DNS не ответил — pipeline отличит
 # ТЗ С5 — у каждого шага свой срок: порт 443, который тихо роняет пакеты, иначе держит check_tls (в net_guard —
 # до 5 с DNS и 10 с подключения) дольше, чем pipeline оставляет на весь шаг измерения.
 TLS_CHECK_TIMEOUT_SECONDS = 4
+# Внешний wait_for вокруг TLS-проверки — только страховка с запасом: проверка сама держит свой срок внутри
+# (обе части — рукопожатие и чтение даты сертификата), и внешний не должен срабатывать раньше внутренних:
+# иначе он стирает уже известный исход (EXPIRED…) и сайт с плохим сертификатом выглядит «не открывается».
+TLS_BUDGET_SLACK_SECONDS = 0.5
 # После замера порт 80 читаем без предела на чтение (check_http_redirect) — медленно или совсем не отвечающий
 # сервер не должен занимать всё время, отведённое на проверки после замера: у переадресации свой короткий срок,
 # как и у TLS-проверки выше.
@@ -39,7 +43,7 @@ class ProbeRejected(Exception):
 class SiteProbes(Protocol):
     async def resolve(self, host: str) -> list[str]: ...
 
-    async def check_tls(self, host: str) -> TlsFacts | None: ...
+    async def check_tls(self, host: str, budget: float) -> TlsFacts | None: ...
 
     async def check_redirect(self, host: str) -> RedirectState: ...
 
@@ -53,9 +57,9 @@ class GuardedProbes:
     async def resolve(self, host: str) -> list[str]:
         return await self._guard.resolve(host)
 
-    async def check_tls(self, host: str) -> TlsFacts | None:
+    async def check_tls(self, host: str, budget: float) -> TlsFacts | None:
         try:
-            return await check_tls(self._guard.open_stream, host)
+            return await check_tls(self._guard.open_stream, host, budget)
         except GUARD_REFUSALS:
             return None
 
@@ -113,11 +117,13 @@ async def _confirm_no_https_on_port_80(target: Target, probes: SiteProbes, tls: 
 
 
 async def check_tls_within_budget(host: str, probes: SiteProbes) -> TlsFacts | None:
-    """Не дождались за свой срок — считаем как явный обрыв соединения, а не тратим на него весь бюджет времени,
+    """Срок TLS-проверки держит она сама (budget): не уложилась в него — явный обрыв соединения; внешний wait_for
+    — лишь страховка. Так не тратим на неё весь бюджет времени,
     в который эта проверка вписана: до замера — на проверку порта 80, после замера — на перепроверку устаревшей
     NO_HTTPS в pipeline.py — обе стороны используют одну и ту же обёртку, не по копии."""
     try:
-        return await asyncio.wait_for(probes.check_tls(host), TLS_CHECK_TIMEOUT_SECONDS)
+        return await asyncio.wait_for(probes.check_tls(host, TLS_CHECK_TIMEOUT_SECONDS),
+                                    TLS_CHECK_TIMEOUT_SECONDS + TLS_BUDGET_SLACK_SECONDS)
     except TimeoutError:
         return TlsFacts(host, TlsOutcome.CONNECT_FAILED)
 
