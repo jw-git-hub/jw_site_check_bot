@@ -22,8 +22,11 @@ from bot.site_check.verdict import TLS_INVALID, SecurityFacts, Verdict, judge
 CHECK_DEADLINE_SECONDS = 120  # ТЗ, Л4: одна проверка целиком
 PROBE_TIMEOUT_SECONDS = 10    # ТЗ, Л4: до замера
 AFTER_TIMEOUT_SECONDS = 15    # ТЗ, Л4: после замера
-# PREVIEW_BUDGET_SECONDS (своя загрузка страницы, 12 секунд внутри 15 после замера) — в page_fetch.py: там же
-# картинке превью достаётся остаток этого срока (задача 33, M2).
+# PREVIEW_BUDGET_SECONDS (своя загрузка страницы, 12 секунд внутри 15 после замера) — в page_fetch.py: страница,
+# разбор и картинка делят его сами, картинке достаётся весь остаток. Поэтому внешний срок здесь — только страховка
+# с запасом (PREVIEW_SLACK_SECONDS): равный внутреннему, он на границе срабатывал бы первым и выбрасывал уже
+# готовые заголовок и контакты. Сумма 12 + 0,5 остаётся внутри AFTER_TIMEOUT_SECONDS.
+PREVIEW_SLACK_SECONDS = 0.5
 DOMAIN_BUDGET_SECONDS = 8     # ТЗ, Л4, С15: реестры — не дольше 8 секунд внутри 15 после замера
 CERT_BLOCKS = "cert_blocks"
 UNREACHABLE = "unreachable"
@@ -114,7 +117,7 @@ class Pipeline:
             return None
         try:
             return await asyncio.wait_for(self._previews.load(page.measured_url or page.final_url),
-                                          PREVIEW_BUDGET_SECONDS)
+                                          PREVIEW_BUDGET_SECONDS + PREVIEW_SLACK_SECONDS)
         except TimeoutError:
             return None
         except Exception:  # noqa: BLE001 — сбой своей загрузки не должен отнимать отчёт и защиту

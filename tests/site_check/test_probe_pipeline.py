@@ -639,6 +639,21 @@ async def test_hanging_preview_keeps_security_results(monkeypatch):
     assert result.verdict.blocks[Block.PREVIEW].grade is Grade.UNKNOWN
 
 
+async def test_preview_finishing_just_after_the_budget_is_kept_by_the_outer_safety_margin(monkeypatch):
+    """Внутренний общий срок своей загрузки кончается раньше внешнего: готовые заголовок и контакты не должны
+    пропасть из-за того, что внешний wait_for сработал на границе первым (та же гонка, что у TLS-проверки)."""
+    monkeypatch.setattr(pipeline_module, "PREVIEW_BUDGET_SECONDS", 0.05)
+    monkeypatch.setattr(pipeline_module, "PREVIEW_SLACK_SECONDS", 0.3)
+    previews = FakePreviews(preview(), delay=0.15)
+    result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), FakePageSpeed(PAGE), FakeClock(),
+                            previews).run(target())
+    assert result.preview is previews.result
+
+
+def test_preview_budget_with_safety_margin_fits_into_the_after_measurement_time():
+    assert pipeline_module.PREVIEW_BUDGET_SECONDS + pipeline_module.PREVIEW_SLACK_SECONDS <= AFTER_TIMEOUT_SECONDS
+
+
 async def test_crashing_preview_loader_does_not_break_the_check():
     previews = FakePreviews(error=RuntimeError("неожиданное"))
     result = await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), FakePageSpeed(PAGE), FakeClock(),
