@@ -36,7 +36,7 @@ JW_DEV_PRO_TITLE = "Сайты, боты и автоматизация для м
 JW_DEV_PRO_RU = f"""[полоса ~/проверка-сайта_ (мигает _)]
 jw-dev.pro
 [снимок первого экрана]
-Есть что чинить: страница закрыта от поисковиков, и не нашёл счётчика посещений.
+Есть что чинить: страница закрыта от поисковиков, и счётчик посещений не найден.
 ────
 Скорость [хорошо·success]
 ┃ главное на экране — через 1,4 секунды
@@ -353,6 +353,16 @@ def test_picture_count_is_in_genitive_after_u(count, phrase):
         assert f"┃ {phrase} сбиты пропорции — например, 0.jpg" in stretched
         assert f"┃ {phrase} на телефоне не хватает чёткости — например, 0.jpg" in blurry
     assert TEXTS.count("ru", count, "picture") == f"{count} " + phrase.rsplit(" ", 1)[1]
+
+
+def test_english_picture_lines_are_worded_like_the_russian_ones():
+    names = ("a.jpg", "b.jpg", "c.jpg")
+    stretched = rich_text(report("en", page(image_facts=images(stretched=names)), security()))
+    blurry = rich_text(report("en", page(image_facts=images(blurry=names)), security()))
+    one = rich_text(report("en", page(image_facts=images(blurry=("a.jpg",))), security()))
+    assert "┃ 3 images have distorted proportions — for example, a.jpg" in stretched
+    assert "┃ 3 images aren't sharp enough on phones — for example, a.jpg" in blurry
+    assert "┃ an image looks blurry on phones — a.jpg" in one
 
 
 def test_certificate_blocking_report_matches_spec():
@@ -749,6 +759,14 @@ def test_owner_sees_how_the_page_was_read_and_what_was_found():
     assert "Контакты | tel: 1, без кода: 1, телефонов текстом: 0, форм с личными полями: 2" in text
     assert "Сервисы на странице | jivo, metrika" in text
     assert "Ссылка на политику персональных данных | есть" in text
+
+
+def test_summary_names_the_missing_counter_in_both_languages():
+    facts = contacts(call_links=0, telegram=True, markers=frozenset())
+    ru = rich_text(report("ru", page(), security(), preview_facts=preview(contact_facts=facts)))
+    en = rich_text(report("en", page(), security(), preview_facts=preview(contact_facts=facts)))
+    assert "счётчик посещений не найден" in ru
+    assert "no visitor analytics found" in en
 
 
 def test_contacts_lines_in_english():

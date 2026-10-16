@@ -107,7 +107,7 @@ TEXTS = {
     "trouble_phone_not_link": "по телефону на сайте нельзя нажать",
     "trouble_call_without_code": "кнопка звонка набирает номер без кода города",
     "trouble_no_privacy_policy": "рядом с формой заявки нет ссылки на политику персональных данных",
-    "trouble_no_analytics": "не нашёл счётчика посещений",
+    "trouble_no_analytics": "счётчик посещений не найден",
     "trouble_domain_expiring": "скоро кончается оплата домена",
     "trouble_images_stretched": "картинки растянуты или сплющены",
     "trouble_images_blurry": "картинки на телефоне нечёткие",
