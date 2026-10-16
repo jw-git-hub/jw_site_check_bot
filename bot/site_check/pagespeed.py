@@ -53,6 +53,10 @@ ERRORED_DOCUMENT = "ERRORED_DOCUMENT_REQUEST"
 BLOCKED_STATUSES = frozenset({401, 403, 429})
 NOT_FOUND_STATUS = 404
 MEASURE_FAILED = "measure_failed"
+BLOCKED = "blocked"
+# Браузер Google не увидел страницу. Наш собственный срок замера (TIMEOUT_CODE) сюда не входит: там страница
+# не при чём. За защитой от ботов сайт часто открывается нам, — pipeline проверяет это своей загрузкой.
+BROWSER_SAW_NOTHING_CODES = frozenset({"NO_FCP", "PAGE_HUNG", "PROTOCOL_TIMEOUT"})
 ERROR_CODES = {
     "DNS_FAILURE": "unreachable_dns", "FAILED_DOCUMENT_REQUEST": "unreachable", "NO_FCP": "timeout",
     "PAGE_HUNG": "timeout", "PROTOCOL_TIMEOUT": "timeout", TIMEOUT_CODE: "timeout", "NOT_HTML": "not_html",
@@ -206,7 +210,7 @@ def classify(failure: LighthouseFailure) -> str:
 
 def _by_page_status(status: int | None) -> str:
     if status in BLOCKED_STATUSES:
-        return "blocked"
+        return BLOCKED
     if status == NOT_FOUND_STATUS:
         return "not_found"
     if status is not None and status >= FIRST_SERVER_ERROR:

@@ -11,8 +11,8 @@ from bot.core.clock import Clock
 from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.lighthouse import AuditState, PageFacts, parse_lighthouse
 from bot.site_check.page_fetch import PREVIEW_BUDGET_SECONDS, PagePreview
-from bot.site_check.pagespeed import (MEASURE_FAILED, LighthouseFailure, PageSpeedClient, PageSpeedUnavailable,
-                                      classify)
+from bot.site_check.pagespeed import (BLOCKED, BROWSER_SAW_NOTHING_CODES, MEASURE_FAILED, LighthouseFailure,
+                                      PageSpeedClient, PageSpeedUnavailable, classify)
 from bot.site_check.probe import (DNS_REASON, SERVICE_DOWN, ProbeRejected, ProbeResult, SiteProbes,
                                   check_redirect_within_budget, check_tls_within_budget, measure, resolve_target)
 from bot.site_check.tls_check import HTTPS_PREFIX, RedirectState, TlsFacts, TlsOutcome
@@ -86,7 +86,7 @@ class Pipeline:
             # общего срока проверки, до AFTER_TIMEOUT_SECONDS сверху.
             result = await self._pagespeed.run(before.url, deadline - AFTER_TIMEOUT_SECONDS)
         except LighthouseFailure as failure:
-            return self._on_failure(before, failure)
+            return await self._on_failure(before, failure)
         except PageSpeedUnavailable as error:
             raise CheckFailed(SERVICE_DOWN, reached_measurement=True, reason=error.reason) from None
         page = self._parse(result)
@@ -113,11 +113,13 @@ class Pipeline:
 
     async def _preview(self, page: PageFacts) -> PagePreview | None:
         """Своя загрузка (ТЗ, 5.6–5.7). Не дождались или упала — новые блоки просто не показаны (ТЗ, 6.1)."""
+        return await self._load_preview(page.measured_url or page.final_url)
+
+    async def _load_preview(self, url: str) -> PagePreview | None:
         if self._previews is None:
             return None
         try:
-            return await asyncio.wait_for(self._previews.load(page.measured_url or page.final_url),
-                                          PREVIEW_BUDGET_SECONDS + PREVIEW_SLACK_SECONDS)
+            return await asyncio.wait_for(self._previews.load(url), PREVIEW_BUDGET_SECONDS + PREVIEW_SLACK_SECONDS)
         except TimeoutError:
             return None
         except Exception:  # noqa: BLE001 — сбой своей загрузки не должен отнимать отчёт и защиту
@@ -168,12 +170,21 @@ class Pipeline:
         if empty:
             raise CheckFailed(MEASURE_FAILED, reached_measurement=True)
 
-    def _on_failure(self, before: ProbeResult, failure: LighthouseFailure) -> CheckResult:
-        code = classify(failure)
+    async def _on_failure(self, before: ProbeResult, failure: LighthouseFailure) -> CheckResult:
+        code = await self._failure_code(before, failure)
         if code != CERT_BLOCKS and not self._blocked_by_known_bad_cert(code, before):
             raise CheckFailed(code, reached_measurement=True, page_status=failure.page_status)
         security = SecurityFacts(tls=_known(before.tls), redirects=(), insecure_urls=(), cert_blocks=True)
         return CheckResult(before.url, None, security, judge(None, security, self._today()))
+
+    async def _failure_code(self, before: ProbeResult, failure: LighthouseFailure) -> str:
+        """Браузер Google не увидел страницу, а наша загрузка её открывает — защита от ботов (ТЗ, 5.1): «blocked»,
+        а не «слишком долго». Не открылась (или загрузчика нет) — прежний код. Наш срок замера сюда не попадает."""
+        code = classify(failure)
+        if failure.code not in BROWSER_SAW_NOTHING_CODES:
+            return code
+        preview = await self._load_preview(before.url)
+        return BLOCKED if preview is not None and preview.failure is None else code
 
     def _blocked_by_known_bad_cert(self, code: str, before: ProbeResult) -> bool:
         """Браузер не открыл страницу («unreachable»), а своя проверка до замера уже сказала, что сертификату

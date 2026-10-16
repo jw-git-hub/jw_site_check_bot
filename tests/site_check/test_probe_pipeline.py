@@ -9,8 +9,8 @@ from bot.site_check import probe as probe_module
 from bot.site_check import tls_check as tls_check_module
 from bot.site_check.domain_expiry import DomainPaid
 from bot.site_check.net_guard import AddressGuard, NameLookupFailed, NameNotFound, NoIPv4, PrivateAddress
-from bot.site_check.page_fetch import PagePreview
-from bot.site_check.pagespeed import MEASURE_FAILED, LighthouseFailure, PageSpeedUnavailable
+from bot.site_check.page_fetch import FetchFailure, PagePreview
+from bot.site_check.pagespeed import MEASURE_FAILED, TIMEOUT_CODE, LighthouseFailure, PageSpeedUnavailable
 from bot.site_check.pipeline import AFTER_TIMEOUT_SECONDS, CHECK_DEADLINE_SECONDS, CheckFailed, Pipeline
 from bot.site_check.probe import GuardedProbes, ProbeRejected, probe
 from bot.site_check.tls_check import RedirectState, TlsFacts, TlsOutcome
@@ -667,6 +667,60 @@ async def test_certificate_blocking_does_not_load_the_page():
     previews = FakePreviews(preview())
     result = await Pipeline(FakeProbes(tls={"site.test": expired}), pagespeed, FakeClock(), previews).run(target())
     assert (previews.urls, result.preview) == ([], None)
+
+
+# --- Браузер Google не увидел страницу, а наша загрузка её открывает — это защита от ботов (ТЗ, 5.1) ---
+
+BROWSER_SAW_NOTHING = ["NO_FCP", "PAGE_HUNG", "PROTOCOL_TIMEOUT"]
+
+
+async def _failed_with(code: str, previews) -> CheckFailed:
+    pagespeed = FakePageSpeed(error=LighthouseFailure(code, None))
+    with pytest.raises(CheckFailed) as failed:
+        await Pipeline(FakeProbes(tls={"site.test": OK_TLS}), pagespeed, FakeClock(), previews).run(target())
+    return failed.value
+
+
+@pytest.mark.parametrize("code", BROWSER_SAW_NOTHING)
+async def test_browser_saw_nothing_but_own_load_opens_the_page_so_blocked(code):
+    previews = FakePreviews(preview())
+    failed = await _failed_with(code, previews)
+    assert (failed.code, failed.charged, previews.urls) == ("blocked", True, ["https://site.test/"])
+
+
+@pytest.mark.parametrize("code", BROWSER_SAW_NOTHING)
+async def test_browser_saw_nothing_and_own_load_fails_so_timeout(code):
+    failed = await _failed_with(code, FakePreviews(preview(failure=FetchFailure.TIMEOUT)))
+    assert (failed.code, failed.charged) == ("timeout", True)
+
+
+@pytest.mark.parametrize("code", BROWSER_SAW_NOTHING)
+async def test_browser_saw_nothing_and_own_load_crashes_so_timeout(code):
+    failed = await _failed_with(code, FakePreviews(error=RuntimeError("неожиданное")))
+    assert failed.code == "timeout"
+
+
+async def test_browser_saw_nothing_and_own_load_hangs_so_timeout(monkeypatch):
+    monkeypatch.setattr(pipeline_module, "PREVIEW_BUDGET_SECONDS", 0.01)
+    failed = await _failed_with("NO_FCP", FakePreviews(preview(), delay=5))
+    assert failed.code == "timeout"
+
+
+async def test_browser_saw_nothing_without_own_loader_so_timeout():
+    failed = await _failed_with("NO_FCP", None)
+    assert (failed.code, failed.charged) == ("timeout", True)
+
+
+async def test_our_own_measurement_deadline_stays_timeout_without_own_load():
+    previews = FakePreviews(preview())
+    failed = await _failed_with(TIMEOUT_CODE, previews)
+    assert (failed.code, previews.urls) == ("timeout", [])
+
+
+async def test_other_failures_do_not_trigger_own_load():
+    previews = FakePreviews(preview())
+    failed = await _failed_with("FAILED_DOCUMENT_REQUEST", previews)
+    assert (failed.code, previews.urls) == ("unreachable", [])
 
 
 # --- Срок оплаты домена — параллельно с защитой и своей загрузкой, у своего срока (ТЗ, 5.4) ---
